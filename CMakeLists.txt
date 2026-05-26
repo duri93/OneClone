@@ -40,6 +40,7 @@ add_executable(SimpleRCloneMountGui WIN32
     ${HEADERS}
     ${UI_FILES}
     ${RESOURCE_FILES}
+    resources/app.rc
 )
 
 target_link_libraries(SimpleRCloneMountGui
