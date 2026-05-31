@@ -41,11 +41,11 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>SRCMG - Simple RClone Mount Gui</string>
+   <string>OneRClone</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources/resources.qrc">
-    <normaloff>:/assets/favicon.svg</normaloff>:/assets/favicon.svg</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/resources/favicon.svg</normaloff>:/resources/favicon.svg</iconset>
   </property>
   <property name="locale">
    <locale language="English" country="AmericanSamoa"/>
@@ -61,7 +61,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="../resources/resources.qrc">:/assets/logo.svg</pixmap>
+       <pixmap resource="../resources.qrc">:/resources/logo.svg</pixmap>
       </property>
       <property name="scaledContents">
        <bool>false</bool>
@@ -74,11 +74,11 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabList">
        <attribute name="title">
-        <string>Mounts list</string>
+        <string>Jobs</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <property name="leftMargin">
@@ -94,7 +94,51 @@
          <number>4</number>
         </property>
         <item>
-         <widget class="QListView" name="listView"/>
+         <widget class="QScrollArea" name="jobsScrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="jobsList">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>334</width>
+             <height>329</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -124,7 +168,7 @@
       </widget>
       <widget class="QWidget" name="tabDetails">
        <attribute name="title">
-        <string>Mount details</string>
+        <string>Job details</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <property name="leftMargin">
@@ -165,49 +209,74 @@
             <item>
              <widget class="QLineEdit" name="name">
               <property name="toolTip">
-               <string>Give a reference name for the connection</string>
+               <string>Give a name for the job</string>
               </property>
              </widget>
             </item>
            </layout>
           </item>
-          <item row="1" column="1">
-           <widget class="QCheckBox" name="automount">
-            <property name="toolTip">
-             <string>If enabled, the folder will be mounted automatically when SRCMG is started</string>
-            </property>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_type">
             <property name="text">
-             <string>Automount on startup</string>
+             <string>Type</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_remote">
-            <property name="text">
-             <string>Remote</string>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="type">
+            <property name="currentIndex">
+             <number>0</number>
             </property>
+            <property name="maxVisibleItems">
+             <number>4</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>mount</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>sync</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>copy</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="remote">
+           <widget class="QCheckBox" name="autostart">
             <property name="toolTip">
-             <string>Specify the remote folder you want to connect to</string>
+             <string>If enabled, the job will run automatically when you open the app</string>
+            </property>
+            <property name="text">
+             <string>Run automatically when app starts</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="3" column="0" colspan="2">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
            <widget class="QLabel" name="label_local">
             <property name="text">
              <string>Local</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <layout class="QHBoxLayout" name="layout_local">
             <item>
              <widget class="QLineEdit" name="local">
               <property name="toolTip">
-               <string>Specify a folder, or drive letter, or network mount path</string>
+               <string>Specify a folder, drive letter, or network mount path</string>
               </property>
              </widget>
             </item>
@@ -220,37 +289,45 @@
             </item>
            </layout>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_remote">
+            <property name="text">
+             <string>Remote</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="remote">
+            <property name="toolTip">
+             <string>Specify the remote folder of the job (RClone needs to be set up correctly to work)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
            <widget class="QCheckBox" name="readOnly">
             <property name="toolTip">
-             <string>If enabled, the mounted folder will be read-only</string>
+             <string>If enabled, the mounted folder will be read-only. Not relevant for sync jobs</string>
             </property>
             <property name="text">
              <string>Read only</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="links">
-            <property name="toolTip">
-             <string>Enable or disable the handling of symlinks</string>
-            </property>
-            <property name="text">
-             <string>Enable links</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+          <item row="7" column="0" colspan="2">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="label_output">
             <property name="text">
              <string>Output</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="8" column="1">
            <widget class="QTextBrowser" name="output">
             <property name="acceptRichText">
              <bool>false</bool>
@@ -527,6 +604,16 @@
          </layout>
         </item>
         <item>
+         <widget class="QCheckBox" name="links">
+          <property name="text">
+           <string>Links</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="startupLaunch">
           <property name="text">
            <string>Launch on windows startup</string>
@@ -625,7 +712,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

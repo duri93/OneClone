@@ -1,53 +1,41 @@
 cmake_minimum_required(VERSION 3.19)
-project(SimpleRCloneMountGui LANGUAGES CXX)
+project(OneRClone LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg Network)
+
+qt_standard_project_setup()
+
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg Network)
-
-set(SOURCES
-    src/main.cpp
-    src/mainwindow.cpp
-    src/settingsmanager.cpp
-    src/mountservice.cpp
-    src/servicelistdelegate.cpp
-    src/servicelistmodel.cpp
+qt_add_executable(OneRClone
+    WIN32 MACOSX_BUNDLE
+    main.cpp
+    model/Config.h
+    model/SharedSettings.h      model/SharedSettings.cpp
+    model/Job.h                 model/Job.cpp
+    model/Manager.h             model/Manager.cpp
+    view/MainWindow.h           view/MainWindow.cpp             view/MainWindow.ui
+    view/JobWidget.h            view/JobWidget.cpp              view/JobWidget.ui
+    resources.qrc
 )
 
-set(HEADERS
-    src/mainwindow.h
-    src/settingsmanager.h
-    src/mountservice.h
-    src/servicelistdelegate.h
-    src/servicelistmodel.h
-    src/appconfig.h
-)
-
-set(UI_FILES
-    src/mainwindow.ui
-)
-
-set(RESOURCE_FILES
-    resources/resources.qrc
-)
-
-add_executable(SimpleRCloneMountGui WIN32
-    ${SOURCES}
-    ${HEADERS}
-    ${UI_FILES}
-    ${RESOURCE_FILES}
-    resources/app.rc
-)
-
-target_link_libraries(SimpleRCloneMountGui
+target_link_libraries(OneRClone
     PRIVATE
-        Qt6::Core
-        Qt6::Widgets
-        Qt6::Network
+        Qt::Core
+        Qt::Widgets
+        Qt::Network
+        Qt::Svg
 )
-target_include_directories(SimpleRCloneMountGui PRIVATE src)
 
+install(TARGETS OneRClone
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET OneRClone
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})

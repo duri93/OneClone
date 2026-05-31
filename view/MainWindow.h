@@ -1,7 +1,8 @@
 #pragma once
 
-#include "settingsmanager.h"
-#include "servicelistmodel.h"
+#include "../model/job.h"
+#include "../model/Manager.h"
+#include "../view/JobWidget.h"
 
 #include <QMainWindow>
 #include <QString>
@@ -26,6 +27,8 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
+    void activate();
+
 protected:
     void closeEvent(QCloseEvent* event) override;
 
@@ -34,50 +37,46 @@ private slots:
     void onSettingsSave();
     void onRcloneSelectClicked();
 
-    // Mounts list tab
-    void onAddMount();
-    void onListDoubleClicked(const QModelIndex& index);
-    void onToggleRequested(const QModelIndex& index);
+    // Jobs list tab
+    void onAddJobClicked();
 
-    // Mount details tab
+    // Job details tab
     void onDetailsSave();
     void onDetailsDelete();
     void onLocalSelectClicked();
 
-    // Service model events
-    void onServiceStatusChanged(const QString& id, ServiceStatus status);
-    void onServiceOutputLine(const QString& id, const QString& line);
+    // Job model events
+    void onJobOutputLine(const QString& id, const QString& line);
+    void onJobAdded(Job* job);
+    void onJobRemoved(const Job* job);
 
     // Tray icon
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
     void onTrayMenuAboutToShow();    // rebuilds service list in menu
 
 private:
-    // Populate settings form from m_settings.shared()
+    // Settings
     void loadSettingsToUi();
-    // Read settings form into m_settings.shared()
     void saveUiToSettings();
 
-    // Show a service's data in the details tab and switch to it
-    void openDetails(const QString& serviceId);
-
-    // Clear the details tab (no service selected)
+    // Job details
+    void openDetails(Job* job);
     void clearDetails();
 
-    // Return the id currently loaded in the details tab ("" if none)
-    QString currentDetailId() const;
+    // Window management
+    void moveWindowToBottomRight();
 
+    // Properties
     Ui::MainWindow*  ui;
-    SettingsManager  m_settings;
-    ServiceListModel m_model;
+    Manager  m_manager;
 
-    // Id of the service currently shown in the details tab
-    QString m_currentDetailId;
+    Job*                m_currentJobDetails = nullptr;
+    QVector<JobWidget*> m_jobWidgets;
 
-// tray icon
 private:
+    // tray icon
     void setupTray();
-    QIcon dotIcon(QColor color);    // generates a small colored-dot icon
+    QIcon dotIcon(const QColor color);    // generates a small colored icon
 
     QSystemTrayIcon* m_trayIcon    = nullptr;
     QMenu*           m_trayMenu    = nullptr;
