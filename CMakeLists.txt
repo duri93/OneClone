@@ -17,6 +17,7 @@ qt_add_executable(OneRClone
     view/MainWindow.h           view/MainWindow.cpp             view/MainWindow.ui
     view/JobWidget.h            view/JobWidget.cpp              view/JobWidget.ui
     resources.qrc
+    main.rc
 )
 
 target_link_libraries(OneRClone

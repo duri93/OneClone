@@ -43,6 +43,8 @@ const QString Job::statusString() const{
             return "Errored";
         case JobStatus::Stopping:
             return "Stopping";
+        case JobStatus::Success:
+            return "Success";
     }
 
     return "Unknown";
@@ -115,15 +117,15 @@ void Job::stop()
         SetConsoleCtrlHandler(nullptr, TRUE);   // suppress it in our process
         GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
         FreeConsole();
-        QTimer::singleShot(2000, this, [this]() {
-            m_process.write("Y\n");
+        //QTimer::singleShot(2000, this, [this]() {
+        //    m_process.write("Y\n");
 
             QTimer::singleShot(3000, this, [this]() {
                 SetConsoleCtrlHandler(nullptr, FALSE);  // restore
                 if (m_process.state() != QProcess::NotRunning)
                     m_process.kill();  // fallback
             });
-        });
+        //});
 
 
     } else {
@@ -168,11 +170,13 @@ void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
     if (m_status == JobStatus::Errored) {
         // Process was stopped because of an error match — keep Errored status
         setStatus(JobStatus::Errored);
+    } else if(m_status == JobStatus::Stopping){
+        setStatus(JobStatus::Stopped);
     } else if (exitCode != 0 && exitCode != 62097) {
         emit outputLine(m_id, QString("[ERROR] Process exited with code %1").arg(exitCode));
         setStatus(JobStatus::Errored);
     } else {
-        setStatus(JobStatus::Stopped);
+        setStatus(JobStatus::Success);
     }
 }
 

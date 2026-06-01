@@ -10,6 +10,7 @@ enum JobStatus{
     Stopped,
     Starting,
     Running,
+    Success,
     Stopping,
     Errored
 };
