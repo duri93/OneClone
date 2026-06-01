@@ -26,7 +26,7 @@ SharedSettings::SharedSettings(const QJsonObject& o){
     this->m_links              = log("links",              this->links());
 }
 
-const QJsonObject SharedSettings::toJson(){
+const QJsonObject SharedSettings::toJson() const{
     QJsonObject o;
 
     o["rclonePath"]         = this->rclonePath();

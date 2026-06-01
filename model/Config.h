@@ -7,7 +7,7 @@ namespace Config {
 
     // Application info
     inline constexpr char APP_NAME[]    = "OneRClone";
-    inline constexpr char APP_VERSION[] = "2.1";
+    inline constexpr char APP_VERSION[] = "2.1c";
     inline constexpr char APP_ID[]      = "tk.duri.onerclone";
 
     // Settings file (resolved at runtime relative to exe)
@@ -20,6 +20,7 @@ namespace Config {
     // display
     inline constexpr int STATUS_DURATION = 5000;
     inline constexpr int MAX_OUTPUT_LINES = 2000;
+    inline constexpr int SMALL_FONT_SIZE = 8;
 
     inline const QRegularExpression ERROR_REGEX{
         Config::DEFAULT_ERROR_REGEX

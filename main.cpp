@@ -4,6 +4,7 @@
 
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QTimer>
 
 int main(int argc, char* argv[])
 {
@@ -32,13 +33,18 @@ int main(int argc, char* argv[])
     MainWindow window;
 
     // When a second instance connects, show the window
+
+
     QObject::connect(&server, &QLocalServer::newConnection, [&]() {
         QLocalSocket* conn = server.nextPendingConnection();
         QObject::connect(conn, &QLocalSocket::readyRead, [&window, conn]() {
-            conn->readAll(); // consume the message
-
+            conn->readAll();
             window.activate();
-
+            conn->deleteLater();
+        });
+        QTimer::singleShot(200, conn, [&window, conn]() {
+            if (conn->bytesAvailable()) conn->readAll();
+            window.activate();
             conn->deleteLater();
         });
     });

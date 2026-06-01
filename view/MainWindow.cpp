@@ -28,7 +28,10 @@ MainWindow::MainWindow(QWidget* parent)
     // ---- Load settings (generates defaults on first run) ----
     connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
     connect(&m_manager, &Manager::removed, this, &MainWindow::onJobRemoved);
-    m_manager.load();
+
+    if (!m_manager.load()) {
+        statusBar()->showMessage("Could not load settings file — using defaults.", Config::STATUS_DURATION);
+    }
 
     // ---- Settings tab ----
     loadSettingsToUi();
@@ -40,6 +43,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->listAdd, &QPushButton::clicked, this, &MainWindow::onAddJobClicked);
 
     // ---- Details tab ----
+    ui->output->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
+
     connect(ui->details_save,   &QPushButton::clicked, this, &MainWindow::onDetailsSave);
     connect(ui->details_delete, &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
     connect(ui->localSelect,    &QToolButton::clicked, this, &MainWindow::onLocalSelectClicked);
@@ -60,7 +65,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    m_manager.save();     // save settings and jobs
     hide();               // hide window, keep app running
     event->ignore();      // don't propagate the close
 }
@@ -118,9 +122,13 @@ void MainWindow::saveUiToSettings()
 void MainWindow::onSettingsSave()
 {
     saveUiToSettings();
-    m_manager.save();
 
-    statusBar()->showMessage("Settings saved.", Config::STATUS_DURATION);
+    if(m_manager.save()){
+        statusBar()->showMessage("Settings saved.", Config::STATUS_DURATION);
+    }else{
+        statusBar()->showMessage("Error saving settings.", Config::STATUS_DURATION);
+    }
+
 }
 void MainWindow::onRcloneSelectClicked()
 {
@@ -206,11 +214,12 @@ void MainWindow::onDetailsSave()
     job->setAutostart(ui->autostart->isChecked());
     job->setReadOnly(ui->readOnly->isChecked());
 
-    m_manager.save();
-
-    ui->tabWidget->setCurrentWidget(ui->tabList);
-
-    statusBar()->showMessage("Job saved.", Config::STATUS_DURATION);
+    if(m_manager.save()){
+        statusBar()->showMessage("Job saved.", Config::STATUS_DURATION);
+        ui->tabWidget->setCurrentWidget(ui->tabList);
+    }else{
+        statusBar()->showMessage("Error saving job.", Config::STATUS_DURATION);
+    }
 }
 
 void MainWindow::onDetailsDelete()
@@ -219,15 +228,18 @@ void MainWindow::onDetailsDelete()
 
     Job* toRemove = m_currentJobDetails;
     m_currentJobDetails = nullptr;   // clear before deletion
-
     m_manager.removeJob(toRemove);
-    m_manager.save();
 
-    clearDetails();
-    openDetails(nullptr);
-    ui->tabWidget->setCurrentWidget(ui->tabList);
+    if(m_manager.save()){
+        statusBar()->showMessage("Job removed.", Config::STATUS_DURATION);
 
-    statusBar()->showMessage("Job removed.", Config::STATUS_DURATION);
+        clearDetails();
+        openDetails(nullptr);
+        ui->tabWidget->setCurrentWidget(ui->tabList);
+    }else{
+        statusBar()->showMessage("Error removing job.", Config::STATUS_DURATION);
+    }
+
 }
 
 void MainWindow::onLocalSelectClicked()
@@ -247,11 +259,8 @@ void MainWindow::onJobOutputLine(const QString& id, const QString& line)
     // Only append to the output widget if the right service is in the details tab
     if (!m_currentJobDetails || id != m_currentJobDetails->id()) return;
 
-    if(ui->output->document()->blockCount() >= Config::MAX_OUTPUT_LINES){
-        ui->output->document()->clear();
-    }
-
     ui->output->append(line);
+
 }
 void MainWindow::onJobAdded(Job* job){
     JobWidget* w = new JobWidget(job);
@@ -265,9 +274,9 @@ void MainWindow::onJobAdded(Job* job){
     ui->jobsList->layout()->addWidget(w);
 }
 
-void MainWindow::onJobRemoved(const Job* job){
+void MainWindow::onJobRemoved(const QString& jobId){
     for (int i = 0; i < m_jobWidgets.size(); ++i) {
-        if (m_jobWidgets[i]->job()->id() == job->id()) {
+        if (m_jobWidgets[i]->job()->id() == jobId) {
             delete m_jobWidgets[i];
             m_jobWidgets.removeAt(i);
             break;
@@ -301,17 +310,7 @@ void MainWindow::setupTray()
     m_trayIcon->setContextMenu(m_trayMenu);
     m_trayIcon->show();
 }
-QIcon MainWindow::dotIcon(const QColor color)
-{
-    QPixmap pm(16, 16);
-    pm.fill(Qt::transparent);
-    QPainter p(&pm);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setBrush(color);
-    p.setPen(Qt::NoPen);
-    p.drawEllipse(2, 2, 12, 12);
-    return QIcon(pm);
-}
+
 void MainWindow::onTrayMenuAboutToShow()
 {
     // Remove all actions between the first separator and the last separator

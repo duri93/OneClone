@@ -1,3 +1,4 @@
+#include "../model/Config.h"
 #include "JobWidget.h"
 #include "view/ui_JobWidget.h"
 
@@ -18,6 +19,14 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     // enable mouse tracking and intercept double-click
     setMouseTracking(true);
     installEventFilter(this);
+
+    // edit font size
+    QFont small("Arial", Config::SMALL_FONT_SIZE);
+    ui->status ->setFont(small);
+    ui->bytes  ->setFont(small);
+    ui->speed  ->setFont(small);
+    ui->percent->setFont(small);
+    ui->eta    ->setFont(small);
 
     // connect events
     connect(job, &Job::specsChanged,    this, &JobWidget::onSpecChange);
@@ -86,12 +95,6 @@ void JobWidget::onSpecChange(){
     bool validType = m_job->type() != "";
     ui->button1->setEnabled(validType);
     ui->button2->setEnabled(validType);
-
-    ui->status->setFont(QFont("Arial", 8));
-    ui->bytes->setFont(QFont("Arial", 8));
-    ui->speed->setFont(QFont("Arial", 8));
-    ui->percent->setFont(QFont("Arial", 8));
-    ui->eta->setFont(QFont("Arial", 8));
 
     onStatusChange();
 }

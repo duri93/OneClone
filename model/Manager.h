@@ -3,6 +3,7 @@
 #include "Job.h"
 #include "../model/SharedSettings.h"
 
+#include <memory>
 #include <QObject>
 
 class Manager : public QObject
@@ -13,8 +14,8 @@ public:
     ~Manager();
 
     // getters
-    SharedSettings*           shared()         { return m_shared; }
-    const SharedSettings*     shared()   const { return m_shared; }
+    SharedSettings*           shared()         { return m_shared.get(); }
+    const SharedSettings*     shared()   const { return m_shared.get(); }
 
     // job management
     Job* getJob(QString id);
@@ -27,10 +28,10 @@ public:
     bool save() const;
 signals:
     void added(Job* newJob);
-    void removed(Job* job);
+    void removed(const QString& jobId);
 
 private:
     QString           m_filePath;
-    SharedSettings*   m_shared = new SharedSettings();
+    std::unique_ptr<SharedSettings> m_shared = std::make_unique<SharedSettings>();
     QVector<Job*> m_jobs;
 };

@@ -48,7 +48,7 @@ private slots:
     // Job model events
     void onJobOutputLine(const QString& id, const QString& line);
     void onJobAdded(Job* job);
-    void onJobRemoved(const Job* job);
+    void onJobRemoved(const QString& jobId);
 
     // Tray icon
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -76,7 +76,6 @@ private:
 private:
     // tray icon
     void setupTray();
-    QIcon dotIcon(const QColor color);    // generates a small colored icon
 
     QSystemTrayIcon* m_trayIcon    = nullptr;
     QMenu*           m_trayMenu    = nullptr;

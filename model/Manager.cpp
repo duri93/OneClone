@@ -10,7 +10,6 @@ Manager::Manager(QObject* parent) : QObject(parent){
     .filePath(Config::SETTINGS_FILENAME);
 }
 Manager::~Manager(){
-    delete m_shared;
     qDeleteAll(m_jobs);
     m_jobs.clear();
 }
@@ -25,18 +24,19 @@ Job* Manager::getJob(QString id){
     return nullptr;
 }
 void Manager::addJob(Job* newJob){
-    Job* job = getJob(newJob->id());
-    if(job) return;
+    if (getJob(newJob->id())) {
+        delete newJob;
+        return;
+    }
 
     m_jobs.append(newJob);
-
     emit added(newJob);
 }
 
 void Manager::removeJob(QString id){
     for(int i = 0; i < m_jobs.size(); ++i){
         if(m_jobs[i]->id() == id){
-            emit removed(m_jobs[i]);
+            emit removed(m_jobs[i]->id());
             delete m_jobs[i];
             m_jobs.removeAt(i);
             break;
@@ -74,13 +74,12 @@ bool Manager::load()
 
     // import shared settings and jobs
     if (root.contains("shared") && root["shared"].isObject()) {
-        delete this->m_shared;
-        this->m_shared = new SharedSettings(root["shared"].toObject());
+        this->m_shared = std::make_unique<SharedSettings>(root["shared"].toObject());
     }
 
     // remove old jobs
     for(Job*& job:m_jobs){
-        emit removed(job);
+        emit removed(job->id());
         delete job;
     }
     m_jobs.clear();
@@ -89,7 +88,7 @@ bool Manager::load()
     if (root.contains("jobs") && root["jobs"].isArray()) {
         for (const QJsonValue& v : root["jobs"].toArray()) {
             if (v.isObject()) {
-                Job* job = new Job(m_shared);
+                Job* job = new Job(m_shared.get());
                 job->fromJson(v);
                 addJob(job);
             }

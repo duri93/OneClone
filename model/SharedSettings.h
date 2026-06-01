@@ -18,22 +18,22 @@ public:
     const int     checkers()           const { return m_checkers;           };
     const bool    links()              const { return m_links;              };
 
-    void setRclonePath        (QString newRclonePath        ){ m_rclonePath         = newRclonePath;        };
-    void setCacheMode         (QString newCacheMode         ){ m_cacheMode          = newCacheMode;         };
-    void setCacheMaxSize      (int     newCacheMaxSize      ){ m_cacheMaxSize       = newCacheMaxSize;      };
-    void setCacheMinFreeSpace (int     newCacheMinFreeSpace ){ m_cacheMinFreeSpace  = newCacheMinFreeSpace; };
-    void setCacheMaxAge       (int     newCacheMaxAge       ){ m_cacheMaxAge        = newCacheMaxAge;       };
-    void setReadChunkSize     (int     newReadChunkSize     ){ m_readChunkSize      = newReadChunkSize;     };
-    void setReadChunkSizeLimit(int     newReadChunkSizeLimit){ m_readChunkSizeLimit = newReadChunkSizeLimit;};
-    void setBufferSize        (int     newBufferSize        ){ m_bufferSize         = newBufferSize;        };
-    void setTransfers         (int     newTransfers         ){ m_transfers          = newTransfers;         };
-    void setCheckers          (int     newCheckers          ){ m_checkers           = newCheckers;          };
-    void setLinks             (bool    newLinks             ){ m_links              = newLinks;             };
+    void setRclonePath        (QString newRclonePath        ){ m_rclonePath         = std::move(newRclonePath); };
+    void setCacheMode         (QString newCacheMode         ){ m_cacheMode          = std::move(newCacheMode);  };
+    void setCacheMaxSize      (int     newCacheMaxSize      ){ m_cacheMaxSize       = newCacheMaxSize;          };
+    void setCacheMinFreeSpace (int     newCacheMinFreeSpace ){ m_cacheMinFreeSpace  = newCacheMinFreeSpace;     };
+    void setCacheMaxAge       (int     newCacheMaxAge       ){ m_cacheMaxAge        = newCacheMaxAge;           };
+    void setReadChunkSize     (int     newReadChunkSize     ){ m_readChunkSize      = newReadChunkSize;         };
+    void setReadChunkSizeLimit(int     newReadChunkSizeLimit){ m_readChunkSizeLimit = newReadChunkSizeLimit;    };
+    void setBufferSize        (int     newBufferSize        ){ m_bufferSize         = newBufferSize;            };
+    void setTransfers         (int     newTransfers         ){ m_transfers          = newTransfers;             };
+    void setCheckers          (int     newCheckers          ){ m_checkers           = newCheckers;              };
+    void setLinks             (bool    newLinks             ){ m_links              = newLinks;                 };
 
     SharedSettings();
     SharedSettings(const QJsonObject& o);
 
-    const QJsonObject toJson();
+    const QJsonObject toJson() const;
 private:
     QString m_rclonePath         = "C:\\RClone\\rclone.exe";
     QString m_cacheMode          = "full";

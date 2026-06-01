@@ -7,6 +7,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+static std::atomic<int> s_ctrlSuppressCount{0};
+
 Job::Job(SharedSettings* shared, QObject* parent)
     : QObject(parent), m_shared(shared){
 
@@ -20,7 +22,7 @@ Job::Job(SharedSettings* shared, QObject* parent)
     connect(&m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &Job::onProcessFinished);
 
     // Merge stderr into stdout channel for unified output display
-    m_process.setProcessChannelMode(QProcess::MergedChannels);
+    // m_process.setProcessChannelMode(QProcess::MergedChannels);
 }
 Job::~Job()
 {
@@ -33,18 +35,18 @@ Job::~Job()
 
 const QString Job::statusString() const{
     switch(status()){
-        case JobStatus::Stopped:
-            return "Stopped";
-        case JobStatus::Starting:
-            return "Starting";
-        case JobStatus::Running:
-            return "Running";
-        case JobStatus::Errored:
-            return "Errored";
-        case JobStatus::Stopping:
-            return "Stopping";
-        case JobStatus::Success:
-            return "Success";
+    case JobStatus::Stopped:
+        return "Stopped";
+    case JobStatus::Starting:
+        return "Starting";
+    case JobStatus::Running:
+        return "Running";
+    case JobStatus::Errored:
+        return "Errored";
+    case JobStatus::Stopping:
+        return "Stopping";
+    case JobStatus::Success:
+        return "Success";
     }
 
     return "Unknown";
@@ -110,31 +112,31 @@ void Job::start(bool swapSides)
 void Job::stop()
 {
     if (m_status == JobStatus::Stopped) return;
-
     setStatus(JobStatus::Stopping);
 
+#ifdef Q_OS_WIN
     if (AttachConsole(m_process.processId())) {
-        SetConsoleCtrlHandler(nullptr, TRUE);   // suppress it in our process
+        if (s_ctrlSuppressCount.fetch_add(1) == 0){
+            SetConsoleCtrlHandler(nullptr, TRUE);   // suppress it in our process
+        }
+
         GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
         FreeConsole();
-        //QTimer::singleShot(2000, this, [this]() {
-        //    m_process.write("Y\n");
 
-            QTimer::singleShot(3000, this, [this]() {
+        QTimer::singleShot(3000, this, [this]() {
+            if (--s_ctrlSuppressCount == 0){
                 SetConsoleCtrlHandler(nullptr, FALSE);  // restore
-                if (m_process.state() != QProcess::NotRunning)
-                    m_process.kill();  // fallback
-            });
-        //});
-
+            }
+            if (m_process.state() != QProcess::NotRunning)
+                m_process.kill();  // fallback
+        });
 
     } else {
         m_process.kill();
     }
-
-
-
-    // m_killTimer->start(5000);
+#else
+    m_process.kill();
+#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -154,8 +156,11 @@ void Job::onProcessError(QProcess::ProcessError error)
 {
     Q_UNUSED(error)
     if (m_status != JobStatus::Stopping) {
-        emit outputLine(m_id,
-                        QString("[ERROR] Process error: %1").arg(m_process.errorString()));
+        if(error == QProcess::FailedToStart){
+            emit outputLine(m_id, QString("[ERROR] Failed to start: %1").arg(m_process.errorString()));
+        }else{
+            emit outputLine(m_id, QString("[ERROR] Process error: %1").arg(m_process.errorString()));
+        }
         setStatus(JobStatus::Errored);
     }
 }
@@ -254,7 +259,7 @@ void Job::fromJson(const QJsonValue& json){
         this->m_id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     }
 }
-const QJsonObject Job::toJson(){
+const QJsonObject Job::toJson() const{
     QJsonObject o;
     o["id"]        = this->m_id;
     o["name"]      = this->m_name;
