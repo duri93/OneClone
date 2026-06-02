@@ -80,7 +80,8 @@ private slots:
 private:
     void setStatus(JobStatus s);
     void processLine(const QString& line);
-    void tryParseProgress(const QString& line);
+    void processLineOutput(const QString & line);
+    void processLineProgress(const QString& line);
 
     QString m_id;       // internal UUID, not shown in UI
     QString m_name    = "New job";

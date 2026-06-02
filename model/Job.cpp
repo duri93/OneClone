@@ -193,12 +193,7 @@ void Job::setStatus(JobStatus s)
 }
 void Job::processLine(const QString& line)
 {
-    m_output.append(line);
-    if(m_output.size() > Config::MAX_OUTPUT_LINES){
-        m_output.removeFirst();
-    }
 
-    emit outputLine(m_id, line);
 
     // Transition from Starting -> Running on first real output
     if (m_status == JobStatus::Starting) {
@@ -213,8 +208,19 @@ void Job::processLine(const QString& line)
     }
 
     // parse progress for sync/copy commands
-    if (m_type != "mount")
-        tryParseProgress(line);
+    if(m_type == "mount"){
+        processLineOutput(line);
+    }else{
+        static const QRegularExpression re(
+            QStringLiteral("^(?:Transferred|Errors|Checks|Elapsed time|Transferring)"),
+            QRegularExpression::CaseInsensitiveOption
+        );
+        if(re.match(line).hasMatch()){
+            processLineProgress(line);
+        }else{
+            processLineOutput(line);
+        }
+    }
 
     // Check for error pattern
     if (Config::ERROR_REGEX.match(line).hasMatch()) {
@@ -224,7 +230,17 @@ void Job::processLine(const QString& line)
         return;
     }
 }
-void Job::tryParseProgress(const QString& line)
+void Job::processLineOutput(const QString &line){
+    // keep line in memory, to show it in details tab
+    m_output.append(line);
+    if(m_output.size() > Config::MAX_OUTPUT_LINES){
+        m_output.removeFirst();
+    }
+
+    // emit signal
+    emit outputLine(m_id, line);
+}
+void Job::processLineProgress(const QString& line)
 {
     // Matches: "Transferred: 123.45 MiB / 1.23 GiB, 10%, 1.23 MiB/s, ETA 1m23s"
     static const QRegularExpression re(
