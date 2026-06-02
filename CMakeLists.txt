@@ -7,6 +7,8 @@ qt_standard_project_setup()
 
 set(CMAKE_AUTORCC ON)
 
+
+
 qt_add_executable(OneClone
     WIN32 MACOSX_BUNDLE
     main.cpp
@@ -18,6 +20,7 @@ qt_add_executable(OneClone
     view/JobWidget.h            view/JobWidget.cpp              view/JobWidget.ui
     resources.qrc
     main.rc
+    view/JobListWidget.h view/JobListWidget.cpp
 )
 
 target_link_libraries(OneClone
@@ -39,4 +42,7 @@ qt_generate_deploy_app_script(
     OUTPUT_SCRIPT deploy_script
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
+
+target_include_directories(OneClone PRIVATE ${CMAKE_SOURCE_DIR})
+
 install(SCRIPT ${deploy_script})

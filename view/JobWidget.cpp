@@ -6,8 +6,12 @@
 #include <QMouseEvent>
 #include <QEnterEvent>
 #include <QFont>
+#include <QDrag>
+#include <QMimeData>
 
-// CONSTRUCT
+// ---------------------------------------------------------------------------
+// Constructor and helpers
+// ---------------------------------------------------------------------------
 JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     ui->setupUi(this);
     m_job = job;
@@ -55,7 +59,9 @@ const QString JobWidget::statusIcon() const{
     return str;
 }
 
-// MOUSE EVENTs
+// ---------------------------------------------------------------------------
+// Mouse events
+// ---------------------------------------------------------------------------
 bool JobWidget::eventFilter(QObject* watched, QEvent* event)
 {
     if (watched == this && event->type() == QEvent::MouseButtonDblClick) {
@@ -87,7 +93,9 @@ void JobWidget::leaveEvent(QEvent* event)
     QWidget::leaveEvent(event);
 }
 
-// OTHERS
+// ---------------------------------------------------------------------------
+// Job spec, status and progress
+// ---------------------------------------------------------------------------
 void JobWidget::onSpecChange(){
     ui->name->setText(m_job->name());
 
@@ -176,3 +184,38 @@ void JobWidget::setProgressVisibility(){
     // adjustSize();
 }
 
+// ---------------------------------------------------------------------------
+// Drag / drop jobs
+// ---------------------------------------------------------------------------
+void JobWidget::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton
+        && ui->jobIcon->geometry().contains(event->pos()))
+    {
+        m_dragStartPos = event->pos();
+    } else {
+        m_dragStartPos = QPoint();  // null — drag won't start
+    }
+    QWidget::mousePressEvent(event);
+}
+void JobWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    if (!(event->buttons() & Qt::LeftButton) || m_dragStartPos.isNull()) return;
+
+    // don't start a drag if the press was on a button
+    if ((event->pos() - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
+        return;
+
+    QDrag*     drag = new QDrag(this);
+    QMimeData* mime = new QMimeData;
+    mime->setText(m_job->id());           // carry the job ID
+    drag->setMimeData(mime);
+
+    // semi-transparent thumbnail of the widget as the drag pixmap
+    QPixmap px = grab();
+    drag->setPixmap(px.scaledToWidth(px.width() / devicePixelRatioF(),
+                                     Qt::SmoothTransformation));
+    drag->setHotSpot(event->pos());
+
+    drag->exec(Qt::MoveAction);
+}

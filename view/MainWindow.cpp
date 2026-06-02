@@ -1,6 +1,6 @@
 #include "MainWindow.h"
-
 #include "ui_MainWindow.h"
+#include "JobListWidget.h"
 
 #include "../model/Config.h"
 
@@ -44,6 +44,8 @@ MainWindow::MainWindow(QWidget* parent)
     // ---- List tab ----
     // populated when adding jobs
     connect(ui->listAdd, &QPushButton::clicked, this, &MainWindow::onAddJobClicked);
+
+    connect(ui->jobsList, &JobListWidget::jobMoved, this, &MainWindow::onJobMoved);
 
     // ---- Details tab ----
     ui->output->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
@@ -159,6 +161,41 @@ void MainWindow::onAddJobClicked()
     Job* job = new Job(m_manager.shared());
     m_manager.addJob(job);
     openDetails(job);
+}
+
+void MainWindow::onJobMoved(const QString& id, int newIndex){
+    m_manager.moveJob(id, newIndex);
+
+    // rebuild the visual order from m_jobs, which is now authoritative
+    QLayout* l = ui->jobsList->layout();
+    for (JobWidget*& w : m_jobWidgets){
+        l->removeWidget(w);
+        w->hide();
+    }
+
+    m_jobWidgets.clear();
+    for (Job* job : m_manager.jobs()) {   // see note below
+        JobWidget* w = findOrCreateJobWidget(job);
+        l->addWidget(w);
+        w->show();
+        m_jobWidgets.append(w);
+    }
+
+    if (!m_manager.save())
+        statusBar()->showMessage("Warning: failed to save settings.", Config::STATUS_DURATION);
+}
+JobWidget* MainWindow::findOrCreateJobWidget(Job* job)
+{
+    for (JobWidget* w : m_jobWidgets)
+        if (w->job() == job) return w;
+
+    // not found — create fresh (same as onJobAdded)
+    JobWidget* w = new JobWidget(job);
+    w->setProperty("jobId", job->id());
+    connect(w, &JobWidget::openDetailsRequested, this, [this](const QString& id) {
+        openDetails(m_manager.getJob(id));
+    });
+    return w;
 }
 
 // ---------------------------------------------------------------------------

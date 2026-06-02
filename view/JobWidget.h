@@ -33,8 +33,13 @@ signals:
 private:
     Ui::JobWidget* ui;
     Job*       m_job;
+    QPoint m_dragStartPos;
 
 protected:
+    // TODO only from icon
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event)  override;
+
     bool eventFilter(QObject* watched, QEvent* event) override;
     void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;

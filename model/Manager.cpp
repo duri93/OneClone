@@ -32,7 +32,18 @@ void Manager::addJob(Job* newJob){
     m_jobs.append(newJob);
     emit added(newJob);
 }
+void Manager::moveJob(const QString& id, int newIndex)
+{
+    int oldIndex = -1;
+    for (int i = 0; i < m_jobs.size(); ++i) {
+        if (m_jobs[i]->id() == id) { oldIndex = i; break; }
+    }
+    if (oldIndex == -1 || oldIndex == newIndex) return;
 
+    Job* job = m_jobs.takeAt(oldIndex);
+    newIndex = qBound(0, newIndex, m_jobs.size());
+    m_jobs.insert(newIndex, job);
+}
 void Manager::removeJob(QString id){
     for(int i = 0; i < m_jobs.size(); ++i){
         if(m_jobs[i]->id() == id){

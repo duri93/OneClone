@@ -40,6 +40,7 @@ private slots:
 
     // Jobs list tab
     void onAddJobClicked();
+    void onJobMoved(const QString& id, int newIndex);
 
     // Job details tab
     void onDetailsSave();
@@ -75,6 +76,9 @@ private:
     QVector<JobWidget*> m_jobWidgets;
 
 private:
+    // list
+    JobWidget* findOrCreateJobWidget(Job* job);
+
     // tray icon
     void setupTray();
 

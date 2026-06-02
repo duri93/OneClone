@@ -16,10 +16,12 @@ public:
     // getters
     SharedSettings*           shared()         { return m_shared.get(); }
     const SharedSettings*     shared()   const { return m_shared.get(); }
+    const QVector<Job*>& jobs() const { return m_jobs; }
 
     // job management
     Job* getJob(QString id);
     void addJob(Job* newJob);
+    void moveJob(const QString& id, int newIndex);
     void removeJob(Job* job);
     void removeJob(QString id);
 

@@ -98,7 +98,7 @@
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="jobsList">
+          <widget class="JobListWidget" name="jobsList">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -738,6 +738,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>JobListWidget</class>
+   <extends>QWidget</extends>
+   <header>view/JobListWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>
