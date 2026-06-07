@@ -3,6 +3,9 @@
 #include "../model/Config.h"
 #include <QUuid>
 #include <QTimer>
+#include <QCoreApplication>
+#include <QDir>
+#include <QDesktopServices>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -52,7 +55,6 @@ const QString Job::statusString() const{
     return "Unknown";
 }
 
-
 // ---------------------------------------------------------------------------
 // start / stop
 // ---------------------------------------------------------------------------
@@ -100,6 +102,8 @@ void Job::start(bool swapSides)
     m_process.setProgram(m_shared->rclonePath());
     m_process.setArguments(args);
     m_process.start();
+
+    logOpen();
 
     setStatus(JobStatus::Starting);
 
@@ -183,6 +187,8 @@ void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
     } else {
         setStatus(JobStatus::Success);
     }
+
+    logClose();
 }
 
 // ---------------------------------------------------------------------------
@@ -239,6 +245,7 @@ void Job::processLineOutput(const QString &line){
     }
 
     // emit signal
+    logAppend(line);
     emit outputLine(m_id, line);
 }
 void Job::processLineProgress(const QString& line)
@@ -259,6 +266,48 @@ void Job::processLineProgress(const QString& line)
 
     emit progressUpdated(m_id, m_progress);
 }
+
+// ---------------------------------------------------------------------------
+// Log helpers
+// ---------------------------------------------------------------------------
+void Job::logOpen(){
+    // prepare filename
+    QDir dir = QDir(QCoreApplication::applicationDirPath());
+    if(!dir.exists("logs")){
+        dir.mkdir("logs");
+    }
+
+    const QString logPath = dir.filePath("logs/" + m_name + ".log");
+    m_logfile.setFileName(logPath);
+
+    // open
+    if(!m_logfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)){
+        // TODO show error
+    }
+}
+void Job::logAppend(const QString& line){
+    // append to file
+    if(!m_logfile.isOpen()) return;
+
+    m_logfile.write(line.toUtf8());
+    //m_logfile.write("\n");
+    m_logfile.flush();
+}
+void Job::logClose(){
+    if(!m_logfile.isOpen()) return;
+
+    m_logfile.close();
+}
+void Job::openLogfile(){
+    if (m_logfile.fileName().isEmpty()) {
+        return;
+    }
+
+    QDesktopServices::openUrl(
+        QUrl::fromLocalFile(m_logfile.fileName())
+        );
+}
+
 
 void Job::fromJson(const QJsonValue& json){
     this->m_id        = json["id"].toString();

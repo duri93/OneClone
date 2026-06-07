@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
+#include <QFile>
 
 enum class JobStatus{
     Stopped,
@@ -64,6 +65,8 @@ public:
     void start(bool swapSides = false);
     void stop();
 
+    void openLogfile();
+
 public slots:
     void toggle(bool swapSides = false);
 
@@ -85,6 +88,11 @@ private:
     void processLineOutput(const QString & line);
     void processLineProgress(const QString& line);
 
+    void logOpen();
+    void logAppend(const QString& line);
+    void logClose();
+
+
     QString m_id;       // internal UUID, not shown in UI
     QString m_name    = "New job";
     QString m_type    = "sync";
@@ -93,10 +101,11 @@ private:
     bool m_autostart  = false;
     bool m_readOnly   = false;
 
-    SharedSettings* m_shared;
-    JobStatus       m_status = JobStatus::Stopped;
+    SharedSettings*  m_shared;
+    JobStatus        m_status = JobStatus::Stopped;
     QVector<QString> m_warnings;
-    JobProgress     m_progress;
-    QProcess        m_process;
-    QStringList     m_output;
+    JobProgress      m_progress;
+    QProcess         m_process;
+    QStringList      m_output;
+    QFile            m_logfile;
 };

@@ -16,8 +16,10 @@ protected:
     void dropEvent(QDropEvent*          event) override;
     void paintEvent(QPaintEvent*        event) override;
 
+
+
 private:
-    int      m_dropLine = -1;   // y-position of the insertion indicator, -1 = hidden
+    int m_dropLine = -1;   // y-position of the insertion indicator, -1 = hidden
 
     int insertionIndexAt(const QPoint& pos) const;
 };

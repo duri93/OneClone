@@ -56,6 +56,12 @@ JobWidget::~JobWidget() {
 // ---------------------------------------------------------------------------
 bool JobWidget::eventFilter(QObject* watched, QEvent* event)
 {
+    // status click
+    if(watched == ui->statusIcon && event->type() == QEvent::MouseButtonRelease){
+        m_job->openLogfile();
+    }
+
+    // double click
     if (watched == this && event->type() == QEvent::MouseButtonDblClick) {
         auto* me = static_cast<QMouseEvent*>(event);
         // Only trigger if the click wasn't on a button
@@ -124,6 +130,7 @@ void JobWidget::onStatusChange(){
     // show progress if copy/sync is running
     setProgressVisibility();
 }
+
 void JobWidget::onProgress(){
     ui->bytes->setText(m_job->progress().bytes);
     ui->speed->setText(m_job->progress().speed);
@@ -166,19 +173,21 @@ const QPixmap JobWidget::getStatusIcon() const{
     pixmap = pixmap.scaled(h, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     // warning badge
-    QString warnIcon = QString(":/resources/icons/warning.svg");
-    QSvgRenderer warnRenderer(warnIcon);
+    if(!m_job->warnings().isEmpty()){
+        QString warnIcon = QString(":/resources/icons/warning.svg");
+        QSvgRenderer warnRenderer(warnIcon);
 
-    int warnSize = h / 3;
+        int warnSize = h / 3;
 
-    QRect warnRect(
-        h - warnSize,
-        h - warnSize,
-        warnSize,
-        warnSize);
+        QRect warnRect(
+            h - warnSize,
+            h - warnSize,
+            warnSize,
+            warnSize);
 
-    QPainter painter(&pixmap);
-    warnRenderer.render(&painter, warnRect);
+        QPainter painter(&pixmap);
+        warnRenderer.render(&painter, warnRect);
+    }
 
     // set icon
     return pixmap;
