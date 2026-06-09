@@ -20,7 +20,6 @@ Job::Job(SharedSettings* shared, QObject* parent)
 
     // Wire up process signals
     connect(&m_process, &QProcess::readyReadStandardOutput, this, &Job::onReadyRead);
-    // connect(&m_process, &QProcess::readyReadStandardError, this, &Job::onReadyRead);
     connect(&m_process, &QProcess::errorOccurred, this, &Job::onProcessError);
     connect(&m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &Job::onProcessFinished);
 
@@ -100,14 +99,13 @@ void Job::start(bool swapSides)
     m_warnings.clear();
     m_output.clear();
     m_output.append(args.join(' '));
+    logAppend(args.join(' '));
 
     m_process.setProgram(m_shared->rclonePath());
     m_process.setArguments(args);
-    m_process.start();
-
-
 
     setStatus(JobStatus::Starting);
+    m_process.start();
 
     // QProcess::started is not connected here; we transition to Running on
     // first stdout output to avoid false positives while rclone initialises.
@@ -156,14 +154,14 @@ void Job::onProcessError(QProcess::ProcessError error)
 {
     Q_UNUSED(error)
     //if (m_status != JobStatus::Stopping) {
-    setStatus(JobStatus::Errored);
 
     if(error == QProcess::FailedToStart){
-        emit outputLine(m_id, QString("[ERROR] Failed to start: %1").arg(m_process.errorString()));
+        processLineOutput(QString("[ERROR] Failed to start: %1").arg(m_process.errorString()));
     }else{
-        emit outputLine(m_id, QString("[ERROR] Process error: %1").arg(m_process.errorString()));
+        processLineOutput(QString("[ERROR] Process error: %1").arg(m_process.errorString()));
     }
 
+    setStatus(JobStatus::Errored);
     //}
 }
 void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -284,7 +282,7 @@ void Job::logOpen(){
         dir.mkdir("logs");
     }
 
-    const QString logPath = dir.filePath("logs/" + m_name + ".log");
+    const QString logPath = dir.filePath("logs/" + m_id + "_" + m_name + ".log");
     m_logfile.setFileName(logPath);
 
     // open
@@ -297,7 +295,7 @@ void Job::logAppend(const QString& line){
     if(!m_logfile.isOpen()) return;
 
     m_logfile.write(line.toUtf8());
-    //m_logfile.write("\n");
+    m_logfile.write("\n");
     m_logfile.flush();
 }
 void Job::logClose(){

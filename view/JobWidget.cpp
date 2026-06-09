@@ -45,6 +45,9 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     connect(ui->button2, &QPushButton::clicked, this, [this]() {
         m_job->toggle(true);
     });
+    connect(ui->statusIcon, &QToolButton::clicked, this, [this]() {
+        m_job->openLogfile();
+    });
 }
 JobWidget::~JobWidget() {
     delete ui;
@@ -56,11 +59,6 @@ JobWidget::~JobWidget() {
 // ---------------------------------------------------------------------------
 bool JobWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    // status click
-    if(watched == ui->statusIcon && event->type() == QEvent::MouseButtonRelease){
-        m_job->openLogfile();
-    }
-
     // double click
     if (watched == this && event->type() == QEvent::MouseButtonDblClick) {
         auto* me = static_cast<QMouseEvent*>(event);
@@ -110,7 +108,8 @@ void JobWidget::onStatusChange(){
 
     // status label
     ui->jobIcon->setPixmap(getJobIcon());
-    ui->statusIcon->setPixmap(getStatusIcon());
+    //ui->statusIcon->setPixmap(getStatusIcon());
+    ui->statusIcon->setIcon(QIcon(getStatusIcon()));
 
     // button labels
     if(m_job->type() == "mount"){
@@ -127,7 +126,7 @@ void JobWidget::onStatusChange(){
         ui->button2->setVisible(!active);
     }
 
-    if(m_job->status == JobStatus::Starting){
+    if(m_job->status() == JobStatus::Starting){
         ui->statusIcon->setToolTip("");
     }
 
@@ -146,7 +145,7 @@ void JobWidget::onProgress(){
 void JobWidget::onWarning(){
 
     if(ui->statusIcon->toolTip().isEmpty()){
-         ui->statusIcon->setPixmap(getStatusIcon());
+         ui->statusIcon->setIcon(QIcon(getStatusIcon()));
     }
 
     QString str = m_job->warnings().join("\n");

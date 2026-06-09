@@ -17,5 +17,6 @@
         <file>resources/icons/sync_inactive.svg</file>
         <file>resources/icons/warning.svg</file>
         <file>resources/icons/logs.svg</file>
+        <file>resources/icons/open.svg</file>
     </qresource>
 </RCC>

@@ -14,6 +14,7 @@
 #include <QRect>
 #include <QSize>
 #include <QScreen>
+#include <QStandardPaths>
 
 // ---------------------------------------------------------------------------
 // Constructor / Destructor
@@ -50,9 +51,10 @@ MainWindow::MainWindow(QWidget* parent)
     // ---- Settings tab ----
     ui->settingsAdvancedScrollarea->hide();
     loadSettingsToUi();
-    connect(ui->settingsAdvanced, &QCheckBox::checkStateChanged, this, &MainWindow::onSettingsAdvanced);
-    connect(ui->settingsSave, &QPushButton::clicked, this, &MainWindow::onSettingsSave);
-    connect(ui->settingsRcloneButton,  &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
+    connect(ui->settingsAdvanced,     &QCheckBox::checkStateChanged, this, &MainWindow::onSettingsAdvanced);
+    connect(ui->settingsSave,         &QPushButton::clicked, this, &MainWindow::onSettingsSave);
+    connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
+    connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &MainWindow::onRcloneConfClicked);
 
     // ---- List tab ----
     // populated when adding jobs
@@ -165,6 +167,10 @@ void MainWindow::onSettingsAdvanced(){
     }else{
         ui->settingsAdvancedScrollarea->hide();
     }
+}
+void MainWindow::onRcloneConfClicked(){
+    QString cmd = QString("cmd /K \"%1\"").arg(ui->settingsRclone->text());
+    QProcess::startDetached(cmd);
 }
 
 // ---------------------------------------------------------------------------
@@ -441,11 +447,9 @@ void MainWindow::activate(){
 // General error messages
 // ---------------------------------------------------------------------------
 bool MainWindow::isRcloneInstalled(){
-    if(QDir(m_manager.shared()->rclonePath()).exists()){
-        return true;
-    }else{
-        return false;
-    }
+    QString path = m_manager.shared()->rclonePath();
+    QFileInfo fi(path);
+    return (fi.exists() && fi.isExecutable()) || !QStandardPaths::findExecutable(path).isEmpty();
 }
 bool MainWindow::isWinFspInstalled(){
 #ifdef Q_OS_WIN
@@ -469,3 +473,4 @@ bool MainWindow::isWinFspInstalled(){
     return false; // WinFsp is Windows-only
 #endif
 }
+
