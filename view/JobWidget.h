@@ -38,6 +38,11 @@ private:
 
     void setProgressVisibility();
 protected:
+    bool jobInvert = false;
+    void showConfirm();
+    void hideConfirm();
+    void confirmEvent();
+
     // TODO only from icon
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event)  override;

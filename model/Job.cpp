@@ -7,9 +7,10 @@
 #include <QDir>
 #include <QDesktopServices>
 
+#ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
+#endif
 static std::atomic<int> s_ctrlSuppressCount{0};
 
 Job::Job(SharedSettings* shared, QObject* parent)
@@ -282,7 +283,10 @@ void Job::logOpen(){
         dir.mkdir("logs");
     }
 
-    const QString logPath = dir.filePath("logs/" + m_id + "_" + m_name + ".log");
+    QString logPath = dir.filePath("logs/" + m_id + "_" + m_name + ".log");
+    logPath.replace(QRegularExpression(R"([\\/:*?"<>|])"), "_");
+    if(logPath.isEmpty()) logPath = "default";
+
     m_logfile.setFileName(logPath);
 
     // open

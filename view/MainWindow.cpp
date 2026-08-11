@@ -36,17 +36,8 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     // ---- Errors ----
-    if(isRcloneInstalled()){
-        ui->errorRcloneFrame->hide();
-    }else{
-        ui->errorRcloneFrame->show();
-    }
-
-    if(isWinFspInstalled()){
-        ui->errorWinfspFrame->hide();
-    }else{
-        ui->errorWinfspFrame->show();
-    }
+    ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
+    ui->errorWinfspFrame->setVisible(!isWinFspInstalled());
 
     // ---- Settings tab ----
     ui->settingsAdvancedScrollarea->hide();
@@ -113,7 +104,6 @@ void MainWindow::loadSettingsToUi()
     int idx = ui->settingsCacheMode->findText(s->cacheMode());
     if (idx >= 0) ui->settingsCacheMode->setCurrentIndex(idx);
 }
-
 void MainWindow::saveUiToSettings()
 {
     SharedSettings* s = m_manager.shared();
@@ -139,7 +129,7 @@ void MainWindow::saveUiToSettings()
     }
 
     // check rclone again
-    ui->errorRcloneFrame->setVisible(isRcloneInstalled());
+    ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
 }
 
 void MainWindow::onSettingsSave()
@@ -169,8 +159,27 @@ void MainWindow::onSettingsAdvanced(){
     }
 }
 void MainWindow::onRcloneConfClicked(){
-    QString cmd = QString("cmd /K \"%1\"").arg(ui->settingsRclone->text());
-    QProcess::startDetached(cmd);
+    /*QString dir = QFileInfo(m_manager.shared()->rclonePath()).absolutePath();
+    QString str = "echo Launching RClone config && "
+                  "\"" + m_manager.shared()->rclonePath() + "\" config";
+
+    bool started = QProcess::startDetached("cmd.exe", {"/C", "start", "cmd.exe", "/K", str});*/
+
+
+    QString rclone = m_manager.shared()->rclonePath();
+
+    // Write a temp bat file
+    QString batPath = QDir::temp().filePath("rclone_config.bat");
+    QFile bat(batPath);
+    if (bat.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream s(&bat);
+        s << "@echo off\n";
+        s << "echo Launching RClone config\n";
+        s << "\"" << rclone << "\" config\n";
+        bat.close();
+    }
+
+    bool started = QProcess::startDetached("cmd.exe", {"/K", batPath});
 }
 
 // ---------------------------------------------------------------------------
@@ -182,7 +191,6 @@ void MainWindow::onAddJobClicked()
     m_manager.addJob(job);
     openDetails(job);
 }
-
 void MainWindow::onJobMoved(const QString& id, int newIndex){
     m_manager.moveJob(id, newIndex);
 
@@ -257,7 +265,6 @@ void MainWindow::openDetails(Job* job)
     // show details tab
     ui->tabWidget->setCurrentWidget(ui->tabDetails);
 }
-
 void MainWindow::clearDetails()
 {
     m_currentJobDetails = nullptr;
@@ -289,7 +296,6 @@ void MainWindow::onDetailsSave()
         statusBar()->showMessage("Error saving job.", Config::STATUS_DURATION);
     }
 }
-
 void MainWindow::onDetailsDelete()
 {
     if (!m_currentJobDetails) return;
@@ -309,7 +315,6 @@ void MainWindow::onDetailsDelete()
     }
 
 }
-
 void MainWindow::onLocalSelectClicked()
 {
     QString path = QFileDialog::getExistingDirectory(
@@ -341,7 +346,6 @@ void MainWindow::onJobAdded(Job* job){
     m_jobWidgets.append(w);
     ui->jobsList->layout()->addWidget(w);
 }
-
 void MainWindow::onJobRemoved(const QString& jobId){
     for (int i = 0; i < m_jobWidgets.size(); ++i) {
         if (m_jobWidgets[i]->job()->id() == jobId) {
@@ -378,7 +382,6 @@ void MainWindow::setupTray()
     m_trayIcon->setContextMenu(m_trayMenu);
     m_trayIcon->show();
 }
-
 void MainWindow::onTrayMenuAboutToShow()
 {
     // Remove all actions between the first separator and the last separator
@@ -411,7 +414,6 @@ void MainWindow::onTrayMenuAboutToShow()
         m_trayMenu->insertAction(lastSep, act);
     }
 }
-
 void MainWindow::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::DoubleClick) {
@@ -424,7 +426,6 @@ void MainWindow::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
         }
     }
 }
-
 void MainWindow::moveWindowToBottomRight(){
     // position window in bottom-right corner
     QScreen* screen = QGuiApplication::primaryScreen();
@@ -435,7 +436,6 @@ void MainWindow::moveWindowToBottomRight(){
     int y = available.bottom() - size.height() - 38;
     move(x, y);
 }
-
 void MainWindow::activate(){
     show();
     setWindowState( (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);

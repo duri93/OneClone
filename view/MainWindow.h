@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../model/job.h"
+#include "../model/Job.h"
 #include "../model/Manager.h"
 #include "../view/JobWidget.h"
 

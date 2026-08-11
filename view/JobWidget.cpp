@@ -21,6 +21,7 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     // populate widget with data
     onSpecChange();
     onStatusChange();
+    hideConfirm();
 
     // enable mouse tracking and intercept double-click
     setMouseTracking(true);
@@ -40,11 +41,26 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     connect(job, &Job::warning,         this, &JobWidget::onWarning);
 
     connect(ui->button1, &QPushButton::clicked, this, [this]() {
-        m_job->toggle(false);
+        this->jobInvert = false;
+
+        if(m_job->type() == "mount"){
+            this->confirmEvent();
+        }else{
+            this->showConfirm();
+        }
     });
     connect(ui->button2, &QPushButton::clicked, this, [this]() {
-        m_job->toggle(true);
+        this->jobInvert = true;
+
+        if(m_job->type() == "mount"){
+            this->confirmEvent();
+        }else{
+            this->showConfirm();
+        }
     });
+    connect(ui->cancel, &QPushButton::clicked, this, &JobWidget::hideConfirm);
+    connect(ui->confirm, &QPushButton::clicked, this, &JobWidget::confirmEvent);
+
     connect(ui->statusIcon, &QToolButton::clicked, this, [this]() {
         m_job->openLogfile();
     });
@@ -199,11 +215,7 @@ void JobWidget::setProgressVisibility(){
     bool active = m_job->active();
 
     if(m_job->type() != "mount" && active){
-        ui->progress->show();
-        ui->bytes->show();
-        ui->speed->show();
-        ui->percent->show();
-        ui->eta->show();
+        ui->progressFrame->show();
     }else{
         ui->bytes->setText("");
         ui->speed->setText("");
@@ -211,14 +223,32 @@ void JobWidget::setProgressVisibility(){
         ui->eta->setText("");
         ui->progress->setValue(0);
 
-        ui->progress->hide();
-        ui->speed->hide();
-        ui->bytes->hide();
-        ui->percent->hide();
-        ui->eta->hide();
+        ui->progressFrame->hide();
     }
 }
 
+// ---------------------------------------------------------------------------
+// Click events
+// ---------------------------------------------------------------------------
+void JobWidget::showConfirm(){
+    QString label = "Confirm starting %1 job?\nFrom: %2\nTo: %3\n";
+    label = label.arg(m_job->type(),
+                      jobInvert ? m_job->remote() : m_job->local(),
+                      jobInvert ? m_job->local()  : m_job->remote());
+
+    ui->confirmLabel->setText(label);
+
+    ui->confirmFrame->show();
+}
+
+void JobWidget::hideConfirm(){
+    ui->confirmFrame->hide();
+}
+void JobWidget::confirmEvent(){
+    hideConfirm();
+
+    m_job->toggle(jobInvert);
+}
 // ---------------------------------------------------------------------------
 // Drag / drop jobs
 // ---------------------------------------------------------------------------
