@@ -76,6 +76,7 @@ signals:
     void warning(const QString& serviceId, const QString& line);
     void progressUpdated(const QString& serviceId, const JobProgress& newProgress);
     void outputLine(const QString& serviceId, const QString& line);
+    void logError(const QString& serviceId);
 
 private slots:
     void onReadyRead();

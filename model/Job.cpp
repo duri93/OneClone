@@ -290,7 +290,7 @@ void Job::logOpen(){
 
     // open
     if(!m_logfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)){
-        // TODO show error
+        emit logError(m_id);
     }
 }
 void Job::logAppend(const QString& line){

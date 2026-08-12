@@ -7,7 +7,6 @@ Bugs that should be fixed.
 ## PRIORITY 2
 Additional small features.
 
-- **Surfacing log-file-open errors** to the UI/status bar instead of silently ignoring them. (`Job:logOpen`)
 - **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
 - **A working "Open rclone config" action**, cross-platform (currently dead code / commented out).
 

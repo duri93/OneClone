@@ -364,6 +364,10 @@ void MainWindow::onJobAdded(Job* job){
     connect(job, &Job::outputLine,    this, &MainWindow::onJobOutputLine);
     m_jobWidgets.append(w);
     ui->jobsList->layout()->addWidget(w);
+
+    connect(job, &Job::logError, this, [this](const QString& id){
+        statusBar()->showMessage("Error opening job log file.", Config::STATUS_DURATION);
+    });
 }
 void MainWindow::onJobRemoved(const QString& jobId){
     for (int i = 0; i < m_jobWidgets.size(); ++i) {
