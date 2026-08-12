@@ -1,5 +1,10 @@
 # IMPLEMENTATION ROADMAP
 
+## TESTS
+New features that need testing:
+- Auto updater
+- Rclone config
+
 ## PRIORITY 1
 Bugs that should be fixed.
 
@@ -9,7 +14,6 @@ Additional small features.
 
 - **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
 - **A working "Open rclone config" action**, cross-platform (currently dead code / commented out).
-
 - **Better progress number formatting** by rounding to significant digits (`Job::processLineProgress`)
 - **throttled progress updates** instead of updating ui every time a progress line is received (`Job::processLineProgress`)
 

@@ -37,7 +37,7 @@ private slots:
     void onSettingsSave();
     void onRcloneSelectClicked();
     void onSettingsAdvanced();
-    void onRcloneConfClicked();
+    bool onRcloneConfClicked();
 
     // Jobs list tab
     void onAddJobClicked();

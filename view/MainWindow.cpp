@@ -16,6 +16,7 @@
 #include <QSize>
 #include <QScreen>
 #include <QStandardPaths>
+#include <QProcess>
 
 // ---------------------------------------------------------------------------
 // Constructor / Destructor
@@ -175,31 +176,61 @@ void MainWindow::onSettingsAdvanced(){
         ui->settingsAdvancedScrollarea->hide();
     }
 }
-void MainWindow::onRcloneConfClicked(){
-    // TODO
-    /*QString dir = QFileInfo(m_manager.shared()->rclonePath()).absolutePath();
-    QString str = "echo Launching RClone config && "
-                  "\"" + m_manager.shared()->rclonePath() + "\" config";
 
-    bool started = QProcess::startDetached("cmd.exe", {"/C", "start", "cmd.exe", "/K", str});*/
+bool startDetachedClean(const QString &program, const QStringList &arguments){
+    QProcess process;
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 
-/*
-    QString rclone = m_manager.shared()->rclonePath();
+    // Strip Qt Creator / Qt kit injected paths that cause ABI mismatches
+    // in system-installed Qt apps like konsole.
+    env.remove("LD_LIBRARY_PATH");
+    env.remove("LD_PRELOAD");
+    env.remove("QT_PLUGIN_PATH");
+    env.remove("QML2_IMPORT_PATH");
+    env.remove("QML_IMPORT_PATH");
 
-    // Write a temp bat file
-    QString batPath = QDir::temp().filePath("rclone_config.bat");
-    QFile bat(batPath);
-    if (bat.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream s(&bat);
-        s << "@echo off\n";
-        s << "echo Launching RClone config\n";
-        s << "\"" << rclone << "\" config\n";
-        bat.close();
-    }
+    process.setProgram(program);
+    process.setArguments(arguments);
+    process.setProcessEnvironment(env);
 
-    bool started = QProcess::startDetached("cmd.exe", {"/K", batPath});
-*/
+    qint64 pid = 0;
+    return process.startDetached(&pid);
 }
+bool MainWindow::onRcloneConfClicked(){
+    QString rclonePath = m_manager.shared()->rclonePath();
+
+    #if defined(Q_OS_WIN)
+        QString program = "cmd.exe";
+        QStringList arguments;
+        arguments << "/c" << "start" << "rclone config" << "/wait" << rclonePath << "config";
+        return QProcess::startDetached(program, arguments);
+    #elif defined(Q_OS_LINUX)
+        // set up terminals lookup table
+        QString shellCmd = QString("'%1' config; exit").arg(rclonePath);
+
+        struct TerminalCmd { QString exe; QStringList args; };
+        const QList<TerminalCmd> terminals = {
+            { "x-terminal-emulator", { "-e", "bash", "-c", shellCmd } }, // Debian/Ubuntu default alias
+            { "gnome-terminal",      { "--", "bash", "-c", shellCmd } },
+            { "konsole",             { "-e", "bash", "-c", shellCmd } },
+            { "xfce4-terminal",      { "-x", "bash", "-c", shellCmd } },
+            { "xterm",               { "-e", "bash", "-c", shellCmd } },
+        };
+
+        // start forst found terminal and run rclone config
+        for (const auto &term : terminals) {
+            if (!QStandardPaths::findExecutable(term.exe).isEmpty())
+                return startDetachedClean(term.exe, term.args);
+        }
+
+        statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
+        return false;
+    #else
+        statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
+        return false;
+    #endif
+}
+
 
 // ---------------------------------------------------------------------------
 // Jobs list tab
