@@ -43,7 +43,7 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     connect(ui->button1, &QPushButton::clicked, this, [this]() {
         this->jobInvert = false;
 
-        if(m_job->type() == "mount"){
+        if(m_job->type() == "mount" || m_job->active()){
             this->confirmEvent();
         }else{
             this->showConfirm();
@@ -52,7 +52,7 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     connect(ui->button2, &QPushButton::clicked, this, [this]() {
         this->jobInvert = true;
 
-        if(m_job->type() == "mount"){
+        if(m_job->type() == "mount" || m_job->active()){
             this->confirmEvent();
         }else{
             this->showConfirm();
