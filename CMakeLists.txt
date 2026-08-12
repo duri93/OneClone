@@ -18,10 +18,10 @@ qt_add_executable(OneClone
     model/Manager.h             model/Manager.cpp
     view/MainWindow.h           view/MainWindow.cpp             view/MainWindow.ui
     view/JobWidget.h            view/JobWidget.cpp              view/JobWidget.ui
+    model/UpdateManager.h       model/UpdateManager.cpp
     resources.qrc
     main.rc
     view/JobListWidget.h view/JobListWidget.cpp
-    autoupdater/AutoUpdater.h autoupdater/AutoUpdater.cpp
 )
 
 target_link_libraries(OneClone

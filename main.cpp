@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     app.setApplicationName(Config::APP_NAME);
     app.setApplicationVersion(Config::APP_VERSION);
-    app.setOrganizationName(Config::APP_NAME);
+    app.setOrganizationName(Config::APP_AUTHOR);
     app.setQuitOnLastWindowClosed(false);
 
     // Try to connect to an already-running instance
@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
         window.show();
     }
 
+    // run
     return app.exec();
 }
 

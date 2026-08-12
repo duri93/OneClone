@@ -9,6 +9,7 @@ namespace Config {
     inline constexpr char APP_NAME[]    = "OneClone";
     inline constexpr char APP_VERSION[] = "1.4";
     inline constexpr char APP_ID[]      = "tk.duri.oneclone";
+    inline constexpr char APP_AUTHOR[]  = "duri93";
 
     // Settings file (resolved at runtime relative to exe)
     inline constexpr char SETTINGS_FILENAME[] = "settings.json";

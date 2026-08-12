@@ -39,18 +39,18 @@
  *   - Optional: a sibling checksum asset (name containing "sha256" or
  *     "checksum") for strong integrity verification.
  */
-class AutoUpdater : public QObject
+class UpdateManager : public QObject
 {
     Q_OBJECT
 
 public:
     // repoOwner/repoName: the GitHub "owner/repo" whose Releases are checked.
     // currentVersion: the running application's version (e.g. "1.4.2" or "v1.4.2").
-    explicit AutoUpdater(QString repoOwner,
+    explicit UpdateManager(QString repoOwner,
                            QString repoName,
                            QString currentVersion,
                            QObject *parent = nullptr);
-    ~AutoUpdater() override;
+    ~UpdateManager() override;
 
     bool isUpdateInProgress() const;
     bool isUpdateReady() const;

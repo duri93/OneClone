@@ -1,4 +1,4 @@
-#include "AutoUpdater.h"
+#include "UpdateManager.h"
 
 #include <QCoreApplication>
 #include <QJsonDocument>
@@ -14,7 +14,7 @@
 #include <QUuid>
 #include <QUrl>
 
-AutoUpdater::AutoUpdater(QString repoOwner,
+UpdateManager::UpdateManager(QString repoOwner,
                          QString repoName,
                          QString currentVersion,
                          QObject *parent)
@@ -30,7 +30,7 @@ AutoUpdater::AutoUpdater(QString repoOwner,
 #endif
 }
 
-AutoUpdater::~AutoUpdater(){
+UpdateManager::~UpdateManager(){
     if (m_currentReply) {
         m_currentReply->abort();
     }
@@ -44,15 +44,15 @@ AutoUpdater::~AutoUpdater(){
     m_tempDir = nullptr;
 }
 
-bool AutoUpdater::isUpdateInProgress() const{
+bool UpdateManager::isUpdateInProgress() const{
     return !m_currentReply.isNull();
 }
 
-bool AutoUpdater::isUpdateReady() const{
+bool UpdateManager::isUpdateReady() const{
     return m_updateReady;
 }
 
-void AutoUpdater::checkForUpdates(){
+void UpdateManager::checkForUpdates(){
     if (m_currentReply) {
         return; // a check/download is already running
     }
@@ -64,7 +64,7 @@ void AutoUpdater::checkForUpdates(){
     fetchReleaseInfo();
 }
 
-void AutoUpdater::fetchReleaseInfo(){
+void UpdateManager::fetchReleaseInfo(){
     const QString path = QStringLiteral("/repos/%1/%2/releases/latest").arg(m_owner, m_repo);
 
     QNetworkRequest request{QUrl(QStringLiteral("https://api.github.com") + path)};
@@ -76,11 +76,10 @@ void AutoUpdater::fetchReleaseInfo(){
                          QVariant::fromValue(QNetworkRequest::NoLessSafeRedirectPolicy));
 
     m_currentReply = m_netManager.get(request);
-    connect(m_currentReply, &QNetworkReply::finished, this, &AutoUpdater::onReleaseInfoReceived);
+    connect(m_currentReply, &QNetworkReply::finished, this, &UpdateManager::onReleaseInfoReceived);
 }
 
-void AutoUpdater::onReleaseInfoReceived()
-{
+void UpdateManager::onReleaseInfoReceived(){
     QNetworkReply *reply = m_currentReply;
     if (!reply) {
         return;
@@ -183,8 +182,7 @@ void AutoUpdater::onReleaseInfoReceived()
     startAssetDownload();
 }
 
-void AutoUpdater::startAssetDownload()
-{
+void UpdateManager::startAssetDownload(){
     ++m_attemptsUsed;
     if (m_attemptsUsed > m_maxAttempts) {
         handleFatalFailure(tr("Download failed after %1 attempt(s).").arg(m_maxAttempts));
@@ -208,20 +206,18 @@ void AutoUpdater::startAssetDownload()
                          QVariant::fromValue(QNetworkRequest::NoLessSafeRedirectPolicy));
 
     m_currentReply = m_netManager.get(request);
-    connect(m_currentReply, &QNetworkReply::readyRead, this, &AutoUpdater::onAssetDownloadReadyRead);
-    connect(m_currentReply, &QNetworkReply::downloadProgress, this, &AutoUpdater::downloadProgress);
-    connect(m_currentReply, &QNetworkReply::finished, this, &AutoUpdater::onAssetDownloadFinished);
+    connect(m_currentReply, &QNetworkReply::readyRead, this, &UpdateManager::onAssetDownloadReadyRead);
+    connect(m_currentReply, &QNetworkReply::downloadProgress, this, &UpdateManager::downloadProgress);
+    connect(m_currentReply, &QNetworkReply::finished, this, &UpdateManager::onAssetDownloadFinished);
 }
 
-void AutoUpdater::onAssetDownloadReadyRead()
-{
+void UpdateManager::onAssetDownloadReadyRead(){
     if (m_currentReply && m_downloadFile.isOpen()) {
         m_downloadFile.write(m_currentReply->readAll());
     }
 }
 
-void AutoUpdater::onAssetDownloadFinished()
-{
+void UpdateManager::onAssetDownloadFinished(){
     QNetworkReply *reply = m_currentReply;
     if (!reply) {
         return;
@@ -255,18 +251,16 @@ void AutoUpdater::onAssetDownloadFinished()
     }
 }
 
-void AutoUpdater::startChecksumDownload()
-{
+void UpdateManager::startChecksumDownload(){
     QNetworkRequest request{QUrl(m_checksumUrl)};
     request.setRawHeader("User-Agent", QStringLiteral("%1-GitHubUpdater").arg(m_repo).toUtf8());
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QVariant::fromValue(QNetworkRequest::NoLessSafeRedirectPolicy));
     m_currentReply = m_netManager.get(request);
-    connect(m_currentReply, &QNetworkReply::finished, this, &AutoUpdater::onChecksumDownloadFinished);
+    connect(m_currentReply, &QNetworkReply::finished, this, &UpdateManager::onChecksumDownloadFinished);
 }
 
-void AutoUpdater::onChecksumDownloadFinished()
-{
+void UpdateManager::onChecksumDownloadFinished(){
     QNetworkReply *reply = m_currentReply;
     if (!reply) {
         return;
@@ -313,8 +307,7 @@ void AutoUpdater::onChecksumDownloadFinished()
     finalizeVerification();
 }
 
-bool AutoUpdater::verifySizeOnDisk(QString *errorOut) const
-{
+bool UpdateManager::verifySizeOnDisk(QString *errorOut) const{
     const QFileInfo info(m_downloadedFilePath);
     if (!info.exists() || info.size() == 0) {
         if (errorOut) {
@@ -333,8 +326,7 @@ bool AutoUpdater::verifySizeOnDisk(QString *errorOut) const
     return true;
 }
 
-bool AutoUpdater::verifyChecksum(QString *errorOut) const
-{
+bool UpdateManager::verifyChecksum(QString *errorOut) const{
     QFile f(m_downloadedFilePath);
     if (!f.open(QIODevice::ReadOnly)) {
         if (errorOut) {
@@ -344,10 +336,11 @@ bool AutoUpdater::verifyChecksum(QString *errorOut) const
     }
 
     QCryptographicHash hash(QCryptographicHash::Sha256);
-    char buffer[65536];
-    qint64 n;
-    while ((n = f.read(buffer, sizeof(buffer))) > 0) {
-        hash.addData(buffer, static_cast<int>(n));
+    if (!hash.addData(&f)) {
+        if (errorOut) {
+            *errorOut = tr("Failed reading downloaded file for checksum verification.");
+        }
+        return false;
     }
 
     const QString actual = QString::fromLatin1(hash.result().toHex());
@@ -360,8 +353,7 @@ bool AutoUpdater::verifyChecksum(QString *errorOut) const
     return true;
 }
 
-void AutoUpdater::retryOrFail(const QString &reason)
-{
+void UpdateManager::retryOrFail(const QString &reason){
     QFile::remove(m_downloadedFilePath);
     if (m_attemptsUsed < m_maxAttempts) {
         startAssetDownload();
@@ -370,27 +362,24 @@ void AutoUpdater::retryOrFail(const QString &reason)
     }
 }
 
-void AutoUpdater::finalizeVerification()
-{
+void UpdateManager::finalizeVerification(){
     m_updateReady = true;
     m_tempDir->setAutoRemove(false); // the install script now owns cleanup of this directory
     armInstallOnQuit();
     emit updateReady(m_newVersion);
 }
 
-void AutoUpdater::armInstallOnQuit()
-{
+void UpdateManager::armInstallOnQuit(){
     if (m_installArmed) {
         return;
     }
     m_installArmed = true;
     if (QCoreApplication *app = QCoreApplication::instance()) {
-        connect(app, &QCoreApplication::aboutToQuit, this, &AutoUpdater::installUpdate);
+        connect(app, &QCoreApplication::aboutToQuit, this, &UpdateManager::installUpdate);
     }
 }
 
-bool AutoUpdater::applyUpdateAndRestart()
-{
+bool UpdateManager::applyUpdateAndRestart(){
     if (!m_updateReady) {
         return false;
     }
@@ -398,14 +387,12 @@ bool AutoUpdater::applyUpdateAndRestart()
     return true;
 }
 
-void AutoUpdater::handleFatalFailure(const QString &reason)
-{
+void UpdateManager::handleFatalFailure(const QString &reason){
     cleanupTempDir();
     emit updateFailed(reason);
 }
 
-void AutoUpdater::cleanupTempDir()
-{
+void UpdateManager::cleanupTempDir(){
     if (m_downloadFile.isOpen()) {
         m_downloadFile.close();
     }
@@ -414,8 +401,7 @@ void AutoUpdater::cleanupTempDir()
     m_downloadedFilePath.clear();
 }
 
-bool AutoUpdater::isDirectoryWritable(const QString &path)
-{
+bool UpdateManager::isDirectoryWritable(const QString &path){
     QDir dir(path);
     if (!dir.exists()) {
         return false;
@@ -424,8 +410,7 @@ bool AutoUpdater::isDirectoryWritable(const QString &path)
     return probe.open(); // QTemporaryFile removes itself when it goes out of scope
 }
 
-QString AutoUpdater::normalizeVersion(const QString &v)
-{
+QString UpdateManager::normalizeVersion(const QString &v){
     QString s = v.trimmed();
     if (s.startsWith(QLatin1Char('v'), Qt::CaseInsensitive)) {
         s.remove(0, 1);
@@ -433,8 +418,7 @@ QString AutoUpdater::normalizeVersion(const QString &v)
     return s;
 }
 
-int AutoUpdater::compareVersions(const QString &a, const QString &b)
-{
+int UpdateManager::compareVersions(const QString &a, const QString &b){
     const QStringList pa = normalizeVersion(a).split(QLatin1Char('.'));
     const QStringList pb = normalizeVersion(b).split(QLatin1Char('.'));
     const int n = qMax(pa.size(), pb.size());
@@ -461,8 +445,7 @@ int AutoUpdater::compareVersions(const QString &a, const QString &b)
     return 0;
 }
 
-QString AutoUpdater::escapeForBatch(const QString &s)
-{
+QString UpdateManager::escapeForBatch(const QString &s){
     // Used inside `set "VAR=value"` assignments. Double quotes are not
     // valid in Windows paths, so the only character that needs escaping in
     // that context is a literal '%' (batch variable-expansion character).
@@ -471,16 +454,14 @@ QString AutoUpdater::escapeForBatch(const QString &s)
     return out;
 }
 
-QString AutoUpdater::quoteForShell(const QString &s)
-{
+QString UpdateManager::quoteForShell(const QString &s){
     // POSIX single-quote escaping: close quote, insert escaped quote, reopen.
     QString out = s;
     out.replace(QLatin1Char('\''), QStringLiteral("'\\''"));
     return QLatin1Char('\'') + out + QLatin1Char('\'');
 }
 
-QString AutoUpdater::writeWindowsScript(qint64 pid) const
-{
+QString UpdateManager::writeWindowsScript(qint64 pid) const{
     const QString scriptPath = QDir::tempPath() + QLatin1String("/ghupdater_apply_")
     + QUuid::createUuid().toString(QUuid::WithoutBraces) + QLatin1String(".bat");
 
@@ -535,8 +516,7 @@ QString AutoUpdater::writeWindowsScript(qint64 pid) const
     return scriptPath;
 }
 
-QString AutoUpdater::writeLinuxScript(qint64 pid) const
-{
+QString UpdateManager::writeLinuxScript(qint64 pid) const{
     const QString scriptPath = QDir::tempPath() + QLatin1String("/ghupdater_apply_")
     + QUuid::createUuid().toString(QUuid::WithoutBraces) + QLatin1String(".sh");
 
@@ -584,8 +564,7 @@ QString AutoUpdater::writeLinuxScript(qint64 pid) const
     return scriptPath;
 }
 
-void AutoUpdater::installUpdate()
-{
+void UpdateManager::installUpdate(){
     if (!m_updateReady || !m_tempDir) {
         return;
     }

@@ -3,6 +3,7 @@
 #include "JobListWidget.h"
 
 #include "../model/Config.h"
+#include "../model/UpdateManager.h"
 
 #include <QFileDialog>
 #include <QCloseEvent>
@@ -26,6 +27,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
     setWindowTitle(QString(Config::APP_NAME) + " " + Config::APP_VERSION);
     moveWindowToBottomRight();
+    ui->updateFrame->hide();
 
     // ---- Load settings (generates defaults on first run) ----
     connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
@@ -59,13 +61,28 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->detailsDelete, &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
     connect(ui->detailsLocalButton,    &QToolButton::clicked, this, &MainWindow::onLocalSelectClicked);
 
-    // Start on the list tab
+    // ---- Start on the list tab ----
     clearDetails();
     openDetails(nullptr);
     ui->tabWidget->setCurrentWidget(ui->tabJobs);
 
-    // setup tray
+    // ---- setup tray ----
     setupTray();
+
+    // ---- updater ----
+    auto *updater = new UpdateManager(Config::APP_AUTHOR, Config::APP_NAME, Config::APP_VERSION, this);
+
+    connect(updater, &UpdateManager::updateReady, this, [this](const QString &v) {
+        ui->updateLabel->setText(tr("Version %1 will be installed on next restart.").arg(v));
+        ui->updateFrame->show();
+    });
+
+    connect(updater, &UpdateManager::updateFailed, this, [this](const QString &reason) {
+        ui->updateLabel->setText(tr("Update failed: ").arg(reason));
+        ui->updateFrame->show();
+    });
+
+    updater->checkForUpdates();
 }
 
 MainWindow::~MainWindow()
@@ -165,7 +182,7 @@ void MainWindow::onRcloneConfClicked(){
 
     bool started = QProcess::startDetached("cmd.exe", {"/C", "start", "cmd.exe", "/K", str});*/
 
-
+/*
     QString rclone = m_manager.shared()->rclonePath();
 
     // Write a temp bat file
@@ -180,6 +197,7 @@ void MainWindow::onRcloneConfClicked(){
     }
 
     bool started = QProcess::startDetached("cmd.exe", {"/K", batPath});
+*/
 }
 
 // ---------------------------------------------------------------------------
