@@ -21,7 +21,7 @@ qt_add_executable(OneClone
     resources.qrc
     main.rc
     view/JobListWidget.h view/JobListWidget.cpp
-    README.md
+    autoupdater/AutoUpdater.h autoupdater/AutoUpdater.cpp
 )
 
 target_link_libraries(OneClone
