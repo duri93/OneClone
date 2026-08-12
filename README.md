@@ -11,7 +11,7 @@ A lightweight Windows tray application for managing [rclone](https://rclone.org/
 ## Features
 
 - **Mount, sync, and copy** — start and stop rclone jobs with a click
-- **Persistent settings** — set up once, use everyday
+- **Persistent job definitions** — set up once, use everyday
 - **System tray integration** — runs in the background, no need to keep windows open
 - **Autostart support** — option to launch the app and any job automatically with windows
 
@@ -19,14 +19,11 @@ A lightweight Windows tray application for managing [rclone](https://rclone.org/
 
 ## Requirements
 
-To run:
-- **Windows 10 or later**
+- **Windows 10 or later** (partial support for linux)
 - **rclone** installed and accessible — [download here](https://rclone.org/downloads/)
-- **WinFsp** for mounting remote folders locally.
+- **WinFsp** for mounting remote folders locally — [download here](https://winfsp.dev/rel/).
 
-To compile:
-- **Qt 6** (tested with Qt 6.x; Qt 5.15 may work but is untested)
-- A C++17-capable compiler (I'm using MinGW-w64)
+Note: UOulu users can find rclone and WinFsp in Company Portal
 
 ---
 
@@ -97,66 +94,6 @@ All settings are stored in `settings.json` next to the application executable. T
 | `remote`    | rclone remote path (e.g. `gdrive:backup`)                |
 | `autostart` | Start this job automatically when the app launches       |
 | `readOnly`  | Mount in read-only mode (mount jobs only)                |
-
-
-
-
----
-
-## Project Structure
-
-```
-OneClone/
-├── main.cpp                    # Entry point; single-instance enforcement
-├── model/
-│   ├── Config.h                # Compile-time constants (app name, regex, limits)
-│   ├── Job.h / Job.cpp         # Individual rclone job: lifecycle, process, output parsing
-│   ├── Manager.h / Manager.cpp # Owns all jobs and shared settings; load/save
-│   ├── SharedSettings.h        # Settings shared across all jobs (rclone path, cache, etc.)
-│   └── SharedSettings.cpp
-└── view/
-    ├── MainWindow.h / .cpp     # Main window: settings tab, job list tab, job detail tab
-    ├── MainWindow.ui           # Qt Designer layout for MainWindow
-    ├── JobWidget.h / .cpp      # Per-job widget shown in the job list
-    └── JobWidget.ui            # Qt Designer layout for JobWidget
-```
-
-
-
-
----
-
-## Status indicators
-
-| Status     | Meaning                                                                             |
-|------------|-------------------------------------------------------------------------------------|
-| `Stopped`  | The rclone process is not running                                                   |
-| `Starting` | Process launched; waiting for first output (or mount ready signal)                  |
-| `Running`  | Process is active and producing output                                              |
-| `Success`  | The copy/sync command completed successfully                                        |
-| `Stopping` | Graceful shutdown in progress                                                       |
-| `Errored`  | An error pattern was detected in output, or the process exited with a non-zero code |
-
-For `mount` jobs, the transition from `Starting` to `Running` occurs when rclone prints:
-```
-The service rclone has been started.
-```
-
-For `sync` and `copy` jobs, any output from rclone triggers the `Running` state.
-
----
-
-## Error detection
-
-Rclone output is scanned against the following regular expression after each line:
-
-```
-NOTICE:.*failed|ERROR:
-```
-
-If a match is found, the job transitions to `Errored` and rclone is terminated. You can adjust this pattern in `model/Config.h` (`DEFAULT_ERROR_REGEX`).
-
----
 
 ## Known limitations
 

@@ -22,6 +22,8 @@ qt_add_executable(OneClone
     resources.qrc
     main.rc
     view/JobListWidget.h view/JobListWidget.cpp
+    TODO.md
+    RELEASE.md
 )
 
 target_link_libraries(OneClone

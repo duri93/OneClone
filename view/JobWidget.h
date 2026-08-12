@@ -43,7 +43,6 @@ protected:
     void hideConfirm();
     void confirmEvent();
 
-    // TODO only from icon
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event)  override;
 

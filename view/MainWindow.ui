@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>520</height>
+    <height>914</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -287,7 +287,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tabJobs">
        <attribute name="title">
@@ -317,7 +317,7 @@
              <x>0</x>
              <y>0</y>
              <width>388</width>
-             <height>172</height>
+             <height>566</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -640,7 +640,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>364</width>
+             <width>378</width>
              <height>333</height>
             </rect>
            </property>

@@ -234,7 +234,6 @@ void Job::processLine(const QString& line)
         }
     }
 
-    // TODO transform this to warning
     // Check for error pattern
     if (Config::WARNING_REGEX.match(line).hasMatch()) {
         m_warnings.append(line);

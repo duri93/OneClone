@@ -176,6 +176,7 @@ void MainWindow::onSettingsAdvanced(){
     }
 }
 void MainWindow::onRcloneConfClicked(){
+    // TODO
     /*QString dir = QFileInfo(m_manager.shared()->rclonePath()).absolutePath();
     QString str = "echo Launching RClone config && "
                   "\"" + m_manager.shared()->rclonePath() + "\" config";

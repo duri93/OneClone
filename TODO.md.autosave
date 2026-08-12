@@ -1,0 +1,57 @@
+# OneClone Codebase Analysis
+
+## 1. Windows-specific functions/code that need rewriting for Linux
+
+| Location | Issue |
+|---|---|
+| `model/Job.cpp` — `Job::stop()` | Uses `AttachConsole` / `GenerateConsoleCtrlEvent(CTRL_C_EVENT)` / `SetConsoleCtrlHandler` / `FreeConsole` (all Win32 API, `#ifdef Q_OS_WIN`) to gracefully stop rclone. The `#else` branch just calls `m_process.kill()` (SIGKILL). This is not a "graceful stop" equivalent — on Linux this should send `SIGINT` (`kill(pid, SIGINT)` or `QProcess::terminate()`) first and only `kill()` as a fallback, especially for `mount` jobs where a SIGKILL can leave a stale FUSE mountpoint. |
+| `view/MainWindow.cpp` — `loadSettingsToUi()` / `saveUiToSettings()` | Autostart-on-login is implemented purely via the Windows registry (`QSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", ...)`). This has no effect at all on Linux — the checkbox will silently do nothing. Needs a Linux implementation (e.g. writing/removing a `~/.config/autostart/oneclone.desktop` file). |
+| `view/MainWindow.cpp` — `saveUiToSettings()` | `QCoreApplication::applicationFilePath().replace('/', '\\')` hardcodes Windows path separators when building the autostart command line. Needs to be conditional on platform (or removed/use `QDir::toNativeSeparators`). |
+| `view/MainWindow.cpp` — `isWinFspInstalled()` | Entirely Windows-specific (registry check + `Program Files` paths). The `#else` branch just `return false;`, meaning on Linux the "WinFSP not installed" error banner is **always shown**, even though WinFsp is irrelevant on Linux. Needs a Linux-appropriate check (e.g. detect FUSE / `fusermount` availability) or the banner/check should be skipped entirely on non-Windows builds. |
+| `model/SharedSettings.h` | Default `m_rclonePath = "C:\\RClone\\rclone.exe"` — a Windows-only default path. Should be platform-conditional (e.g. `"/usr/bin/rclone"` or simply `"rclone"` relying on `PATH` on Linux). |
+| `view/MainWindow.cpp` — `onRcloneSelectClicked()` | File dialog filter is hardcoded to `"Executable (*.exe);;All files (*.*)"`. On Linux rclone binaries have no `.exe` extension, so the primary filter is useless there. |
+| `CMakeLists.txt` / `main.rc` | `main.rc` (a Windows `.ico` resource script) is added unconditionally to `qt_add_executable(...)` sources. `.rc` compilation is a Windows/MSVC-toolchain-only concept; on Linux this file should be wrapped in `if(WIN32) ... endif()` or added conditionally, or the Linux build may fail/behave unpredictably depending on the generator. |
+| `view/MainWindow.ui` | Tooltip text for the "local" field hardcodes Windows-style paths/examples (`C:\Users\Desktop\My Folder`, drive letters `E:\`, UNC paths `\\allas\folder`) with no Linux-path guidance (e.g. `/mnt/...`). Not a functional bug, but confusing to Linux users. |
+| `view/MainWindow.ui` | Several rich-text labels hardcode the font family `Segoe UI`, which doesn't exist on Linux (will silently fall back, but is worth normalizing/removing for a cross-platform build). |
+
+> Note: `model/UpdateManager.cpp` is already well cross-platform — it has real `Q_OS_WIN` / `Q_OS_LINUX` branches for both the update-script generation (`writeWindowsScript` / `writeLinuxScript`) and asset selection (`"win"` vs `"linux"` substring filtering), so it does **not** need rewriting, just verification.
+
+## 2. Functionality marked TODO (or similar) in code
+
+| Location | TODO |
+|---|---|
+| `model/Job.cpp:237` | `// TODO transform this to warning` — the error/notice regex match handling is flagged as needing rework (currently just appends to `m_warnings` and emits `warning()`). |
+| `model/Job.cpp:265` | `// TODO: recognize as number and format number of significant digits?` — progress `bytes`/`speed` fields are stored as raw strings from rclone output, not properly parsed/formatted numbers. |
+| `model/Job.cpp:266` | `// TODO: limit refresh rate?` — progress updates emit on every matching line with no throttling/debouncing. |
+| `model/Job.cpp:294` | `// TODO show error` — if the log file fails to open, the failure is silently swallowed; no error is surfaced to the user. |
+| `view/MainWindow.cpp:178-201` | `onRcloneConfClicked()` — the entire "Open rclone config" feature is commented out (both the direct `cmd.exe` approach and the temp `.bat` file approach). The slot is connected to the button but does nothing. |
+| `view/JobWidget.h:46` | `// TODO only from icon` — drag-and-drop is meant to be restricted to starting only from the job icon; the comment suggests this isn't fully/cleanly implemented yet. |
+
+## 3. Functionality that would be nice to implement in the future
+
+- **Proper Linux autostart-on-login** (freedesktop `.desktop` autostart entry) to match the existing Windows registry-based autostart.
+- **Proper Linux "mount backend" detection** (FUSE availability) to replace the WinFsp-only check, so the mount-support warning is meaningful on Linux too.
+- **Graceful stop / unmount on Linux** (SIGINT then SIGKILL fallback, and/or `fusermount -u` for `mount` jobs) instead of an immediate hard kill.
+- **A working "Open rclone config" action**, cross-platform (currently dead code / commented out).
+- **Surfacing log-file-open errors** to the UI/status bar instead of silently ignoring them.
+- **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
+- **Desktop notifications** (toast/tray balloon) on job completion, failure, or new warnings — useful since the app is tray-based and the window is often hidden.
+- **Log rotation / cleanup** — logs are only ever appended to per-run files under `logs/`, with no pruning of old logs.
+- **Job scheduling** beyond simple "autostart on app launch" (e.g. cron-like scheduled sync times).
+- **Bulk job actions** (start/stop/select multiple jobs at once) in the job list.
+- **Automatic retry** of a job after a transient error/crash.
+- **Better progress number formatting** (rounded significant digits) and **throttled progress updates**, per the existing TODOs.
+- **Refined warning classification** (severity levels, not just a flat warning list), per the existing TODO.
+- **In-app rclone remote configuration editor**, rather than relying entirely on an external `rclone config` session.
+- **Localization/i18n** — `tr()` is used throughout, but no translation files currently ship.
+
+## 4. Odd or unintended behavior (from the user's perspective)
+
+- **Drag-and-drop reordering off-by-one:** In `JobListWidget::dropEvent()`, `targetIndex` is decremented once inside the loop (if the source index is found before the drop index) *and* unconditionally decremented again immediately afterward (`targetIndex--;`). This looks like a double-decrement bug and can land a dragged job one position off from where the user visually dropped it.
+- **"WinFSP not installed" warning always shows on Linux:** because `isWinFspInstalled()` unconditionally returns `false` on non-Windows builds, Linux users will always see the WinFSP warning banner, even though WinFsp is a Windows-only technology and irrelevant to their platform — confusing and effectively a permanent false warning.
+- **Default rclone path is a Windows path on all platforms:** `SharedSettings` defaults `rclonePath` to `C:\RClone\rclone.exe`. On first run on Linux this guarantees the "cannot find RClone" error banner appears even if rclone is correctly installed, until the user manually fixes the path.
+- **Inconsistent start confirmation:** starting a `copy`/`sync` job shows a "Confirm starting…" dialog, but starting a `mount` job (or toggling an already-active job to stop it) skips the confirmation entirely and executes immediately — an inconsistent safety net from the user's point of view (mounting to the wrong folder, or accidentally stopping a long sync, both happen without any confirmation).
+- **"Open rclone conf" button does nothing:** it's wired up to a slot (`onRcloneConfClicked`) whose entire body is commented out — clicking it is a silent no-op with no error or feedback, which looks broken to a user.
+- **Autostart checkbox is Windows-only but shown on all platforms:** the "Run on startup" checkbox in Settings always appears, but on Linux checking it currently has no effect at all (see registry-only implementation above) — the setting silently fails to do anything.
+- **Hard kill instead of graceful stop on non-Windows:** stopping a `mount` job on Linux immediately SIGKILLs the rclone process rather than attempting a clean unmount, which can leave a "Transport endpoint is not connected" stale mount that requires a manual `fusermount -u`.
+- **Warning detection is a fragile, case-sensitive regex** (`Config::WARNING_REGEX = "NOTICE:.*failed|ERROR:"`, no `CaseInsensitiveOption`, unlike the progress-parsing regex which explicitly uses one) — any variation in rclone's log casing/formatting across versions could silently stop warnings from being detected.
