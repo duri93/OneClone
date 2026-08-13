@@ -140,9 +140,10 @@ void UpdateManager::onReleaseInfoReceived(){
             continue;
         }
         const QString lower = name.toLower();
+        const bool looksLikeCompressedFolder = lower.contains(QStringLiteral(".zip")) || lower.contains(QStringLiteral(".tar.gz"));
         const bool looksLikeChecksum = lower.contains(QStringLiteral("sha256"));
 
-        if (chosen.name.isEmpty() && !looksLikeChecksum &&
+        if (chosen.name.isEmpty() && looksLikeCompressedFolder && !looksLikeChecksum &&
             (m_assetNameFilter.isEmpty() || lower.contains(m_assetNameFilter.toLower()))) {
             chosen.name = name;
             chosen.downloadUrl = url;
