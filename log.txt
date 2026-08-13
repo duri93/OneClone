@@ -1,0 +1,66 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20260813103557
+Username: Win11\duri93
+RunAs User: Win11\duri93
+Configuration Name: 
+Machine: WIN11 (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+Process ID: 4836
+PSVersion: 5.1.26100.7920
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7920
+BuildVersion: 10.0.26100.7920
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\logs\log.txt
+==> Cleaning C:\temp for a fresh run...
+==> Copying 'Z:\OneClone' -> 'C:\temp\src'
+    (excluding: build, .git, .qtcreator, release, .gitattributes, .gitignore)...
+1
+==> Running CMake configure...
+-- The CXX compiler identification is MSVC 19.44.35228.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - failed
+-- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/b
+in/HostX64/x64/cl.exe
+-- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/b
+in/HostX64/x64/cl.exe - broken
+CMake Error at C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestCXXCompiler.cmake:73 (message):
+  The C++ compiler
+
+    "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/cl.exe"
+
+  is not able to compile a simple test program.
+
+  It fails with the following output:
+
+    Change Dir: 'C:/temp/build/CMakeFiles/CMakeScratch/TryCompile-x5dw67'
+
+    Run Build Command(s): C:/Qt/Tools/CMake_64/bin/cmake.exe -E env VERBOSE=1 jom -f Makefile /nologo cmTC_3c4df\fast
+    no such file or directory
+
+
+
+
+
+  CMake will not be able to correctly generate this project.
+Call Stack (most recent call first):
+  CMakeLists.txt:2 (project)
+
+
+-- Configuring incomplete, errors occurred!
+PS>TerminatingError(win-build-deploy.ps1): "The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: Build/deploy failed: CMake configure failed (exit code 1)"
+>> TerminatingError(win-build-deploy.ps1): "The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: Build/deploy failed: CMake configure failed (exit code 1)"
+>> TerminatingError(win-build-deploy.ps1): "The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: Build/deploy failed: CMake configure failed (exit code 1)"
+The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: Build/deploy failed: CMake configure failed (exit code 1)
+Z:\OneClone\release\win-build-deploy.ps1 : Build/deploy failed: CMake configure failed (exit code 1)
+At line:1 char:1
++ .\win-build-deploy.ps1
++ ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException
+    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException,win-build-deploy.ps1
+

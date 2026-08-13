@@ -11,19 +11,17 @@ set(CMAKE_AUTORCC ON)
 
 qt_add_executable(OneClone
     WIN32 MACOSX_BUNDLE
-    main.cpp
-    model/Config.h
-    model/SharedSettings.h      model/SharedSettings.cpp
-    model/Job.h                 model/Job.cpp
-    model/Manager.h             model/Manager.cpp
-    view/MainWindow.h           view/MainWindow.cpp             view/MainWindow.ui
-    view/JobWidget.h            view/JobWidget.cpp              view/JobWidget.ui
-    model/UpdateManager.h       model/UpdateManager.cpp
-    resources.qrc
-    main.rc
-    view/JobListWidget.h view/JobListWidget.cpp
-    TODO.md
-    RELEASE.md
+    src/main.cpp
+    src/model/Config.h
+    src/model/SharedSettings.h      src/model/SharedSettings.cpp
+    src/model/Job.h                 src/model/Job.cpp
+    src/model/Manager.h             src/model/Manager.cpp
+    src/model/UpdateManager.h       src/model/UpdateManager.cpp
+    src/view/MainWindow.h           src/view/MainWindow.cpp             src/view/MainWindow.ui
+    src/view/JobWidget.h            src/view/JobWidget.cpp              src/view/JobWidget.ui
+    src/view/JobListWidget.h        src/view/JobListWidget.cpp
+    resources/resources.qrc
+    resources/main.rc
 )
 
 target_link_libraries(OneClone
