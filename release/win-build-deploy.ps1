@@ -14,33 +14,40 @@ $ErrorActionPreference = "Stop"
 # ============================================================
 # 1) VARIABLES - EDIT THESE
 # ============================================================
-
 # --- Project-specific ---
 $ProjectName    = "OneClone"
-$ProjectFolder  = Join-Path "Z:\" $ProjectName                    # <-- source project folder (contains CMakeLists.txt)
-$DeploymentFile = Join-Path $ProjectFolder "release\OneClone-win.zip" # <-- final zip file (full path incl. filename)
-$HashFile       = Join-Path $ProjectFolder "release\OneClone-win.sha256.txt"
-$ExeName        = $ProjectName + ".exe"                             # <-- built executable name
+Write-Host "Project: $ProjectName"
+$Version        = Read-Host 'Specify release version'
 
-# Folders/files to exclude when copying PROJECT_FOLDER -> C:\temp\src
-$ExcludeDirs  = @("build", ".git", ".qtcreator", "release")
-$ExcludeFiles = @(".gitattributes", ".gitignore")
+$ProjectDir     = "Z:\$ProjectName"                    # <-- source project folder (contains CMakeLists.txt)
+$ExeName        = "$ProjectName.exe"                             # <-- built executable name
 
-# --- Working folders ---
+$DeploymentFile = "$ProjectDir\release\$ProjectName-$Version-win.zip" # <-- final zip file (full path incl. filename)
+$HashFile       = "$ProjectDir\release\$ProjectName-$Version-win.sha256.txt"
+$InstallerDir   = "$ProjectDir\release"
+$InstallerFile  = "$ProjectName-$Version-win"
+
+# folders/files to exclude when copying PROJECT_FOLDER -> C:\temp\src
+$ExcludeDirs    = @("build", ".git", ".qtcreator", "release")
+$ExcludeFiles   = @(".gitattributes", ".gitignore")
+
+# --- Working temporary folders ---
 $TempRoot       = "C:\temp"
-$CompileFolder  = Join-Path $TempRoot "compile"
-$SrcFolder      = Join-Path $TempRoot "src"
-$BuildDir       = Join-Path $TempRoot "build"
-$DeployDir      = Join-Path $TempRoot "deploy"
+$SrcDir         = "$TempRoot\src"
+$BuildDir       = "$TempRoot\build"
+$DeployDir      = "$TempRoot\deploy"
+$ReleaseDir     = "$TempRoot\release"
+
+$IssFile        = "$TempRoot\setup.iss"
 
 # --- Fixed tool locations (from your QtCreator setup) ---
 $CMakeExe       = "C:\Qt\Tools\CMake_64\bin\cmake.exe"
 $QtBinDir       = "C:\Qt\6.11.1\msvc2022_64\bin"
-$WindeployqtExe = Join-Path $QtBinDir "windeployqt.exe"
-$QMakeExe       = Join-Path $QtBinDir "qmake.exe"
+$WindeployqtExe = "$QtBinDir\windeployqt.exe"
+$QMakeExe       = "$QtBinDir\qmake.exe"
 $MsvcCompiler   = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\cl.exe"
-$VcVarsAllBat = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"
-$JomDir       = "C:\Qt\Tools\QtCreator\bin\jom"   # folder containing jom.exe
+$VcVarsAllBat   = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"
+$JomDir         = "C:\Qt\Tools\QtCreator\bin\jom"   # folder containing jom.exe
 
 # ============================================================
 # Helper: run robocopy and treat exit codes 0-7 as success
@@ -98,20 +105,20 @@ try {
     if (Test-Path $TempRoot) {
         Remove-Item -Path $TempRoot -Recurse -Force
     }
-    New-Item -ItemType Directory -Path $SrcFolder     -Force | Out-Null
-    New-Item -ItemType Directory -Path $BuildDir      -Force | Out-Null
-    New-Item -ItemType Directory -Path $DeployDir     -Force | Out-Null
-    New-Item -ItemType Directory -Path $CompileFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $SrcDir     -Force | Out-Null
+    New-Item -ItemType Directory -Path $BuildDir   -Force | Out-Null
+    New-Item -ItemType Directory -Path $DeployDir  -Force | Out-Null
+    New-Item -ItemType Directory -Path $ReleaseDir -Force | Out-Null
 
     # ============================================================
     # 2) Copy PROJECT_FOLDER -> C:\temp\src (excluding build, .git, etc.)
     # ============================================================
-    Write-Host "==> Copying '$ProjectFolder' -> '$SrcFolder'"
+    Write-Host "==> Copying '$ProjectDir' -> '$SrcDir'"
     Write-Host "    (excluding: $($ExcludeDirs -join ', '), $($ExcludeFiles -join ', '))..."
-    Invoke-RobocopySafe -Source $ProjectFolder -Destination $SrcFolder -XD $ExcludeDirs -XF $ExcludeFiles
+    Invoke-RobocopySafe -Source $ProjectDir -Destination $SrcDir -XD $ExcludeDirs -XF $ExcludeFiles
 
     # Safety net: make sure no 'build' folder slipped through
-    $leftoverBuild = Join-Path $SrcFolder "build"
+    $leftoverBuild = Join-Path $SrcDir "build"
     if (Test-Path $leftoverBuild) {
         Write-Host "==> Removing leftover 'build' folder in source copy..."
         Remove-Item -Path $leftoverBuild -Recurse -Force
@@ -126,7 +133,7 @@ try {
     $env:PATH = "$JomDir;$env:PATH"
 
     & $CMakeExe `
-        -S ($SrcFolder -replace '\\','/') `
+        -S ($SrcDir -replace '\\','/') `
         -B ($BuildDir  -replace '\\','/') `
         "-DCMAKE_BUILD_TYPE:STRING=Release" `
         "-DCMAKE_COLOR_DIAGNOSTICS:BOOL=ON" `
@@ -159,7 +166,7 @@ try {
     Copy-Item -Path $exeFile.FullName -Destination $DeployDir -Force
 
     # Also bring along the resources folder
-    $resourcesSrc = Join-Path $SrcFolder "resources"
+    $resourcesSrc = Join-Path $SrcDir "resources"
     if (Test-Path $resourcesSrc) {
         Write-Host "==> Copying resources folder into deployment..."
         $resourcesDest = Join-Path $DeployDir "resources"
@@ -200,14 +207,53 @@ try {
 
 
     # ============================================================
-    # 7) Create hash file
+    # 7) Create zip hash file
     # ============================================================
     Write-Host "==> Creating zip hash file $DeploymentFile..."
 
     Get-FileHash $DeploymentFile -Algorithm SHA256 | Out-File -FilePath $HashFile
 
     # ============================================================
-    # 8) Cleanup: delete C:\temp entirely on success
+    # 8) Create installer using ISS
+    # ============================================================
+
+    $IssContent = @"
+[Setup]
+AppName=$ProjectName
+AppVersion=$Version
+DefaultDirName={userpf}\$ProjectName
+DefaultGroupName=$ProjectName
+OutputDir=$InstallerDir
+OutputBaseFilename=$InstallerFile
+Compression=lzma2/ultra64
+SolidCompression=yes
+Uninstallable=yes
+
+PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
+
+UninstallDisplayIcon={app}\$ProjectName.exe
+
+[Files]
+Source: "$DeployDir\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\$ProjectName"; Filename: "{app}\$ProjectName.exe"
+
+[Run]
+Filename: "{app}\$ProjectName.exe"; Description: "Launch $ProjectName"; Flags: postinstall nowait skipifsilent
+"@
+
+    Set-Content -Path $IssFile -Value $IssContent -Encoding UTF8
+
+    & "C:\Program Files\Inno Setup 7\iscc.exe" $IssFile
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Inno Setup compilation failed (exit code $LASTEXITCODE)"
+    }
+
+    # ============================================================
+    # 9) Cleanup: delete C:\temp entirely on success
     # ============================================================
     Write-Host "==> Cleaning up $TempRoot..."
     Remove-Item -Path $TempRoot -Recurse -Force

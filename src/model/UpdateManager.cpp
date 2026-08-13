@@ -140,16 +140,17 @@ void UpdateManager::onReleaseInfoReceived(){
             continue;
         }
         const QString lower = name.toLower();
+        const bool looksLikeInstaller = lower.contains(QStringLiteral(".exe")) || lower.contains(QStringLiteral(".msi"));
         const bool looksLikeCompressedFolder = lower.contains(QStringLiteral(".zip")) || lower.contains(QStringLiteral(".tar.gz"));
         const bool looksLikeChecksum = lower.contains(QStringLiteral("sha256"));
 
-        if (chosen.name.isEmpty() && looksLikeCompressedFolder && !looksLikeChecksum &&
+        if (chosen.name.isEmpty() && looksLikeCompressedFolder && !looksLikeInstaller && !looksLikeChecksum &&
             (m_assetNameFilter.isEmpty() || lower.contains(m_assetNameFilter.toLower()))) {
             chosen.name = name;
             chosen.downloadUrl = url;
             chosen.size = a.value(QStringLiteral("size")).toVariant().toLongLong();
         }
-        if (checksumUrl.isEmpty() && looksLikeChecksum) {
+        if (checksumUrl.isEmpty() && looksLikeChecksum && !looksLikeInstaller) {
             checksumUrl = url;
         }
     }
