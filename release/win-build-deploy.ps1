@@ -19,6 +19,7 @@ $ErrorActionPreference = "Stop"
 $ProjectName    = "OneClone"
 $ProjectFolder  = Join-Path "Z:\" $ProjectName                    # <-- source project folder (contains CMakeLists.txt)
 $DeploymentFile = Join-Path $ProjectFolder "release\OneClone-win.zip" # <-- final zip file (full path incl. filename)
+$HashFile       = Join-Path $ProjectFolder "release\OneClone-win.sha256.txt"
 $ExeName        = $ProjectName + ".exe"                             # <-- built executable name
 
 # Folders/files to exclude when copying PROJECT_FOLDER -> C:\temp\src
@@ -197,8 +198,16 @@ try {
 
     Write-Host "==> Deployment zip created: $DeploymentFile"
 
+
     # ============================================================
-    # Cleanup: delete C:\temp entirely on success
+    # 7) Create hash file
+    # ============================================================
+    Write-Host "==> Creating zip hash file $DeploymentFile..."
+
+    Get-FileHash $DeploymentFile -Algorithm SHA256 | Out-File -FilePath $HashFile
+
+    # ============================================================
+    # 8) Cleanup: delete C:\temp entirely on success
     # ============================================================
     Write-Host "==> Cleaning up $TempRoot..."
     Remove-Item -Path $TempRoot -Recurse -Force

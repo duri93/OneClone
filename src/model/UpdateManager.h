@@ -59,11 +59,6 @@ public slots:
     // Starts an asynchronous check. No-op if a check/download is already running.
     void checkForUpdates();
 
-    // Quits the application immediately and applies the update that was
-    // previously announced via updateReady(). Returns false and does
-    // nothing if no update is ready.
-    bool applyUpdateAndRestart();
-
 signals:
     void checkStarted();
     void noUpdateAvailable(const QString &currentVersion);

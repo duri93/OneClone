@@ -140,15 +140,15 @@ void UpdateManager::onReleaseInfoReceived(){
             continue;
         }
         const QString lower = name.toLower();
+        const bool looksLikeChecksum = lower.contains(QStringLiteral("sha256"));
 
-        if (chosen.name.isEmpty() &&
+        if (chosen.name.isEmpty() && !looksLikeChecksum &&
             (m_assetNameFilter.isEmpty() || lower.contains(m_assetNameFilter.toLower()))) {
             chosen.name = name;
             chosen.downloadUrl = url;
             chosen.size = a.value(QStringLiteral("size")).toVariant().toLongLong();
         }
-        if (checksumUrl.isEmpty() &&
-            (lower.contains(QStringLiteral("sha256")) || lower.contains(QStringLiteral("checksum")))) {
+        if (checksumUrl.isEmpty() && looksLikeChecksum) {
             checksumUrl = url;
         }
     }
@@ -379,14 +379,6 @@ void UpdateManager::armInstallOnQuit(){
     }
 }
 
-bool UpdateManager::applyUpdateAndRestart(){
-    if (!m_updateReady) {
-        return false;
-    }
-    QCoreApplication::quit(); // triggers aboutToQuit -> installUpdate()
-    return true;
-}
-
 void UpdateManager::handleFatalFailure(const QString &reason){
     cleanupTempDir();
     emit updateFailed(reason);
@@ -495,7 +487,7 @@ QString UpdateManager::writeWindowsScript(qint64 pid) const{
                                "robocopy \"%EXTRACT_DIR%\" \"%INSTALL_DIR%\" /E /IS /IT /NFL /NDL /NJH /NJS\r\n"
                                "if errorlevel 8 goto cleanup\r\n"
                                "\r\n"
-                               "start \"\" \"%APP_EXE%\"\r\n"
+                               "::start \"\" \"%APP_EXE%\"\r\n"
                                "\r\n"
                                ":cleanup\r\n"
                                "rd /s /q \"%TEMP_DIR%\" >NUL 2>NUL\r\n"
