@@ -1,2 +1,5 @@
 /build
 /.qtcreator
+*.exe
+*.zip
+*.txt

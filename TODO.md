@@ -2,7 +2,6 @@
 
 ## PRIORITY 1
 Tests and bugs that should be fixed.
-- Auto updater
 
 
 ## PRIORITY 2
@@ -10,7 +9,6 @@ Additional small features.
 
 - **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
 - **Better progress number formatting** by rounding to significant digits (`Job::processLineProgress`)
-- **throttled progress updates** instead of updating ui every time a progress line is received (`Job::processLineProgress`)
 
 
 ## PRIORITY 3
