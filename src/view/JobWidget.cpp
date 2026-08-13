@@ -1,6 +1,6 @@
 #include "../model/Config.h"
 #include "JobWidget.h"
-#include "view/ui_JobWidget.h"
+#include "src/view/ui_JobWidget.h"
 
 #include <QApplication>
 #include <QMouseEvent>
@@ -171,7 +171,7 @@ void JobWidget::onWarning(){
 
 const QPixmap JobWidget::getJobIcon() const{
     // svg resource
-    QString str = QString(":/resources/icons/%1_%2.svg")
+    QString str = QString(":/icons/%1_%2.svg")
         .arg(m_job->type(), m_job->active() ? "active" : "inactive");
     str = str.toLower();
 
@@ -185,7 +185,7 @@ const QPixmap JobWidget::getStatusIcon() const{
     int h = ui->statusIcon->size().height();
 
     // base icon
-    QString baseIcon = QString(":/resources/icons/%1.svg").arg(m_job->statusString());
+    QString baseIcon = QString(":/icons/%1.svg").arg(m_job->statusString());
     baseIcon = baseIcon.toLower();
 
     QPixmap pixmap(baseIcon);
@@ -193,7 +193,7 @@ const QPixmap JobWidget::getStatusIcon() const{
 
     // warning badge
     if(!m_job->warnings().isEmpty()){
-        QString warnIcon = QString(":/resources/icons/warning.svg");
+        QString warnIcon = QString(":/icons/warning.svg");
         QSvgRenderer warnRenderer(warnIcon);
 
         int warnSize = h / 3;
