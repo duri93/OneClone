@@ -27,7 +27,6 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
     setWindowTitle(QString(Config::APP_NAME) + " " + Config::APP_VERSION);
     moveWindowToBottomRight();
-    ui->updateFrame->hide();
 
     // ---- Load settings (generates defaults on first run) ----
     connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
@@ -37,9 +36,14 @@ MainWindow::MainWindow(QWidget* parent)
         statusBar()->showMessage("Could not load settings file — using defaults.", Config::STATUS_DURATION);
     }
 
-    // ---- Errors ----
+    // ---- Errors, warnings and messages ----
     ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
     ui->errorWinfspFrame->setVisible(!isWinFspInstalled());
+    ui->updateFrame->hide();
+
+    connect(ui->errorRcloneClose, &QPushButton::clicked, ui->errorRcloneClose, &QFrame::hide);
+    connect(ui->errorWinfspClose, &QPushButton::clicked, ui->errorWinfspClose, &QFrame::hide);
+    connect(ui->updateClose,      &QPushButton::clicked, ui->updateFrame,      &QFrame::hide);
 
     // ---- Settings tab ----
     ui->settingsAdvancedScrollarea->hide();
