@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SharedSettings.h"
+#include "LogFile.h"
 
 #include <QObject>
 #include <QProcess>
@@ -77,7 +78,6 @@ signals:
     void warning(const QString& serviceId, const QString& line);
     void progressUpdated(const QString& serviceId, const JobProgress& newProgress);
     void outputLine(const QString& serviceId, const QString& line);
-    void logError(const QString& serviceId);
 
 private slots:
     void onReadyRead();
@@ -89,11 +89,6 @@ private:
     void processLine(const QString& line);
     void processLineOutput(const QString & line);
     bool processLineProgress(const QString& line);
-
-    void logOpen();
-    void logAppend(const QString& line);
-    void logClose();
-
 
     QString m_id;       // internal UUID, not shown in UI
     QString m_name    = "New job";
@@ -108,5 +103,5 @@ private:
     QVector<QString> m_warnings;
     JobProgress      m_progress;
     QProcess         m_process;
-    QFile            m_logfile;
+    LogFile*         m_logfile = nullptr;
 };

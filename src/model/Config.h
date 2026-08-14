@@ -22,6 +22,9 @@ namespace Config {
     inline constexpr int MAX_OUTPUT_LINES = 2000;
     inline constexpr int SMALL_FONT_SIZE = 8;
 
+    //logs
+    inline constexpr int MAX_LOG_FILES = 20;
+
     inline const QRegularExpression WARNING_REGEX{
         "NOTICE:.*failed|ERROR:"
     };

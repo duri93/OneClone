@@ -22,6 +22,7 @@ qt_add_executable(OneClone
     src/view/JobListWidget.h        src/view/JobListWidget.cpp
     resources/resources.qrc
     resources/main.rc
+    src/model/LogFile.h src/model/LogFile.cpp
 )
 
 target_link_libraries(OneClone

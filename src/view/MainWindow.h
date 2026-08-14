@@ -49,7 +49,6 @@ private slots:
     void onLocalSelectClicked();
 
     // Job model events
-    void onJobOutputLine(const QString& id, const QString& line);
     void onJobAdded(Job* job);
     void onJobRemoved(const QString& jobId);
 

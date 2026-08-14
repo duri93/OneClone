@@ -27,8 +27,7 @@ Job::Job(SharedSettings* shared, QObject* parent)
     // Merge stderr into stdout channel for unified output display
     m_process.setProcessChannelMode(QProcess::MergedChannels);
 }
-Job::~Job()
-{
+Job::~Job(){
     if (m_process.state() != QProcess::NotRunning) {
         m_status = JobStatus::Stopping;
         m_process.kill();
@@ -95,8 +94,7 @@ void Job::toggle(bool swapSides){
         start(swapSides);
     }
 }
-void Job::start(bool swapSides)
-{
+void Job::start(bool swapSides){
     // don't start if already running
     if(active()) return;
 
@@ -104,8 +102,12 @@ void Job::start(bool swapSides)
     QStringList args = this->getCommand(swapSides);
 
     // open log file
-    logOpen();
-    logAppend(args.join(' '));
+    delete m_logfile;
+    m_logfile = new LogFile(m_name, this);
+    connect(m_logfile, &LogFile::error, this, [this](const QString& message){
+        emit warning(m_id, message);
+    });
+    m_logfile->write(args.join(' '));
 
     // clear job warnings
     m_warnings.clear();
@@ -120,8 +122,7 @@ void Job::start(bool swapSides)
     // QProcess::started is not connected here; we transition to Running on
     // first stdout output to avoid false positives while rclone initialises.
 }
-void Job::stop()
-{
+void Job::stop(){
     if (!active()) return;
     setStatus(JobStatus::Stopping);
 
@@ -150,8 +151,7 @@ void Job::stop()
 // ---------------------------------------------------------------------------
 // Private slots
 // ---------------------------------------------------------------------------
-void Job::onReadyRead()
-{
+void Job::onReadyRead(){
     // Read all available data line by line
     while (m_process.canReadLine()) {
         QString line = QString::fromUtf8(m_process.readLine()).trimmed();
@@ -160,8 +160,7 @@ void Job::onReadyRead()
         }
     }
 }
-void Job::onProcessError(QProcess::ProcessError error)
-{
+void Job::onProcessError(QProcess::ProcessError error){
     Q_UNUSED(error)
     //if (m_status != JobStatus::Stopping) {
 
@@ -174,8 +173,7 @@ void Job::onProcessError(QProcess::ProcessError error)
     setStatus(JobStatus::Errored);
     //}
 }
-void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
+void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus){
     Q_UNUSED(exitStatus)
 
 #ifdef Q_OS_WIN
@@ -200,20 +198,19 @@ void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
         setStatus(JobStatus::Success);
     }
 
-    logClose();
+    delete m_logfile;
+    m_logfile = nullptr;
 }
 
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
-void Job::setStatus(JobStatus s)
-{
+void Job::setStatus(JobStatus s){
     if (m_status == s) return;
     m_status = s;
     emit statusChanged(m_id, s);
 }
-void Job::processLine(const QString& line)
-{
+void Job::processLine(const QString& line){
     // Transition from Starting -> Running on first real output
     if (m_status == JobStatus::Starting) {
         if (m_type == "mount") {
@@ -252,13 +249,12 @@ void Job::processLine(const QString& line)
 }
 void Job::processLineOutput(const QString &line){
     // save to log file
-    logAppend(line);
+    m_logfile->write(line);
 
     // emit signal
     emit outputLine(m_id, line);
 }
-bool Job::processLineProgress(const QString& line)
-{
+bool Job::processLineProgress(const QString& line){
     // Matches: "Transferred: 123.45 MiB / 1.23 GiB, 10%, 1.23 MiB/s, ETA 1m23s"
     static const QRegularExpression re(
         R"(Transferred:\s+([\d.]+ \S+ \/ [\d.]+ \S+),\s+(\d+)%,\s+([\S]+ \S+\/s),\s+ETA\s+(\S+))");
@@ -280,46 +276,20 @@ bool Job::processLineProgress(const QString& line)
 // ---------------------------------------------------------------------------
 // Log helpers
 // ---------------------------------------------------------------------------
-void Job::logOpen(){
-    // prepare filename
-    QDir dir = QDir(QCoreApplication::applicationDirPath());
-    if(!dir.exists("logs")){
-        dir.mkdir("logs");
-    }
 
-    QString logPath = dir.filePath("logs/" + m_id + "_" + m_name + ".log");
-    logPath.replace(QRegularExpression(R"([\\/:*?"<>|])"), "_");
-    if(logPath.isEmpty()) logPath = "default";
-
-    m_logfile.setFileName(logPath);
-
-    // open
-    if(!m_logfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)){
-        emit logError(m_id);
-    }
-}
-void Job::logAppend(const QString& line){
-    // append to file
-    if(!m_logfile.isOpen()) return;
-
-    m_logfile.write(line.toUtf8());
-    m_logfile.write("\n");
-    m_logfile.flush();
-}
-void Job::logClose(){
-    if(!m_logfile.isOpen()) return;
-
-    m_logfile.close();
-}
 void Job::openLogfile(){
-    if (m_logfile.fileName().isEmpty()) return;
-    if (!m_logfile.exists()) return;
+    if(!m_logfile) return;
+
+    const QFile& log = m_logfile->file();
+
+    if(log.fileName().isEmpty() || !log.exists()){
+        return;
+    }
 
     QDesktopServices::openUrl(
-        QUrl::fromLocalFile(m_logfile.fileName())
-        );
+        QUrl::fromLocalFile(log.fileName())
+    );
 }
-
 
 void Job::fromJson(const QJsonValue& json){
     this->m_id        = json["id"].toString();
