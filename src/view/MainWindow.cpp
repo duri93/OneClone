@@ -24,9 +24,17 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow){
+
+    // ---- Set up window ----
     ui->setupUi(this);
     setWindowTitle(QString(Config::APP_NAME) + " " + Config::APP_VERSION);
-    moveWindowToBottomRight();
+
+    QSettings settings(Config::APP_AUTHOR, Config::APP_NAME);
+    if(settings.contains("geometry")){
+        restoreGeometry(settings.value("geometry").toByteArray());
+    }else{
+        moveWindowToBottomRight();
+    }
 
     // ---- Load settings (generates defaults on first run) ----
     connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
@@ -93,6 +101,11 @@ MainWindow::~MainWindow(){
     delete ui;
 }
 void MainWindow::closeEvent(QCloseEvent* event){
+    if(!this->isMaximized()){
+        QSettings settings(Config::APP_AUTHOR, Config::APP_NAME);
+        settings.setValue("geometry", saveGeometry());
+    }
+
     hide();               // hide window, keep app running
     event->ignore();      // don't propagate the close
 }
