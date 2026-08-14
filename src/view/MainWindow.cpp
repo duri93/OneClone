@@ -1,4 +1,4 @@
-#include "ui_MainWindow.h"
+#include "src/view/ui_MainWindow.h"
 #include "MainWindow.h"
 #include "JobListWidget.h"
 
@@ -297,10 +297,7 @@ void MainWindow::openDetails(Job* job){
     ui->detailsReadOnly->setChecked(job->readOnly());
 
     // populate output log
-    ui->detailsOutput->clear();
-    for(const QString& line : job->output()){
-        ui->detailsOutput->append(line);
-    }
+    ui->detailsOutput->setText(job->getCommand(false).join(' '));
 
     // show details tab
     ui->tabWidget->setCurrentWidget(ui->tabDetails);
@@ -326,6 +323,8 @@ void MainWindow::onDetailsSave(){
     job->setRemote(ui->detailsRemote->text());
     job->setAutostart(ui->detailsAutostart->isChecked());
     job->setReadOnly(ui->detailsReadOnly->isChecked());
+
+    ui->detailsOutput->setText(job->getCommand(false).join(' '));
 
     if(m_manager.save()){
         statusBar()->showMessage("Job saved.", Config::STATUS_DURATION);

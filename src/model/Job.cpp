@@ -58,6 +58,36 @@ const QString Job::statusString() const{
 // ---------------------------------------------------------------------------
 // start / stop
 // ---------------------------------------------------------------------------
+QStringList Job::getCommand(bool swapSides){
+    QStringList command;
+
+    if(m_type == "mount"){
+        command << "mount" << m_remote << m_local;
+        if (m_readOnly) command << "--read-only";
+        command << "--vfs-cache-mode"              << m_shared->cacheMode();
+        command << "--vfs-cache-max-size"          << QString::number(m_shared->cacheMaxSize())       + "G";
+        command << "--vfs-cache-min-free-space"    << QString::number(m_shared->cacheMinFreeSpace())  + "G";
+        command << "--vfs-cache-max-age"           << QString::number(m_shared->cacheMaxAge())        + "h";
+        command << "--vfs-read-chunk-size"         << QString::number(m_shared->readChunkSize())      + "M";
+        command << "--vfs-read-chunk-size-limit"   << QString::number(m_shared->readChunkSizeLimit()) + "M";
+    }else{
+        command << m_type;
+        if(swapSides){
+            command << m_remote << m_local;
+        }else{
+            command << m_local << m_remote;
+        }
+        command << "--progress" << "--delete-before";
+    }
+
+    command << "--buffer-size"                 << QString::number(m_shared->bufferSize())         + "M";
+    command << "--transfers"                   << QString::number(m_shared->transfers());
+    command << "--checkers"                    << QString::number(m_shared->checkers());
+    if (m_shared->links()) command << "--links";
+
+    return command;
+}
+
 void Job::toggle(bool swapSides){
     if(active()){
         stop();
@@ -67,45 +97,24 @@ void Job::toggle(bool swapSides){
 }
 void Job::start(bool swapSides)
 {
+    // don't start if already running
     if(active()) return;
 
+    // generate rclone command
+    QStringList args = this->getCommand(swapSides);
+
+    // open log file
     logOpen();
-
-    QStringList args;
-
-    if(m_type == "mount"){
-        args << "mount" << m_remote << m_local;
-        if (m_readOnly) args << "--read-only";
-        args << "--vfs-cache-mode"              << m_shared->cacheMode();
-        args << "--vfs-cache-max-size"          << QString::number(m_shared->cacheMaxSize())       + "G";
-        args << "--vfs-cache-min-free-space"    << QString::number(m_shared->cacheMinFreeSpace())  + "G";
-        args << "--vfs-cache-max-age"           << QString::number(m_shared->cacheMaxAge())        + "h";
-        args << "--vfs-read-chunk-size"         << QString::number(m_shared->readChunkSize())      + "M";
-        args << "--vfs-read-chunk-size-limit"   << QString::number(m_shared->readChunkSizeLimit()) + "M";
-    }else{
-        args << m_type;
-        if(swapSides){
-            args << m_remote << m_local;
-        }else{
-            args << m_local << m_remote;
-        }
-        args << "--progress" << "--delete-before";
-    }
-
-    args << "--buffer-size"                 << QString::number(m_shared->bufferSize())         + "M";
-    args << "--transfers"                   << QString::number(m_shared->transfers());
-    args << "--checkers"                    << QString::number(m_shared->checkers());
-    if (m_shared->links()) args << "--links";
-
-    m_warnings.clear();
-    m_output.clear();
-    m_output.append(args.join(' '));
     logAppend(args.join(' '));
+
+    // clear job warnings
+    m_warnings.clear();
+
+    // start process
+    setStatus(JobStatus::Starting);
 
     m_process.setProgram(m_shared->rclonePath());
     m_process.setArguments(args);
-
-    setStatus(JobStatus::Starting);
     m_process.start();
 
     // QProcess::started is not connected here; we transition to Running on
@@ -242,14 +251,10 @@ void Job::processLine(const QString& line)
     }
 }
 void Job::processLineOutput(const QString &line){
-    // keep line in memory, to show it in details tab
-    m_output.append(line);
-    if(m_output.size() > Config::MAX_OUTPUT_LINES){
-        m_output.removeFirst();
-    }
+    // save to log file
+    logAppend(line);
 
     // emit signal
-    logAppend(line);
     emit outputLine(m_id, line);
 }
 bool Job::processLineProgress(const QString& line)

@@ -2,7 +2,8 @@
 
 ## PRIORITY 1
 Tests and bugs that should be fixed.
-
+- Progress lines are not filtered
+- Error opening log files
 
 ## PRIORITY 2
 Additional small features.

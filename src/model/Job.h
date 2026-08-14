@@ -31,7 +31,7 @@ public:
     explicit Job(SharedSettings* shared, QObject* parent = nullptr);
     ~Job() override;
 
-    // Property accessors
+    // property accessors
     const QString id()       const { return m_id; }
     const QString name()     const { return m_name; }
     const QString type()     const { return m_type; }
@@ -48,12 +48,11 @@ public:
     void setAutostart(bool newAutostart){ m_autostart = newAutostart; emit specsChanged(); }
     void setReadOnly (bool newReaOnly  ){ m_readOnly  = newReaOnly;   emit specsChanged(); }
 
-    // Import / export
+    // import / export
     const QJsonObject toJson() const;
     void fromJson(const QJsonValue& json);
 
     // Status accessors
-    const QStringList      output()   const { return m_output; }
     const JobStatus        status()   const { return m_status; }
     const bool             active()   const { return m_status == JobStatus::Starting || m_status == JobStatus::Running; }
     const JobProgress      progress() const { return m_progress; }
@@ -62,6 +61,8 @@ public:
     const QString       statusString() const;
 
     // Process handling
+    QStringList getCommand(bool swapSides = false);
+
     void start(bool swapSides = false);
     void stop();
 
@@ -107,6 +108,5 @@ private:
     QVector<QString> m_warnings;
     JobProgress      m_progress;
     QProcess         m_process;
-    QStringList      m_output;
     QFile            m_logfile;
 };
