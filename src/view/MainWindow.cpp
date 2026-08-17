@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     connect(updater, &UpdateManager::updateFailed, this, [this](const QString &reason) {
-        ui->updateLabel->setText(tr("Update failed: ").arg(reason));
+        ui->updateLabel->setText(tr("%1").arg(reason));
         ui->updateFrame->show();
     });
 
