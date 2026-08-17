@@ -56,7 +56,8 @@ Note: the difference between copy and sync is that the latter will also delete f
 
 ### Edit job and see output log
 
-Double-click any job in the list to open its detail view, which includes a live output log of everything rclone prints to stdout/stderr.
+Double-click any job in the list to open its detail view where you can edit it freely.
+Alternatively, click the job's status icon (next to the mount/sync/copy button) to open the rclone log file and inspect its output.
 
 ### Startup with Windows
 
