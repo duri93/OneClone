@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget* parent)
     // ---- Details tab ----
     ui->detailsOutput->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
 
+    connect(ui->detailsOpenLog,&QPushButton::clicked, this, &MainWindow::onDetailsOpenLog);
     connect(ui->detailsSave,   &QPushButton::clicked, this, &MainWindow::onDetailsSave);
     connect(ui->detailsDelete, &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
     connect(ui->detailsLocalButton,    &QToolButton::clicked, this, &MainWindow::onLocalSelectClicked);
@@ -286,6 +287,7 @@ void MainWindow::openDetails(Job* job){
     ui->detailsReadOnly ->setEnabled(validJob);
     ui->detailsSave     ->setEnabled(validJob);
     ui->detailsDelete   ->setEnabled(validJob);
+    ui->detailsOpenLog  ->setEnabled(validJob);
 
     if(!validJob) return;
 
@@ -317,6 +319,16 @@ void MainWindow::clearDetails(){
     ui->detailsOutput->clear();
 }
 
+void MainWindow::onDetailsOpenLog(){
+    if(!m_currentJobDetails) return;
+    Job* job = m_currentJobDetails;
+
+    bool status = job->openLogFile();
+
+    if(!status){
+         statusBar()->showMessage("Error opening job log file (run the job at least once first).", Config::STATUS_DURATION);
+    }
+}
 void MainWindow::onDetailsSave(){
     if(!m_currentJobDetails) return;
     Job* job = m_currentJobDetails;

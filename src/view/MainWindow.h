@@ -44,6 +44,7 @@ private slots:
     void onJobMoved(const QString& id, int newIndex);
 
     // Job details tab
+    void onDetailsOpenLog();
     void onDetailsSave();
     void onDetailsDelete();
     void onLocalSelectClicked();

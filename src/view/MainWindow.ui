@@ -365,7 +365,7 @@
              <x>0</x>
              <y>0</y>
              <width>384</width>
-             <height>318</height>
+             <height>267</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -595,7 +595,14 @@
          </widget>
         </item>
         <item row="9" column="1">
-         <layout class="QHBoxLayout" name="detailsButtonsLayout" stretch="1,0,0">
+         <layout class="QHBoxLayout" name="detailsButtonsLayout" stretch="0,1,0,0">
+          <item>
+           <widget class="QPushButton" name="detailsOpenLog">
+            <property name="text">
+             <string>Open log file</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="detailsButtonsSpacer">
             <property name="orientation">
@@ -691,8 +698,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>356</width>
-             <height>337</height>
+             <width>353</width>
+             <height>377</height>
             </rect>
            </property>
            <layout class="QFormLayout" name="formLayout_2">
