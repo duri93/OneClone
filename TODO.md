@@ -2,11 +2,16 @@
 
 ## PRIORITY 1
 Tests and bugs that should be fixed.
-- Progress lines are not filtered
-- Error opening log files
 
 ## PRIORITY 2
 Additional small features.
+
+- **guide.md** for general setup (not allas)
+- **start guided setup** if no config file
+- **guided setup** using QWizard
+  - Check for rclone (show/edit exe path) and winfsp. Show download links or uoulu instructions if not found
+  - List rclone remotes. Buttons for general rclone config or Allas rclone config. First opens cmd, latter shows page with name, key and secret input, link to allas setup guide, and appends to config.dat. !NOTE: Need a way to check it works!
+  - Guide on how to create a job
 
 - **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
 - **Better progress number formatting** by rounding to significant digits (`Job::processLineProgress`)
@@ -15,7 +20,6 @@ Additional small features.
 ## PRIORITY 3
 Optional things to implement.
 
-- **Nore advanced log management** — logs are per-job-run files under `logs/`, being overwritten every time the job starts.
 - **In-app rclone remote configuration editor**, rather than relying entirely on an external `rclone config` session.
 - **Localization/i18n** — `tr()` is used throughout, but no translation files currently ship.
 

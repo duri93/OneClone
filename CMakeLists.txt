@@ -23,6 +23,7 @@ qt_add_executable(OneClone
     resources/resources.qrc
     resources/main.rc
     src/model/LogFile.h src/model/LogFile.cpp
+    src/model/RemotesAutocompleter.h src/model/RemotesAutocompleter.cpp
 )
 
 target_link_libraries(OneClone

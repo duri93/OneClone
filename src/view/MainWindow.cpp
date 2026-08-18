@@ -4,6 +4,7 @@
 
 #include "../model/Config.h"
 #include "../model/UpdateManager.h"
+#include "../model/RemotesAutocompleter.h"
 
 #include <QFileDialog>
 #include <QCloseEvent>
@@ -61,9 +62,9 @@ MainWindow::MainWindow(QWidget* parent)
     // ---- Details tab ----
     ui->detailsOutput->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
 
-    connect(ui->detailsOpenLog,&QPushButton::clicked, this, &MainWindow::onDetailsOpenLog);
-    connect(ui->detailsSave,   &QPushButton::clicked, this, &MainWindow::onDetailsSave);
-    connect(ui->detailsDelete, &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
+    connect(ui->detailsOpenLog,        &QPushButton::clicked, this, &MainWindow::onDetailsOpenLog);
+    connect(ui->detailsSave,           &QPushButton::clicked, this, &MainWindow::onDetailsSave);
+    connect(ui->detailsDelete,         &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
     connect(ui->detailsLocalButton,    &QToolButton::clicked, this, &MainWindow::onLocalSelectClicked);
 
     // ---- Start on the list tab ----
@@ -304,6 +305,10 @@ void MainWindow::openDetails(Job* job){
 
     // populate output log
     ui->detailsOutput->setText(job->getCommand(false).join(' '));
+
+    // show autocomplete
+    QString rclonePath = m_manager.shared()->rclonePath();
+    RemotesAutocompleter::setup(ui->detailsRemote, rclonePath);
 
     // show details tab
     ui->tabWidget->setCurrentWidget(ui->tabDetails);
