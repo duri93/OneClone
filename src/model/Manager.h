@@ -33,6 +33,8 @@ public:
     bool isRcloneInstalled();
     bool isWinFspInstalled();
     bool openRcloneConf();
+    bool openRcloneConfFile();
+    QString listRCloneRemotes();
 signals:
     void added(Job* newJob);
     void removed(const QString& jobId);

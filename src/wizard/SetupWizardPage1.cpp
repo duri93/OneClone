@@ -11,17 +11,10 @@ SetupWizardPage1::SetupWizardPage1(Manager* manager, QWidget *parent):QWizardPag
     , ui(new Ui::SetupWizardPage1){
     ui->setupUi(this);
     ui->rclonePath->setText(manager->shared()->rclonePath());
+    this->setTitle("1. Install dependencies");
 
     m_manager = manager;
-}
 
-SetupWizardPage1::~SetupWizardPage1()
-{
-    m_timer->stop();
-    delete ui;
-}
-
-void SetupWizardPage1::setup(){
     // rclone path
     ui->rclonePath->setText(m_manager->shared()->rclonePath());
     connect(ui->rclonePathButton, &QPushButton::clicked, this, &SetupWizardPage1::onRcloneSelectClicked);
@@ -35,6 +28,13 @@ void SetupWizardPage1::setup(){
     connect(m_timer, &QTimer::timeout, this, &SetupWizardPage1::isComplete);
     m_timer->start();
 }
+
+SetupWizardPage1::~SetupWizardPage1()
+{
+    m_timer->stop();
+    delete ui;
+}
+
 bool SetupWizardPage1::isComplete() const{
     // check
     bool rcloneOk = m_manager->isRcloneInstalled();
@@ -43,6 +43,9 @@ bool SetupWizardPage1::isComplete() const{
     // update icons
     QPixmap okPixmap (":/resources/success.png");
     QPixmap noPixmap (":/resources/errored.png");
+
+    ui->rcloneStatus->setText(rcloneOk ? "Found" : "Not found");
+    ui->winfspStatus->setText(winfspOk ? "Found" : "Not found");
 
     ui->rcloneIcon->setPixmap(rcloneOk ? okPixmap : noPixmap);
     ui->winfspIcon->setPixmap(winfspOk ? okPixmap : noPixmap);

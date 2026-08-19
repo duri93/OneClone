@@ -2,32 +2,20 @@
 
 TODO
 - Page 2
-  - QTimer to update remotes every second
-  - List remotes to label
-  - button click event for rclone conifg
-  - button click event for allas config (show/hide frame)
-  - button click event save allas config
   - link to allas guide
-  - also move isRcloneInstalled and isWinFspInstalled in manager
+  - link to rclone docs
 - Page 3 (guide)
-- QWizard
-  - wizard itself
-  - start routine
-  - start button
 
 ## PRIORITY 1
 Tests and bugs that should be fixed.
+- test wizard and wizard button
+- test autocomplete (again)
+- merge branches
 
 ## PRIORITY 2
 Additional small features.
 
 - **guide.md** for general setup (not allas)
-- **start guided setup** if no config file
-- **guided setup** using QWizard
-  - Check for rclone (show/edit exe path) and winfsp. Show download links or uoulu instructions if not found
-  - List rclone remotes. Buttons for general rclone config or Allas rclone config. First opens cmd, latter shows page with name, key and secret input, link to allas setup guide, and appends to config.dat. !NOTE: Need a way to check it works!
-  - Guide on how to create a job
-
 - **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
 - **Better progress number formatting** by rounding to significant digits (`Job::processLineProgress`)
 

@@ -26,6 +26,8 @@ qt_add_executable(OneClone
     src/model/RemotesAutocompleter.h src/model/RemotesAutocompleter.cpp
     src/wizard/SetupWizardPage1.h src/wizard/SetupWizardPage1.cpp src/wizard/SetupWizardPage1.ui
     src/wizard/SetupWizardPage2.h src/wizard/SetupWizardPage2.cpp src/wizard/SetupWizardPage2.ui
+    src/wizard/SetupWizardPage3.h src/wizard/SetupWizardPage3.cpp src/wizard/SetupWizardPage3.ui
+    src/wizard/SetupWizard.h src/wizard/SetupWizard.cpp
 
 )
 

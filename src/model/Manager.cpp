@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QStandardPaths>
 #include <QSettings>
+#include <QDesktopServices>
 
 Manager::Manager(QObject* parent) : QObject(parent){
     m_filePath = QDir(QCoreApplication::applicationDirPath())
@@ -194,4 +195,51 @@ bool Manager::openRcloneConf(){
     statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
     return false;
 #endif
+}
+
+QString Manager::listRCloneRemotes(){
+    QString rclonePath = shared()->rclonePath();
+
+    QProcess process;
+    process.start(rclonePath, {"listremotes"});
+
+    if (!process.waitForStarted())
+        return QString();
+
+    process.waitForFinished();
+
+    return QString::fromLocal8Bit(process.readAllStandardOutput());
+}
+
+bool Manager::openRcloneConfFile(){
+    QString rclonePath = shared()->rclonePath();
+
+    QProcess process;
+    process.start(rclonePath, {"config", "file"});
+
+    if (!process.waitForStarted() || !process.waitForFinished())
+        return false;
+
+    if (process.exitStatus() != QProcess::NormalExit ||
+        process.exitCode() != 0)
+        return false;
+
+    QString output = QString::fromLocal8Bit(process.readAllStandardOutput()).trimmed();
+
+    // rclone outputs something like:
+    // Configuration file is stored at:
+    // C:\Users\User\AppData\Roaming\rclone\rclone.conf
+    //
+    // Extract the last non-empty line.
+    QStringList lines = output.split(QRegularExpression("[\r\n]"),
+                                     Qt::SkipEmptyParts);
+
+    if (lines.isEmpty())
+        return false;
+
+    QString configPath = lines.last().trimmed();
+
+    return QDesktopServices::openUrl(
+        QUrl::fromLocalFile(configPath)
+        );
 }

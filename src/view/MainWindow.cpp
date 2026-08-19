@@ -5,6 +5,7 @@
 #include "../model/Config.h"
 #include "../model/UpdateManager.h"
 #include "../model/RemotesAutocompleter.h"
+#include "../wizard/SetupWizard.h"
 
 #include <QFileDialog>
 #include <QCloseEvent>
@@ -33,13 +34,20 @@ MainWindow::MainWindow(QWidget* parent)
     connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
     connect(&m_manager, &Manager::removed, this, &MainWindow::onJobRemoved);
 
-    if (!m_manager.load()) {
+    bool dryRun = !m_manager.load();
+
+    if (dryRun) {
         statusBar()->showMessage("Could not load settings file — using defaults.", Config::STATUS_DURATION);
     }
 
-    // ---- Errors, warnings and messages ----
-    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
-    ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
+    // ---- Setup wizard, errors, warnings and messages ----
+    if(dryRun){
+        SetupWizard* wizard = new SetupWizard(&m_manager);
+    }else{
+        ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
+        ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
+    }
+
     ui->updateFrame->hide();
 
     connect(ui->errorRcloneClose, &QPushButton::clicked, ui->errorRcloneClose, &QFrame::hide);
@@ -53,6 +61,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->settingsSave,         &QPushButton::clicked, this, &MainWindow::onSettingsSave);
     connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
     connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &MainWindow::onRcloneConfClicked);
+    connect(ui->settingsWizard,       &QPushButton::clicked, this, [this](){new SetupWizard(&m_manager);});
 
     // ---- List tab ----
     // populated when adding jobs
@@ -195,7 +204,7 @@ bool startDetachedClean(const QString &program, const QStringList &arguments){
     qint64 pid = 0;
     return process.startDetached(&pid);
 }
-bool MainWindow::onRcloneConfClicked(){
+void MainWindow::onRcloneConfClicked(){
     if(!m_manager.openRcloneConf()){
         statusBar()->showMessage("Failed to run 'rclone config'.", Config::STATUS_DURATION);
     }
