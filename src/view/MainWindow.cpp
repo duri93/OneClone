@@ -38,8 +38,8 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     // ---- Errors, warnings and messages ----
-    ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
-    ui->errorWinfspFrame->setVisible(!isWinFspInstalled());
+    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
+    ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
     ui->updateFrame->hide();
 
     connect(ui->errorRcloneClose, &QPushButton::clicked, ui->errorRcloneClose, &QFrame::hide);
@@ -148,7 +148,7 @@ void MainWindow::saveUiToSettings(){
     }
 
     // check rclone again
-    ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
+    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
 }
 
 void MainWindow::onSettingsSave(){
@@ -196,38 +196,9 @@ bool startDetachedClean(const QString &program, const QStringList &arguments){
     return process.startDetached(&pid);
 }
 bool MainWindow::onRcloneConfClicked(){
-    QString rclonePath = m_manager.shared()->rclonePath();
-
-    #if defined(Q_OS_WIN)
-        QString program = "cmd.exe";
-        QStringList arguments;
-        arguments << "/c" << "start" << "rclone config" << "/wait" << rclonePath << "config";
-        return QProcess::startDetached(program, arguments);
-    #elif defined(Q_OS_LINUX)
-        // set up terminals lookup table
-        QString shellCmd = QString("'%1' config; exit").arg(rclonePath);
-
-        struct TerminalCmd { QString exe; QStringList args; };
-        const QList<TerminalCmd> terminals = {
-            { "x-terminal-emulator", { "-e", "bash", "-c", shellCmd } }, // Debian/Ubuntu default alias
-            { "gnome-terminal",      { "--", "bash", "-c", shellCmd } },
-            { "konsole",             { "-e", "bash", "-c", shellCmd } },
-            { "xfce4-terminal",      { "-x", "bash", "-c", shellCmd } },
-            { "xterm",               { "-e", "bash", "-c", shellCmd } },
-        };
-
-        // start forst found terminal and run rclone config
-        for (const auto &term : terminals) {
-            if (!QStandardPaths::findExecutable(term.exe).isEmpty())
-                return startDetachedClean(term.exe, term.args);
-        }
-
-        statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
-        return false;
-    #else
-        statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
-        return false;
-    #endif
+    if(!m_manager.openRcloneConf()){
+        statusBar()->showMessage("Failed to run 'rclone config'.", Config::STATUS_DURATION);
+    }
 }
 
 
@@ -486,35 +457,3 @@ void MainWindow::activate(){
     raise();
     activateWindow();
 }
-
-// ---------------------------------------------------------------------------
-// General error messages
-// ---------------------------------------------------------------------------
-bool MainWindow::isRcloneInstalled(){
-    QString path = m_manager.shared()->rclonePath();
-    QFileInfo fi(path);
-    return (fi.exists() && fi.isExecutable()) || !QStandardPaths::findExecutable(path).isEmpty();
-}
-bool MainWindow::isWinFspInstalled(){
-#ifdef Q_OS_WIN
-    // Method 1: Check registry
-    QSettings reg("HKEY_LOCAL_MACHINE\\SOFTWARE\\WinFsp", QSettings::NativeFormat);
-    if (!reg.allKeys().isEmpty()){
-        return true;
-    }
-
-    // Method 2: Check default install path
-    QStringList paths = {
-        "C:/Program Files (x86)/WinFsp",
-        "C:/Program Files/WinFsp"
-    };
-    for (const QString &path : paths) {
-        if (QDir(path).exists())
-            return true;
-    }
-    return false;
-#else
-    return false; // WinFsp is Windows-only
-#endif
-}
-

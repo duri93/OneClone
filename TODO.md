@@ -1,5 +1,20 @@
 # IMPLEMENTATION ROADMAP
 
+TODO
+- Page 2
+  - QTimer to update remotes every second
+  - List remotes to label
+  - button click event for rclone conifg
+  - button click event for allas config (show/hide frame)
+  - button click event save allas config
+  - link to allas guide
+  - also move isRcloneInstalled and isWinFspInstalled in manager
+- Page 3 (guide)
+- QWizard
+  - wizard itself
+  - start routine
+  - start button
+
 ## PRIORITY 1
 Tests and bugs that should be fixed.
 

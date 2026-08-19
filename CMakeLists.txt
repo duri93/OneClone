@@ -24,6 +24,9 @@ qt_add_executable(OneClone
     resources/main.rc
     src/model/LogFile.h src/model/LogFile.cpp
     src/model/RemotesAutocompleter.h src/model/RemotesAutocompleter.cpp
+    src/wizard/SetupWizardPage1.h src/wizard/SetupWizardPage1.cpp src/wizard/SetupWizardPage1.ui
+    src/wizard/SetupWizardPage2.h src/wizard/SetupWizardPage2.cpp src/wizard/SetupWizardPage2.ui
+
 )
 
 target_link_libraries(OneClone

@@ -4,6 +4,8 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QJsonArray>
+#include <QStandardPaths>
+#include <QSettings>
 
 Manager::Manager(QObject* parent) : QObject(parent){
     m_filePath = QDir(QCoreApplication::applicationDirPath())
@@ -131,3 +133,65 @@ bool Manager::save() const
     return true;
 }
 
+bool Manager::isRcloneInstalled(){
+    QString path = shared()->rclonePath();
+
+    QFileInfo fi(path);
+    return (fi.exists() && fi.isExecutable()) || !QStandardPaths::findExecutable(path).isEmpty();
+}
+bool Manager::isWinFspInstalled(){
+#ifdef Q_OS_WIN
+    // Method 1: Check registry
+    QSettings reg("HKEY_LOCAL_MACHINE\\SOFTWARE\\WinFsp", QSettings::NativeFormat);
+    if (!reg.allKeys().isEmpty()){
+        return true;
+    }
+
+    // Method 2: Check default install path
+    QStringList paths = {
+        "C:/Program Files (x86)/WinFsp",
+        "C:/Program Files/WinFsp"
+    };
+    for (const QString &path : paths) {
+        if (QDir(path).exists())
+            return true;
+    }
+    return false;
+#else
+    return false; // WinFsp is Windows-only
+#endif
+}
+bool Manager::openRcloneConf(){
+    QString rclonePath = shared()->rclonePath();
+
+#if defined(Q_OS_WIN)
+    QString program = "cmd.exe";
+    QStringList arguments;
+    arguments << "/c" << "start" << "rclone config" << "/wait" << rclonePath << "config";
+    return QProcess::startDetached(program, arguments);
+#elif defined(Q_OS_LINUX)
+    // set up terminals lookup table
+    QString shellCmd = QString("'%1' config; exit").arg(rclonePath);
+
+    struct TerminalCmd { QString exe; QStringList args; };
+    const QList<TerminalCmd> terminals = {
+                                           { "x-terminal-emulator", { "-e", "bash", "-c", shellCmd } }, // Debian/Ubuntu default alias
+                                           { "gnome-terminal",      { "--", "bash", "-c", shellCmd } },
+                                           { "konsole",             { "-e", "bash", "-c", shellCmd } },
+                                           { "xfce4-terminal",      { "-x", "bash", "-c", shellCmd } },
+                                           { "xterm",               { "-e", "bash", "-c", shellCmd } },
+                                           };
+
+    // start forst found terminal and run rclone config
+    for (const auto &term : terminals) {
+        if (!QStandardPaths::findExecutable(term.exe).isEmpty())
+            return startDetachedClean(term.exe, term.args);
+    }
+
+    statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
+    return false;
+#else
+    statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
+    return false;
+#endif
+}

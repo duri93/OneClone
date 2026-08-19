@@ -13,8 +13,8 @@ public:
     // Returns nullptr if the rclone lookup fails.
     static QCompleter *setup(QLineEdit *lineEdit, const QString &rclonePath);
 
-private:
     static QStringList listRemotes(const QString &rclonePath);
+private:
     static QStringList listDirs(const QString &rclonePath, const QString &remote);
     static QStringList buildEntries(const QString &rclonePath);
 

@@ -25,9 +25,14 @@ public:
     void removeJob(Job* job);
     void removeJob(QString id);
 
-    // general
+    // general settings
     bool load();
     bool save() const;
+
+    // prerequisite checks
+    bool isRcloneInstalled();
+    bool isWinFspInstalled();
+    bool openRcloneConf();
 signals:
     void added(Job* newJob);
     void removed(const QString& jobId);
