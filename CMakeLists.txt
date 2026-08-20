@@ -20,6 +20,7 @@ qt_add_executable(OneClone
     src/model/UpdateManager.h           src/model/UpdateManager.cpp
     src/model/LogFile.h                 src/model/LogFile.cpp
     src/model/RemotesAutocompleter.h    src/model/RemotesAutocompleter.cpp
+    src/model/RemotesLookupWorker.h     src/model/RemotesLookupWorker.cpp
 
     src/view/MainWindow.h               src/view/MainWindow.cpp             src/view/MainWindow.ui
     src/view/JobWidget.h                src/view/JobWidget.cpp              src/view/JobWidget.ui

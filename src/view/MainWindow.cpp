@@ -293,7 +293,8 @@ void MainWindow::openDetails(Job* job){
 
     // show autocomplete
     QString rclonePath = m_manager.shared()->rclonePath();
-    RemotesAutocompleter::setup(ui->detailsRemote, rclonePath);
+
+    RemotesAutocompleter::attach(ui->detailsRemote, rclonePath);
 
     // show details tab
     ui->tabWidget->setCurrentWidget(ui->tabDetails);

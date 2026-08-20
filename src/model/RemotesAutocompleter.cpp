@@ -1,127 +1,105 @@
-// RemotesList.cpp
+// RemotesAutocompleter.cpp
 
 #include "RemotesAutocompleter.h"
 
+#include "RemotesLookupWorker.h"
+#include <QLoggingCategory>
 #include <QProcess>
 #include <QRegularExpression>
-#include <QStringList>
+#include <QStringListModel>
 
-bool RemotesAutocompleter::runRclone(const QString &rclonePath, const QStringList &arguments, QString *stdoutText){
-#ifdef Q_OS_WIN
-    QProcess process;
-    process.start(rclonePath, arguments);
+// ---------------------------------------------------------------------------
+// RemotesAutocompleter
+// ---------------------------------------------------------------------------
 
-    if (!process.waitForStarted())
-        return false;
-
-    if (!process.waitForFinished(-1))
-        return false;
-
-    if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0){
-        return false;
-    }
-
-    *stdoutText = QString::fromLocal8Bit(process.readAllStandardOutput());
-    return true;
-#else
-    Q_UNUSED(rclonePath)
-    Q_UNUSED(arguments)
-    Q_UNUSED(stdoutText)
-
-    return false;
-#endif
-}
-
-QStringList RemotesAutocompleter::listRemotes(const QString &rclonePath){
-    QString output;
-
-    if (!runRclone(rclonePath, {"listremotes"}, &output))
-        return {};
-
-    QStringList remotes;
-
-    for (const QString &line : output.split('\n', Qt::SkipEmptyParts)) {
-        QString remote = line.trimmed();
-
-        if (remote.endsWith(':'))
-            remote.chop(1);
-
-        if (!remote.isEmpty())
-            remotes.append(remote);
-    }
-
-    return remotes;
-}
-
-QStringList RemotesAutocompleter::listDirs(const QString &rclonePath, const QString &remote){
-    QString output;
-
-    if (!runRclone(rclonePath, {"lsd", remote + ":"}, &output)) return {};
-
-    QStringList dirs;
-
-    static const QRegularExpression re(R"(^\s*\S+\s+\S+\s+\S+\s+\S+\s+(.*?)\s*$)");
-
-    for (const QString &line : output.split('\n', Qt::SkipEmptyParts)) {
-        const QString trimmed = line.trimmed();
-
-        QRegularExpressionMatch match = re.match(trimmed);
-
-        if (!match.hasMatch())
-            continue;
-
-        const QString dir = match.captured(1).trimmed();
-
-        if (!dir.isEmpty())
-            dirs.append(dir);
-    }
-
-    return dirs;
-}
-
-QStringList RemotesAutocompleter::buildEntries(const QString &rclonePath){
-    QStringList entries;
-
-    const QStringList remotes = listRemotes(rclonePath);
-
-    for (const QString &remote : remotes) {
-        const QStringList dirs = listDirs(rclonePath, remote);
-
-        for (const QString &dir : dirs) {
-            entries.append(remote + ":" + dir);
-        }
-    }
-
-    entries.removeDuplicates();
-    entries.sort(Qt::CaseInsensitive);
-
-    return entries;
-}
-
-QCompleter *RemotesAutocompleter::setup(QLineEdit *lineEdit, const QString &rclonePath){
-#ifdef Q_OS_WIN
-
+RemotesAutocompleter *RemotesAutocompleter::attach(QLineEdit *lineEdit, const QString &rclonePath)
+{
     if (!lineEdit)
         return nullptr;
 
-    const QStringList entries = buildEntries(rclonePath);
+    // Parented to lineEdit: destroyed automatically along with it.
+    return new RemotesAutocompleter(lineEdit, rclonePath, lineEdit);
+}
 
-    auto *completer = new QCompleter(entries, lineEdit);
+RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, QString rclonePath, QObject *parent)
+    : QObject(parent)
+    , m_lineEdit(lineEdit)
+{
+    // Wire up the completer immediately, with an empty model, so the line
+    // edit is fully usable from the start. Entries get added to m_model as
+    // the background lookup reports them in.
+    m_model = new QStringListModel(this);
 
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    completer->setFilterMode(Qt::MatchStartsWith);
-    completer->setCompletionMode(QCompleter::PopupCompletion);
+    m_completer = new QCompleter(this);
+    m_completer->setModel(m_model);
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_completer->setFilterMode(Qt::MatchStartsWith);
+    m_completer->setCompletionMode(QCompleter::PopupCompletion);
 
-    lineEdit->setCompleter(completer);
+    if (lineEdit)
+        lineEdit->setCompleter(m_completer);
 
-    return completer;
+#ifdef Q_OS_WIN
+    auto *worker = new RemotesLookupWorker(std::move(rclonePath));
+    worker->moveToThread(&m_workerThread);
 
+    connect(&m_workerThread, &QThread::started, worker, &RemotesLookupWorker::run);
+    connect(worker, &RemotesLookupWorker::remotesReady, this, &RemotesAutocompleter::onRemotesReady);
+    connect(worker, &RemotesLookupWorker::dirsReady, this, &RemotesAutocompleter::onDirsReady);
+    connect(worker, &RemotesLookupWorker::finished, this, &RemotesAutocompleter::lookupFinished);
+    connect(worker, &RemotesLookupWorker::finished, &m_workerThread, &QThread::quit);
+    connect(&m_workerThread, &QThread::finished, worker, &QObject::deleteLater);
+
+    m_workerThread.start();
 #else
-
-    Q_UNUSED(lineEdit)
     Q_UNUSED(rclonePath)
-
-    return nullptr;
-
 #endif
+}
+
+RemotesAutocompleter::~RemotesAutocompleter()
+{
+    qDebug() << "DESTROY";
+    m_workerThread.quit();
+    m_workerThread.wait();
+}
+
+void RemotesAutocompleter::onRemotesReady(const QStringList &remotes)
+{
+    QStringList entries;
+    entries.reserve(remotes.size());
+
+    for (const QString &remote : remotes)
+        entries.append(remote + ":");
+
+    addEntries(entries);
+}
+
+void RemotesAutocompleter::onDirsReady(const QString &remote, const QStringList &dirs)
+{
+    QStringList entries;
+    entries.reserve(dirs.size());
+
+    for (const QString &dir : dirs)
+        entries.append(remote + ":" + dir);
+
+    addEntries(entries);
+}
+
+void RemotesAutocompleter::addEntries(const QStringList &newEntries)
+{
+    if (newEntries.isEmpty())
+        return;
+
+    m_entries.append(newEntries);
+    m_entries.removeDuplicates();
+    m_entries.sort(Qt::CaseInsensitive);
+
+    qDebug() << m_entries;
+
+    m_model->setStringList(m_entries);
+
+    if (m_lineEdit && m_lineEdit->hasFocus()) {
+        m_completer->setCompletionPrefix(m_lineEdit->text());
+        m_completer->complete();
+    }
 }
