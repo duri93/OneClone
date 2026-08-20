@@ -1,12 +1,8 @@
 #pragma once
-
-#include <QObject>
-#include <QString>
 #include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QTemporaryDir>
-#include <QFile>
 #include <QPointer>
+#include <QFile>
+class QTemporaryDir;
 
 /**
  * GitHubUpdater

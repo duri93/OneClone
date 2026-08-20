@@ -1,5 +1,5 @@
 #include "SetupWizardPage2.h"
-
+#include "../model/Manager.h"
 #include <QProcess>
 
 SetupWizardPage2::SetupWizardPage2(Manager* manager, QWidget* parent)

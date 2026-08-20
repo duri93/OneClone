@@ -1,13 +1,14 @@
 #include "src/view/ui_MainWindow.h"
 #include "MainWindow.h"
+#include "JobWidget.h"
 #include "JobListWidget.h"
-
+#include "../model/Job.h"
 #include "../model/Config.h"
 #include "../model/UpdateManager.h"
 #include "../model/RemotesAutocompleter.h"
 #include "../model/LocalPathAutocompleter.h"
 #include "../wizard/SetupWizard.h"
-
+#include "../wizard/SetupWizard.h"
 #include <QFileDialog>
 #include <QCloseEvent>
 #include <QUuid>
@@ -20,6 +21,8 @@
 #include <QScreen>
 #include <QStandardPaths>
 #include <QProcess>
+#include <QString>
+#include <QMenu>
 
 // ---------------------------------------------------------------------------
 // Constructor / Destructor

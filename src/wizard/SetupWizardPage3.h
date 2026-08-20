@@ -1,8 +1,6 @@
 #pragma once
-
-#include <QWizardPage>
-
 #include "ui_SetupWizardPage3.h"
+#include <QWizardPage>
 
 // Page 3: intentionally empty for now.
 class SetupWizardPage3 : public QWizardPage {

@@ -1,12 +1,13 @@
 #include "Manager.h"
 #include "Config.h"
-
 #include <QCoreApplication>
 #include <QDir>
 #include <QJsonArray>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QDesktopServices>
+#include "Job.h"
+#include <QProcess>
 
 Manager::Manager(QObject* parent) : QObject(parent){
     m_filePath = QDir(QCoreApplication::applicationDirPath())

@@ -1,15 +1,14 @@
 #pragma once
-
-#include "../model/Job.h"
 #include "../model/Manager.h"
-#include "JobWidget.h"
-#include "../wizard/SetupWizard.h"
-
 #include <QMainWindow>
-#include <QString>
 #include <QSystemTrayIcon>
-#include <QMenu>
-#include <QAction>
+
+class Job;
+class JobWidget;
+class SetupWizard;
+class QString;
+class QMenu;
+class QAction;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

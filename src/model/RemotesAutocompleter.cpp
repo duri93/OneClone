@@ -1,5 +1,3 @@
-// RemotesAutocompleter.cpp
-
 #include "RemotesAutocompleter.h"
 
 #include "RemotesLookupWorker.h"
@@ -7,6 +5,8 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QStringListModel>
+#include <QCompleter>
+#include <QLineEdit>
 
 // ---------------------------------------------------------------------------
 // RemotesAutocompleter

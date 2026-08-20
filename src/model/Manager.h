@@ -1,10 +1,10 @@
 #pragma once
-
-#include "Job.h"
 #include "SharedSettings.h"
-
 #include <memory>
 #include <QObject>
+
+class Job;
+class QProcess;
 
 class Manager : public QObject
 {

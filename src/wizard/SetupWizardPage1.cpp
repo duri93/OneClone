@@ -1,9 +1,9 @@
 #include "SetupWizardPage1.h"
 #include "../model/Manager.h"
 #include "../model/LocalPathAutocompleter.h"
-
 #include <QFileDialog>
 #include <QDir>
+#include <QTimer>
 
 SetupWizardPage1::SetupWizardPage1(Manager* manager, QWidget* parent)
     : QWizardPage(parent), m_manager(manager), m_timer(new QTimer(this))

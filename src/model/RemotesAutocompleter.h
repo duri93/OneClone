@@ -1,14 +1,10 @@
-// RemotesAutocompleter.h
-
 #pragma once
-
-#include <QCompleter>
-#include <QLineEdit>
 #include <QObject>
 #include <QPointer>
-#include <QStringList>
 #include <QThread>
 
+class QLineEdit;
+class QCompleter;
 class QStringListModel;
 class RemotesLookupWorker;
 

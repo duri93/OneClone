@@ -1,14 +1,13 @@
 #pragma once
-
-#include "SetupWizardPage1.h"
-#include "SetupWizardPage2.h"
-#include "SetupWizardPage3.h"
-#include "../model/Manager.h"
-
-#include <QWizard>
-#include <QWidget>
 #include <QObject>
+#include <QWizard>
 #include <QPointer>
+
+class Manager;
+class QWizard;
+class SetupWizardPage1;
+class SetupWizardPage2;
+class SetupWizardPage3;
 
 // Owns and drives a QWizard, without being one itself. This lets us
 // manage the wizard's lifetime explicitly (see the .cpp) instead of

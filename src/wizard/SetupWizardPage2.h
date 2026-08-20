@@ -1,8 +1,8 @@
 #pragma once
+#include "ui_SetupWizardPage2.h"
 #include <QWizardPage>
 
-#include "../model/Manager.h"
-#include "ui_SetupWizardPage2.h"
+class Manager;
 
 // Page 2: shows configured rclone remotes, lets the user open the
 // config console or the raw config file. The remotes list refreshes

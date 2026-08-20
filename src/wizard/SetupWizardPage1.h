@@ -1,11 +1,9 @@
 #pragma once
-
-#include <QWizardPage>
-#include <QTimer>
-
 #include "ui_SetupWizardPage1.h"
+#include <QWizardPage>
 
 class Manager;
+class QTimer;
 
 // Page 1: checks for rclone / WinFsp, lets the user point at the
 // rclone executable. Polls while visible; the poll stops as soon as
