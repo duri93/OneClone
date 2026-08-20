@@ -335,7 +335,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabJobs">
        <attribute name="title">
@@ -537,7 +537,10 @@
           <item>
            <widget class="QLineEdit" name="detailsLocal">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For mount jobs, specify either:&lt;/p&gt;&lt;p&gt;- a local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;/p&gt;&lt;p&gt;- a drive letter (e.g., &amp;quot;E:\&amp;quot;)&lt;/p&gt;&lt;p&gt;- a network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;For copy and sync jobs, specify a folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For mount jobs, specify either:&lt;br/&gt;- a local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For copy and sync jobs, specify a folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="placeholderText">
+             <string>Local folder, new drive (e.g., X:\) or network (e.g., \\allas\folder)</string>
             </property>
            </widget>
           </item>

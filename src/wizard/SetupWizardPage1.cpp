@@ -1,5 +1,6 @@
 #include "SetupWizardPage1.h"
 #include "../model/Manager.h"
+#include "../model/LocalPathAutocompleter.h"
 
 #include <QFileDialog>
 #include <QDir>
@@ -9,6 +10,10 @@ SetupWizardPage1::SetupWizardPage1(Manager* manager, QWidget* parent)
 {
     ui.setupUi(this);
     ui.rclonePath->setText(m_manager->shared()->rclonePath());
+
+    LocalPathAutocompleter::attach(ui.rclonePath,
+                                   LocalPathAutocompleter::Mode::FoldersAndFiles,
+                                   {"rclone.exe"});
 
     connect(ui.rclonePathButton, &QToolButton::clicked, this, [this](){
         QString path = QFileDialog::getOpenFileName(

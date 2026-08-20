@@ -58,7 +58,6 @@ RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, QString rclonePa
 
 RemotesAutocompleter::~RemotesAutocompleter()
 {
-    qDebug() << "DESTROY";
     m_workerThread.quit();
     m_workerThread.wait();
 }
@@ -93,8 +92,6 @@ void RemotesAutocompleter::addEntries(const QStringList &newEntries)
     m_entries.append(newEntries);
     m_entries.removeDuplicates();
     m_entries.sort(Qt::CaseInsensitive);
-
-    qDebug() << m_entries;
 
     m_model->setStringList(m_entries);
 

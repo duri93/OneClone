@@ -4,7 +4,6 @@
 
 ## PRIORITY 1
 Tests and bugs that should be fixed.
-- async autocomplete
 - check and fix tooltips everywhere
 - rework includes
 - merge branches

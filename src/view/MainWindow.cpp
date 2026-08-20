@@ -5,6 +5,7 @@
 #include "../model/Config.h"
 #include "../model/UpdateManager.h"
 #include "../model/RemotesAutocompleter.h"
+#include "../model/LocalPathAutocompleter.h"
 #include "../wizard/SetupWizard.h"
 
 #include <QFileDialog>
@@ -57,6 +58,9 @@ MainWindow::MainWindow(QWidget* parent)
 
     // ---- Settings tab ----
     ui->settingsAdvancedScrollarea->hide();
+    LocalPathAutocompleter::attach(ui->settingsRclone,
+                                   LocalPathAutocompleter::Mode::FoldersAndFiles,
+                                   {"rclone.exe"});
 
     loadSettingsToUi();
     connect(ui->settingsAdvanced,     &QCheckBox::checkStateChanged, this, &MainWindow::onSettingsAdvanced);
@@ -75,6 +79,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     // ---- Details tab ----
     ui->detailsOutput->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
+    LocalPathAutocompleter::attach(ui->detailsLocal);
 
     connect(ui->detailsOpenLog,        &QPushButton::clicked, this, &MainWindow::onDetailsOpenLog);
     connect(ui->detailsSave,           &QPushButton::clicked, this, &MainWindow::onDetailsSave);
