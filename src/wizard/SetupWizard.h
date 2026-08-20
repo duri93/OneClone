@@ -1,15 +1,36 @@
-#ifndef SETUPWIZARD_H
-#define SETUPWIZARD_H
+#pragma once
 
-#include "..\model\Manager.h"
+#include "SetupWizardPage1.h"
+#include "SetupWizardPage2.h"
+#include "SetupWizardPage3.h"
+#include "../model/Manager.h"
+
 #include <QWizard>
+#include <QWidget>
+#include <QObject>
+#include <QPointer>
 
-class SetupWizard : public QWizard{
+// Owns and drives a QWizard, without being one itself. This lets us
+// manage the wizard's lifetime explicitly (see the .cpp) instead of
+// relying on the wizard object outliving whoever created it.
+class SetupWizard : public QObject {
     Q_OBJECT
 public:
-    explicit SetupWizard(Manager *manager, QObject *parent = nullptr);
+    explicit SetupWizard(Manager* manager, QWidget* parent = nullptr);
+    ~SetupWizard();
 
-signals:
+    void show();
+
+private:
+    // QPointer so we can safely tell, in the destructor, whether the
+    // wizard has already deleted itself (WA_DeleteOnClose) or not.
+    QPointer<QWizard> m_wizard;
+
+    // Owned by m_wizard via QWizard::addPage(); kept here only for
+    // reference, never deleted manually.
+    SetupWizardPage1* m_page1 = nullptr;
+    SetupWizardPage2* m_page2 = nullptr;
+    SetupWizardPage3* m_page3 = nullptr;
+
+    Manager* m_manager = nullptr;
 };
-
-#endif // SETUPWIZARD_H

@@ -32,7 +32,7 @@ public:
     // prerequisite checks
     bool isRcloneInstalled();
     bool isWinFspInstalled();
-    bool openRcloneConf();
+    QProcess* openRcloneConf();
     bool openRcloneConfFile();
     QString listRCloneRemotes();
 signals:

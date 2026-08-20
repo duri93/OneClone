@@ -162,39 +162,24 @@ bool Manager::isWinFspInstalled(){
     return false; // WinFsp is Windows-only
 #endif
 }
-bool Manager::openRcloneConf(){
+QProcess* Manager::openRcloneConf(){
     QString rclonePath = shared()->rclonePath();
 
-#if defined(Q_OS_WIN)
+    QProcess* process = new QProcess(this); // parented to Manager
+    // auto-cleanup once the process is done, regardless of who else
+    // is listening to ::finished()
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), process, &QProcess::deleteLater);
+
     QString program = "cmd.exe";
     QStringList arguments;
     arguments << "/c" << "start" << "rclone config" << "/wait" << rclonePath << "config";
-    return QProcess::startDetached(program, arguments);
-#elif defined(Q_OS_LINUX)
-    // set up terminals lookup table
-    QString shellCmd = QString("'%1' config; exit").arg(rclonePath);
 
-    struct TerminalCmd { QString exe; QStringList args; };
-    const QList<TerminalCmd> terminals = {
-                                           { "x-terminal-emulator", { "-e", "bash", "-c", shellCmd } }, // Debian/Ubuntu default alias
-                                           { "gnome-terminal",      { "--", "bash", "-c", shellCmd } },
-                                           { "konsole",             { "-e", "bash", "-c", shellCmd } },
-                                           { "xfce4-terminal",      { "-x", "bash", "-c", shellCmd } },
-                                           { "xterm",               { "-e", "bash", "-c", shellCmd } },
-                                           };
-
-    // start forst found terminal and run rclone config
-    for (const auto &term : terminals) {
-        if (!QStandardPaths::findExecutable(term.exe).isEmpty())
-            return startDetachedClean(term.exe, term.args);
+    process->start(program, arguments);
+    if (!process->waitForStarted()) {
+        process->deleteLater();
+        return nullptr;
     }
-
-    statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
-    return false;
-#else
-    statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
-    return false;
-#endif
+    return process;
 }
 
 QString Manager::listRCloneRemotes(){

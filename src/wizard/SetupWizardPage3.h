@@ -1,22 +1,15 @@
-#ifndef SETUPWIZARDPAGE3_H
-#define SETUPWIZARDPAGE3_H
+#pragma once
 
 #include <QWizardPage>
 
-namespace Ui {
-class SetupWizardPage3;
-}
+#include "ui_SetupWizardPage3.h"
 
-class SetupWizardPage3 : public QWizardPage
-{
+// Page 3: intentionally empty for now.
+class SetupWizardPage3 : public QWizardPage {
     Q_OBJECT
-
 public:
-    explicit SetupWizardPage3(QWidget *parent = nullptr);
-    ~SetupWizardPage3();
+    explicit SetupWizardPage3(QWidget* parent = nullptr);
 
 private:
-    Ui::SetupWizardPage3 *ui;
+    Ui::SetupWizardPage3 ui;
 };
-
-#endif // SETUPWIZARDPAGE3_H

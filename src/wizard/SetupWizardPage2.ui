@@ -6,18 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
-    <height>471</height>
+    <width>500</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>OneClone setup (2/3)</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="mainLabel">
      <property name="text">
-      <string>RClone needs to be set up with the remote you want to connect to. Currently set up remotes:</string>
+      <string>RClone needs to be set up with the remote(s) you want to connect to. Currently, your RClone is set up with these remotes:</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -26,45 +26,30 @@
    </item>
    <item>
     <widget class="QLabel" name="remotes">
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
      <property name="text">
-      <string>allas:</string>
+      <string>[searching...]</string>
+     </property>
+     <property name="margin">
+      <number>16</number>
      </property>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QPushButton" name="configFileButton">
+       <property name="text">
+        <string>Open RClone's rclone.conf file</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="configConsoleButton">
        <property name="text">
         <string>Launch RClone config console</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../resources/resources.qrc">
-         <normaloff>:/icons/open.svg</normaloff>:/icons/open.svg</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QPushButton" name="configFileButton">
-       <property name="text">
-        <string>Open RClone's config.ini file</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../resources/resources.qrc">
-         <normaloff>:/icons/open.svg</normaloff>:/icons/open.svg</iconset>
        </property>
       </widget>
      </item>
@@ -84,23 +69,40 @@
     </layout>
    </item>
    <item>
-    <widget class="Line" name="line">
+    <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QFrame" name="line">
+     <property name="frameShape">
+      <enum>QFrame::Shape::HLine</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QLabel" name="docsLabel">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;See RClone's official documentation here.&lt;/p&gt;&lt;p&gt;Detailed instructions to set up Allas are here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;See RClone's official documentation &lt;a href=&quot;https://rclone.org/commands/rclone_config/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#27bf73;&quot;&gt;here&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Detailed instructions to set up Allas are &lt;a href=&quot;https://github.com/duri93/OneClone/blob/main/ALLAS_SETUP.md&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#27bf73;&quot;&gt;here&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../resources/resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

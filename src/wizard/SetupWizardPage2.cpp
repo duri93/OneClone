@@ -1,31 +1,38 @@
 #include "SetupWizardPage2.h"
-#include "ui_SetupWizardPage2.h"
 
-SetupWizardPage2::SetupWizardPage2(Manager* manager, QWidget *parent) : QWizardPage(parent)
-    , ui(new Ui::SetupWizardPage2)
+#include <QProcess>
+
+SetupWizardPage2::SetupWizardPage2(Manager* manager, QWidget* parent)
+    : QWizardPage(parent), m_manager(manager)
 {
-    ui->setupUi(this);
-    this->setTitle("2. Setup RClone remote connection");
+    ui.setupUi(this);
 
-    m_manager = manager;
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/icons/open.svg"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
+    ui.configFileButton->setIcon(icon);
+    ui.configConsoleButton->setIcon(icon);
 
-    // buttons
-    connect(ui->configConsoleButton, &QPushButton::clicked, this, [this](){m_manager->openRcloneConf();});
-    connect(ui->configFileButton, &QPushButton::clicked, this, [this](){m_manager->openRcloneConfFile();});
+    connect(ui.configFileButton, &QPushButton::clicked, this, [this](){
+        m_manager->openRcloneConfFile();
+    });
 
-    // remotes (check and update every second)
-    m_timer = new QTimer();
-    m_timer->setInterval(2000);
-    connect(m_timer, &QTimer::timeout, this, &SetupWizardPage2::listRemotes);
-    m_timer->start();
+    connect(ui.configConsoleButton, &QPushButton::clicked, this, [this](){
+        // Manager::openRcloneConfigProcess() hands back the running
+        // QProcess (or nullptr if it failed to start) so we can react
+        // when the user closes the config console, instead of polling.
+        QProcess* process = m_manager->openRcloneConf();
+        if (!process) {
+            return;
+        }
+        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                this, &SetupWizardPage2::refreshRemotes);
+    });
 }
 
-SetupWizardPage2::~SetupWizardPage2()
-{
-    m_timer->stop();
-    delete ui;
+void SetupWizardPage2::initializePage(){
+    refreshRemotes();
 }
 
-void SetupWizardPage2::listRemotes(){
-    ui->remotes->setText(m_manager->listRCloneRemotes());
+void SetupWizardPage2::refreshRemotes(){
+    ui.remotes->setText(m_manager->listRCloneRemotes());
 }

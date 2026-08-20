@@ -42,7 +42,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     // ---- Setup wizard, errors, warnings and messages ----
     if(dryRun){
-        SetupWizard* wizard = new SetupWizard(&m_manager);
+        m_wizard = new SetupWizard(&m_manager, this);
+        m_wizard->show();
     }else{
         ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
         ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
@@ -56,12 +57,16 @@ MainWindow::MainWindow(QWidget* parent)
 
     // ---- Settings tab ----
     ui->settingsAdvancedScrollarea->hide();
+
     loadSettingsToUi();
     connect(ui->settingsAdvanced,     &QCheckBox::checkStateChanged, this, &MainWindow::onSettingsAdvanced);
     connect(ui->settingsSave,         &QPushButton::clicked, this, &MainWindow::onSettingsSave);
     connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
     connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &MainWindow::onRcloneConfClicked);
-    connect(ui->settingsWizard,       &QPushButton::clicked, this, [this](){new SetupWizard(&m_manager);});
+    connect(ui->settingsWizard,       &QPushButton::clicked, this, [this](){
+        m_wizard = new SetupWizard(&m_manager);
+        m_wizard->show();
+    });
 
     // ---- List tab ----
     // populated when adding jobs

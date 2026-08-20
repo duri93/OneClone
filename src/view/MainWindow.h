@@ -3,6 +3,7 @@
 #include "../model/Job.h"
 #include "../model/Manager.h"
 #include "JobWidget.h"
+#include "../wizard/SetupWizard.h"
 
 #include <QMainWindow>
 #include <QString>
@@ -77,6 +78,9 @@ private:
     QVector<JobWidget*> m_jobWidgets;
 
 private:
+    // setup wizard
+    SetupWizard* m_wizard = nullptr;
+
     // list
     JobWidget* findOrCreateJobWidget(Job* job);
 

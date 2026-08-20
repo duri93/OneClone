@@ -12,23 +12,26 @@ set(CMAKE_AUTORCC ON)
 qt_add_executable(OneClone
     WIN32 MACOSX_BUNDLE
     src/main.cpp
+
     src/model/Config.h
-    src/model/SharedSettings.h      src/model/SharedSettings.cpp
-    src/model/Job.h                 src/model/Job.cpp
-    src/model/Manager.h             src/model/Manager.cpp
-    src/model/UpdateManager.h       src/model/UpdateManager.cpp
-    src/view/MainWindow.h           src/view/MainWindow.cpp             src/view/MainWindow.ui
-    src/view/JobWidget.h            src/view/JobWidget.cpp              src/view/JobWidget.ui
-    src/view/JobListWidget.h        src/view/JobListWidget.cpp
+    src/model/SharedSettings.h          src/model/SharedSettings.cpp
+    src/model/Job.h                     src/model/Job.cpp
+    src/model/Manager.h                 src/model/Manager.cpp
+    src/model/UpdateManager.h           src/model/UpdateManager.cpp
+    src/model/LogFile.h                 src/model/LogFile.cpp
+    src/model/RemotesAutocompleter.h    src/model/RemotesAutocompleter.cpp
+
+    src/view/MainWindow.h               src/view/MainWindow.cpp             src/view/MainWindow.ui
+    src/view/JobWidget.h                src/view/JobWidget.cpp              src/view/JobWidget.ui
+    src/view/JobListWidget.h            src/view/JobListWidget.cpp
+
+    src/wizard/SetupWizard.h            src/wizard/SetupWizard.cpp
+    src/wizard/SetupWizardPage1.h       src/wizard/SetupWizardPage1.cpp     src/wizard/SetupWizardPage1.ui
+    src/wizard/SetupWizardPage2.h       src/wizard/SetupWizardPage2.cpp     src/wizard/SetupWizardPage2.ui
+    src/wizard/SetupWizardPage3.h       src/wizard/SetupWizardPage3.cpp     src/wizard/SetupWizardPage3.ui
+
     resources/resources.qrc
     resources/main.rc
-    src/model/LogFile.h src/model/LogFile.cpp
-    src/model/RemotesAutocompleter.h src/model/RemotesAutocompleter.cpp
-    src/wizard/SetupWizardPage1.h src/wizard/SetupWizardPage1.cpp src/wizard/SetupWizardPage1.ui
-    src/wizard/SetupWizardPage2.h src/wizard/SetupWizardPage2.cpp src/wizard/SetupWizardPage2.ui
-    src/wizard/SetupWizardPage3.h src/wizard/SetupWizardPage3.cpp src/wizard/SetupWizardPage3.ui
-    src/wizard/SetupWizard.h src/wizard/SetupWizard.cpp
-
 )
 
 target_link_libraries(OneClone

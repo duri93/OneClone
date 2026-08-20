@@ -1,16 +1,12 @@
 # IMPLEMENTATION ROADMAP
 
-TODO
-- Page 2
-  - link to allas guide
-  - link to rclone docs
-- Page 3 (guide)
+
 
 ## PRIORITY 1
 Tests and bugs that should be fixed.
-- test wizard and wizard button
-- test autocomplete (again)
+- async autocomplete
 - merge branches
+- version bump
 
 ## PRIORITY 2
 Additional small features.
