@@ -5,6 +5,7 @@
 
 class Manager;
 class QWizard;
+class SetupWizardPage0;
 class SetupWizardPage1;
 class SetupWizardPage2;
 class SetupWizardPage3;
@@ -27,6 +28,7 @@ private:
 
     // Owned by m_wizard via QWizard::addPage(); kept here only for
     // reference, never deleted manually.
+    SetupWizardPage0* m_page0 = nullptr;
     SetupWizardPage1* m_page1 = nullptr;
     SetupWizardPage2* m_page2 = nullptr;
     SetupWizardPage3* m_page3 = nullptr;

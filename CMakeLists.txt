@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(OneClone LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg Network)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg SvgWidgets Network)
 
 qt_standard_project_setup()
 
@@ -28,6 +28,7 @@ qt_add_executable(OneClone
     src/view/JobListWidget.h            src/view/JobListWidget.cpp
 
     src/wizard/SetupWizard.h            src/wizard/SetupWizard.cpp
+    src/wizard/SetupWizardPage0.h     src/wizard/SetupWizardPage0.cpp     src/wizard/SetupWizardPage0.ui
     src/wizard/SetupWizardPage1.h       src/wizard/SetupWizardPage1.cpp     src/wizard/SetupWizardPage1.ui
     src/wizard/SetupWizardPage2.h       src/wizard/SetupWizardPage2.cpp     src/wizard/SetupWizardPage2.ui
     src/wizard/SetupWizardPage3.h       src/wizard/SetupWizardPage3.cpp     src/wizard/SetupWizardPage3.ui
@@ -42,6 +43,7 @@ target_link_libraries(OneClone
         Qt::Widgets
         Qt::Network
         Qt::Svg
+        Qt::SvgWidgets
 )
 
 install(TARGETS OneClone

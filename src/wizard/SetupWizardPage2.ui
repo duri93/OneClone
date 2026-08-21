@@ -41,6 +41,9 @@
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
       <widget class="QPushButton" name="configFileButton">
+       <property name="toolTip">
+        <string>Open RClone's configuration file with notepad for manual editing</string>
+       </property>
        <property name="text">
         <string>Open RClone's rclone.conf file</string>
        </property>
@@ -48,6 +51,9 @@
      </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="configConsoleButton">
+       <property name="toolTip">
+        <string>Launch &quot;rclone config&quot; command on your console</string>
+       </property>
        <property name="text">
         <string>Launch RClone config console</string>
        </property>

@@ -335,7 +335,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tabJobs">
        <attribute name="title">
@@ -480,7 +480,7 @@
         <item row="1" column="1">
          <widget class="QComboBox" name="detailsType">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select job type:&lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt;: connect the remote folder to this pc and access it like a normal folder;&lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;copy&lt;/span&gt;: copy files between two folders;&lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;sync&lt;/span&gt;: ensure two folders are exacly the same by copying new and modified files, and deleting files in the destination folder if they're not present in the source folder. This is often referred to as one-way synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select job type:&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt;: connect the remote folder to this pc and access it like a normal folder;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;copy&lt;/span&gt;: copy files between two folders;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;sync&lt;/span&gt;: ensure two folders are exacly the same by copying new and modified files, and deleting files in the destination folder if they're not present in the source folder. This is often referred to as one-way synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="currentIndex">
            <number>0</number>
@@ -563,14 +563,14 @@
         <item row="5" column="1">
          <widget class="QLineEdit" name="detailsRemote">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="6" column="1">
          <widget class="QCheckBox" name="detailsReadOnly">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;NOTE 1: this is for mount jobs only, not relevant for sync jobs.&lt;/p&gt;&lt;p&gt;NOTE 2: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only&lt;/p&gt;&lt;p&gt;NOTE 1: this is for mount jobs only, not relevant for sync jobs.&lt;/p&gt;&lt;p&gt;NOTE 2: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Read only</string>
@@ -679,6 +679,9 @@
         </item>
         <item>
          <widget class="QCheckBox" name="settingsAutostart">
+          <property name="toolTip">
+           <string>Make OneClone start automatically with your pc.</string>
+          </property>
           <property name="text">
            <string>Launch OneClone on Windows start up</string>
           </property>
@@ -686,6 +689,9 @@
         </item>
         <item>
          <widget class="QCheckBox" name="settingsAdvanced">
+          <property name="toolTip">
+           <string>Show advanced RClone's settings.</string>
+          </property>
           <property name="text">
            <string>Show advanced settings</string>
           </property>
@@ -935,6 +941,9 @@
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="toolTip">
+             <string>Run &quot;rclone config&quot; command to let you set up rclone.</string>
+            </property>
             <property name="text">
              <string>Open rclone conf</string>
             </property>
@@ -959,6 +968,9 @@
           </item>
           <item row="1" column="0">
            <widget class="QPushButton" name="settingsWizard">
+            <property name="toolTip">
+             <string>Start OneClone's setup wizard.</string>
+            </property>
             <property name="text">
              <string>Run Setup Wizard</string>
             </property>
@@ -975,6 +987,9 @@
               <width>0</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Save these settings.</string>
             </property>
             <property name="text">
              <string>Save</string>

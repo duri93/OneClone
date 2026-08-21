@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="mainLabel">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OneClone requires the following dependencies to work properly. Ensure they are both installed and set the correct path to the rclone executable so OneClone can recognize it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;These are required dependencies. Ensure they are installed on your system.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -107,12 +107,19 @@
         <item>
          <widget class="QLabel" name="rclonePathLabel">
           <property name="text">
-           <string>RClone executable path:</string>
+           <string>Executable path:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="rclonePath"/>
+         <widget class="QLineEdit" name="rclonePath">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Location of Rclone's executable file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="placeholderText">
+           <string>C:\RClone\rclone.exe</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QToolButton" name="rclonePathButton">
