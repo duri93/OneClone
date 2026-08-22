@@ -335,7 +335,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tabJobs">
        <attribute name="title">
@@ -365,7 +365,7 @@
              <x>0</x>
              <y>0</y>
              <width>384</width>
-             <height>318</height>
+             <height>267</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -480,7 +480,7 @@
         <item row="1" column="1">
          <widget class="QComboBox" name="detailsType">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select job type:&lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt;: connect the remote folder to this pc and access it like a normal folder;&lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;copy&lt;/span&gt;: copy files between two folders;&lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;sync&lt;/span&gt;: ensure two folders are exacly the same by copying new and modified files, and deleting files in the destination folder if they're not present in the source folder. This is often referred to as one-way synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select job type:&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt;: connect the remote folder to this pc and access it like a normal folder;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;copy&lt;/span&gt;: copy files between two folders;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;sync&lt;/span&gt;: ensure two folders are exacly the same by copying new and modified files, and deleting files in the destination folder if they're not present in the source folder. This is often referred to as one-way synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="currentIndex">
            <number>0</number>
@@ -537,7 +537,10 @@
           <item>
            <widget class="QLineEdit" name="detailsLocal">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For mount jobs, specify either:&lt;/p&gt;&lt;p&gt;- a local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;/p&gt;&lt;p&gt;- a drive letter (e.g., &amp;quot;E:\&amp;quot;)&lt;/p&gt;&lt;p&gt;- a network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;For copy and sync jobs, specify a folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For mount jobs, specify either:&lt;br/&gt;- a local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For copy and sync jobs, specify a folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="placeholderText">
+             <string>Local folder, new drive (e.g., X:\) or network (e.g., \\allas\folder)</string>
             </property>
            </widget>
           </item>
@@ -560,14 +563,14 @@
         <item row="5" column="1">
          <widget class="QLineEdit" name="detailsRemote">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="6" column="1">
          <widget class="QCheckBox" name="detailsReadOnly">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;NOTE 1: this is for mount jobs only, not relevant for sync jobs.&lt;/p&gt;&lt;p&gt;NOTE 2: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only&lt;/p&gt;&lt;p&gt;NOTE 1: this is for mount jobs only, not relevant for sync jobs.&lt;/p&gt;&lt;p&gt;NOTE 2: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Read only</string>
@@ -595,7 +598,14 @@
          </widget>
         </item>
         <item row="9" column="1">
-         <layout class="QHBoxLayout" name="detailsButtonsLayout" stretch="1,0,0">
+         <layout class="QHBoxLayout" name="detailsButtonsLayout" stretch="0,1,0,0">
+          <item>
+           <widget class="QPushButton" name="detailsOpenLog">
+            <property name="text">
+             <string>Open log file</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="detailsButtonsSpacer">
             <property name="orientation">
@@ -669,6 +679,9 @@
         </item>
         <item>
          <widget class="QCheckBox" name="settingsAutostart">
+          <property name="toolTip">
+           <string>Make OneClone start automatically with your pc.</string>
+          </property>
           <property name="text">
            <string>Launch OneClone on Windows start up</string>
           </property>
@@ -676,6 +689,9 @@
         </item>
         <item>
          <widget class="QCheckBox" name="settingsAdvanced">
+          <property name="toolTip">
+           <string>Show advanced RClone's settings.</string>
+          </property>
           <property name="text">
            <string>Show advanced settings</string>
           </property>
@@ -691,8 +707,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>356</width>
-             <height>337</height>
+             <width>353</width>
+             <height>377</height>
             </rect>
            </property>
            <layout class="QFormLayout" name="formLayout_2">
@@ -919,11 +935,14 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="settingsNavLayout">
-          <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
            <widget class="QPushButton" name="settingsRcloneConf">
             <property name="enabled">
              <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Run &quot;rclone config&quot; command to let you set up rclone.</string>
             </property>
             <property name="text">
              <string>Open rclone conf</string>
@@ -934,7 +953,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="0" column="1">
            <spacer name="settingsNavSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
@@ -947,10 +966,36 @@
             </property>
            </spacer>
           </item>
-          <item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="settingsWizard">
+            <property name="toolTip">
+             <string>Start OneClone's setup wizard.</string>
+            </property>
+            <property name="text">
+             <string>Run Setup Wizard</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/resources.qrc">
+              <normaloff>:/icons/open.svg</normaloff>:/icons/open.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
            <widget class="QPushButton" name="settingsSave">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Save these settings.</string>
+            </property>
             <property name="text">
              <string>Save</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
             </property>
            </widget>
           </item>

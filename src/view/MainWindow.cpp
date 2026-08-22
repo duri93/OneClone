@@ -1,10 +1,14 @@
 #include "src/view/ui_MainWindow.h"
 #include "MainWindow.h"
+#include "JobWidget.h"
 #include "JobListWidget.h"
-
+#include "../model/Job.h"
 #include "../model/Config.h"
 #include "../model/UpdateManager.h"
-
+#include "../model/RemotesAutocompleter.h"
+#include "../model/LocalPathAutocompleter.h"
+#include "../wizard/SetupWizard.h"
+#include "../wizard/SetupWizard.h"
 #include <QFileDialog>
 #include <QCloseEvent>
 #include <QUuid>
@@ -17,6 +21,8 @@
 #include <QScreen>
 #include <QStandardPaths>
 #include <QProcess>
+#include <QString>
+#include <QMenu>
 
 // ---------------------------------------------------------------------------
 // Constructor / Destructor
@@ -40,13 +46,21 @@ MainWindow::MainWindow(QWidget* parent)
     connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
     connect(&m_manager, &Manager::removed, this, &MainWindow::onJobRemoved);
 
-    if (!m_manager.load()) {
+    bool dryRun = !m_manager.load();
+
+    if (dryRun) {
         statusBar()->showMessage("Could not load settings file — using defaults.", Config::STATUS_DURATION);
     }
 
-    // ---- Errors, warnings and messages ----
-    ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
-    ui->errorWinfspFrame->setVisible(!isWinFspInstalled());
+    // ---- Setup wizard, errors, warnings and messages ----
+    if(dryRun){
+        m_wizard = new SetupWizard(&m_manager, this);
+        m_wizard->show();
+    }else{
+        ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
+        ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
+    }
+
     ui->updateFrame->hide();
 
     connect(ui->errorRcloneClose, &QPushButton::clicked, ui->errorRcloneClose, &QFrame::hide);
@@ -55,11 +69,19 @@ MainWindow::MainWindow(QWidget* parent)
 
     // ---- Settings tab ----
     ui->settingsAdvancedScrollarea->hide();
+    LocalPathAutocompleter::attach(ui->settingsRclone,
+                                   LocalPathAutocompleter::Mode::FoldersAndFiles,
+                                   {"rclone.exe"});
+
     loadSettingsToUi();
     connect(ui->settingsAdvanced,     &QCheckBox::checkStateChanged, this, &MainWindow::onSettingsAdvanced);
     connect(ui->settingsSave,         &QPushButton::clicked, this, &MainWindow::onSettingsSave);
     connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
     connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &MainWindow::onRcloneConfClicked);
+    connect(ui->settingsWizard,       &QPushButton::clicked, this, [this](){
+        m_wizard = new SetupWizard(&m_manager);
+        m_wizard->show();
+    });
 
     // ---- List tab ----
     // populated when adding jobs
@@ -68,9 +90,11 @@ MainWindow::MainWindow(QWidget* parent)
 
     // ---- Details tab ----
     ui->detailsOutput->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
+    LocalPathAutocompleter::attach(ui->detailsLocal);
 
-    connect(ui->detailsSave,   &QPushButton::clicked, this, &MainWindow::onDetailsSave);
-    connect(ui->detailsDelete, &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
+    connect(ui->detailsOpenLog,        &QPushButton::clicked, this, &MainWindow::onDetailsOpenLog);
+    connect(ui->detailsSave,           &QPushButton::clicked, this, &MainWindow::onDetailsSave);
+    connect(ui->detailsDelete,         &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
     connect(ui->detailsLocalButton,    &QToolButton::clicked, this, &MainWindow::onLocalSelectClicked);
 
     // ---- Start on the list tab ----
@@ -90,7 +114,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     connect(updater, &UpdateManager::updateFailed, this, [this](const QString &reason) {
-        ui->updateLabel->setText(tr("Update failed: ").arg(reason));
+        ui->updateLabel->setText(tr("%1").arg(reason));
         ui->updateFrame->show();
     });
 
@@ -159,7 +183,7 @@ void MainWindow::saveUiToSettings(){
     }
 
     // check rclone again
-    ui->errorRcloneFrame->setVisible(!isRcloneInstalled());
+    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
 }
 
 void MainWindow::onSettingsSave(){
@@ -206,39 +230,10 @@ bool startDetachedClean(const QString &program, const QStringList &arguments){
     qint64 pid = 0;
     return process.startDetached(&pid);
 }
-bool MainWindow::onRcloneConfClicked(){
-    QString rclonePath = m_manager.shared()->rclonePath();
-
-    #if defined(Q_OS_WIN)
-        QString program = "cmd.exe";
-        QStringList arguments;
-        arguments << "/c" << "start" << "rclone config" << "/wait" << rclonePath << "config";
-        return QProcess::startDetached(program, arguments);
-    #elif defined(Q_OS_LINUX)
-        // set up terminals lookup table
-        QString shellCmd = QString("'%1' config; exit").arg(rclonePath);
-
-        struct TerminalCmd { QString exe; QStringList args; };
-        const QList<TerminalCmd> terminals = {
-            { "x-terminal-emulator", { "-e", "bash", "-c", shellCmd } }, // Debian/Ubuntu default alias
-            { "gnome-terminal",      { "--", "bash", "-c", shellCmd } },
-            { "konsole",             { "-e", "bash", "-c", shellCmd } },
-            { "xfce4-terminal",      { "-x", "bash", "-c", shellCmd } },
-            { "xterm",               { "-e", "bash", "-c", shellCmd } },
-        };
-
-        // start forst found terminal and run rclone config
-        for (const auto &term : terminals) {
-            if (!QStandardPaths::findExecutable(term.exe).isEmpty())
-                return startDetachedClean(term.exe, term.args);
-        }
-
-        statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
-        return false;
-    #else
-        statusBar()->showMessage("No suitable terminal emulator found on this system.", Config::STATUS_DURATION);
-        return false;
-    #endif
+void MainWindow::onRcloneConfClicked(){
+    if(!m_manager.openRcloneConf()){
+        statusBar()->showMessage("Failed to run 'rclone config'.", Config::STATUS_DURATION);
+    }
 }
 
 
@@ -299,6 +294,7 @@ void MainWindow::openDetails(Job* job){
     ui->detailsReadOnly ->setEnabled(validJob);
     ui->detailsSave     ->setEnabled(validJob);
     ui->detailsDelete   ->setEnabled(validJob);
+    ui->detailsOpenLog  ->setEnabled(validJob);
 
     if(!validJob) return;
 
@@ -316,6 +312,11 @@ void MainWindow::openDetails(Job* job){
     // populate output log
     ui->detailsOutput->setText(job->getCommand(false).join(' '));
 
+    // show autocomplete
+    QString rclonePath = m_manager.shared()->rclonePath();
+
+    RemotesAutocompleter::attach(ui->detailsRemote, rclonePath);
+
     // show details tab
     ui->tabWidget->setCurrentWidget(ui->tabDetails);
 }
@@ -330,6 +331,16 @@ void MainWindow::clearDetails(){
     ui->detailsOutput->clear();
 }
 
+void MainWindow::onDetailsOpenLog(){
+    if(!m_currentJobDetails) return;
+    Job* job = m_currentJobDetails;
+
+    bool status = job->openLogFile();
+
+    if(!status){
+         statusBar()->showMessage("Error opening job log file (run the job at least once first).", Config::STATUS_DURATION);
+    }
+}
 void MainWindow::onDetailsSave(){
     if(!m_currentJobDetails) return;
     Job* job = m_currentJobDetails;
@@ -482,35 +493,3 @@ void MainWindow::activate(){
     raise();
     activateWindow();
 }
-
-// ---------------------------------------------------------------------------
-// General error messages
-// ---------------------------------------------------------------------------
-bool MainWindow::isRcloneInstalled(){
-    QString path = m_manager.shared()->rclonePath();
-    QFileInfo fi(path);
-    return (fi.exists() && fi.isExecutable()) || !QStandardPaths::findExecutable(path).isEmpty();
-}
-bool MainWindow::isWinFspInstalled(){
-#ifdef Q_OS_WIN
-    // Method 1: Check registry
-    QSettings reg("HKEY_LOCAL_MACHINE\\SOFTWARE\\WinFsp", QSettings::NativeFormat);
-    if (!reg.allKeys().isEmpty()){
-        return true;
-    }
-
-    // Method 2: Check default install path
-    QStringList paths = {
-        "C:/Program Files (x86)/WinFsp",
-        "C:/Program Files/WinFsp"
-    };
-    for (const QString &path : paths) {
-        if (QDir(path).exists())
-            return true;
-    }
-    return false;
-#else
-    return false; // WinFsp is Windows-only
-#endif
-}
-

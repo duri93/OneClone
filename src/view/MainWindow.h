@@ -1,14 +1,14 @@
 #pragma once
-
-#include "../model/Job.h"
 #include "../model/Manager.h"
-#include "JobWidget.h"
-
 #include <QMainWindow>
-#include <QString>
 #include <QSystemTrayIcon>
-#include <QMenu>
-#include <QAction>
+
+class Job;
+class JobWidget;
+class SetupWizard;
+class QString;
+class QMenu;
+class QAction;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,13 +37,14 @@ private slots:
     void onSettingsSave();
     void onRcloneSelectClicked();
     void onSettingsAdvanced();
-    bool onRcloneConfClicked();
+    void onRcloneConfClicked();
 
     // Jobs list tab
     void onAddJobClicked();
     void onJobMoved(const QString& id, int newIndex);
 
     // Job details tab
+    void onDetailsOpenLog();
     void onDetailsSave();
     void onDetailsDelete();
     void onLocalSelectClicked();
@@ -76,12 +77,11 @@ private:
     QVector<JobWidget*> m_jobWidgets;
 
 private:
+    // setup wizard
+    SetupWizard* m_wizard = nullptr;
+
     // list
     JobWidget* findOrCreateJobWidget(Job* job);
-
-    // general error checkers
-    bool isRcloneInstalled();
-    bool isWinFspInstalled();
 
     // tray icon
     void setupTray();

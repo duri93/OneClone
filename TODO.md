@@ -1,13 +1,18 @@
 # IMPLEMENTATION ROADMAP
 
+
+
 ## PRIORITY 1
 Tests and bugs that should be fixed.
-- Progress lines are not filtered
-- Error opening log files
+- check and fix tooltips everywhere
+- rework includes
+- merge branches
+- version bump
 
 ## PRIORITY 2
 Additional small features.
 
+- **guide.md** for general setup (not allas)
 - **Bandwidth limiting** (`--bwlimit`) and other advanced rclone flags not currently exposed in Settings.
 - **Better progress number formatting** by rounding to significant digits (`Job::processLineProgress`)
 
@@ -15,7 +20,6 @@ Additional small features.
 ## PRIORITY 3
 Optional things to implement.
 
-- **Nore advanced log management** — logs are per-job-run files under `logs/`, being overwritten every time the job starts.
 - **In-app rclone remote configuration editor**, rather than relying entirely on an external `rclone config` session.
 - **Localization/i18n** — `tr()` is used throughout, but no translation files currently ship.
 

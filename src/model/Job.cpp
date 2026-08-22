@@ -277,18 +277,20 @@ bool Job::processLineProgress(const QString& line){
 // Log helpers
 // ---------------------------------------------------------------------------
 
-void Job::openLogfile(){
-    if(!m_logfile) return;
+bool Job::openLogFile(){
+    if(!m_logfile) return false;
 
     const QFile& log = m_logfile->file();
 
     if(log.fileName().isEmpty() || !log.exists()){
-        return;
+        return false;
     }
 
     QDesktopServices::openUrl(
         QUrl::fromLocalFile(log.fileName())
     );
+
+    return true;
 }
 
 void Job::fromJson(const QJsonValue& json){

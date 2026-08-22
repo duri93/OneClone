@@ -10,6 +10,7 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QSvgRenderer>
+#include <QMessageBox>
 
 // ---------------------------------------------------------------------------
 // Constructor and helpers
@@ -60,10 +61,6 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     });
     connect(ui->cancel, &QPushButton::clicked, this, &JobWidget::hideConfirm);
     connect(ui->confirm, &QPushButton::clicked, this, &JobWidget::confirmEvent);
-
-    connect(ui->statusIcon, &QToolButton::clicked, this, [this]() {
-        m_job->openLogfile();
-    });
 }
 JobWidget::~JobWidget() {
     delete ui;

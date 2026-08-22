@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>412</width>
-    <height>227</height>
+    <height>252</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -165,9 +165,6 @@
      </item>
      <item>
       <widget class="QToolButton" name="statusIcon">
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
-       </property>
        <property name="toolTip">
         <string>Open log file</string>
        </property>

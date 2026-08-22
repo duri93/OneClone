@@ -1,5 +1,6 @@
 #include "UpdateManager.h"
-
+#include <QNetworkReply>
+#include <QTemporaryDir>
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
