@@ -1,4 +1,4 @@
-#include "logfile.h"
+#include "LogFile.h"
 #include "Config.h"
 
 #include <QCoreApplication>

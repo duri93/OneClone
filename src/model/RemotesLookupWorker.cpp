@@ -22,7 +22,7 @@ void RemotesLookupWorker::run(){
         }
     }
 #else
-    qCDebug(lcRemotes) << "RemotesAutocompleter is only implemented on Windows";
+    qDebug() << "RemotesAutocompleter is only implemented on Windows";
 #endif
     emit finished();
 }
