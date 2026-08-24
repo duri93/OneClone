@@ -15,9 +15,10 @@ class QTemporaryDir;
  *      compares its tag against the current version.
  *   2. If newer, the matching release asset is downloaded to a temporary
  *      directory (HTTP redirects are followed automatically).
- *   3. The download is verified (size, and SHA-256 if a checksum asset is
- *      published alongside the release). Corrupted downloads are retried
- *      up to setMaxDownloadAttempts() times.
+ *   3. The download is verified (size, and SHA-256 using the "digest"
+ *      field GitHub reports for each release asset, when present).
+ *      Corrupted downloads are retried up to setMaxDownloadAttempts()
+ *      times.
  *   4. Once verified, updateReady() is emitted so the application can tell
  *      the user. The update is applied automatically the next time the
  *      application quits (via QCoreApplication::aboutToQuit), by handing
@@ -32,8 +33,11 @@ class QTemporaryDir;
  * Requirements on the release assets (see accompanying guide):
  *   - Windows asset: a .zip archive containing the full application folder.
  *   - Linux asset:   a .tar.gz archive containing the full application folder.
- *   - Optional: a sibling checksum asset (name containing "sha256" or
- *     "checksum") for strong integrity verification.
+ *   - No separate checksum asset is required: GitHub computes and reports
+ *     a SHA-256 "digest" for each uploaded asset via the Releases API,
+ *     which is used for strong integrity verification automatically. If
+ *     GitHub does not report a digest for a given asset, verification
+ *     falls back to the size check alone.
  */
 class UpdateManager : public QObject
 {
@@ -76,7 +80,6 @@ private slots:
     void onReleaseInfoReceived();
     void onAssetDownloadReadyRead();
     void onAssetDownloadFinished();
-    void onChecksumDownloadFinished();
     void installUpdate();
 
 private:
@@ -88,7 +91,6 @@ private:
 
     void fetchReleaseInfo();
     void startAssetDownload();
-    void startChecksumDownload();
     void finalizeVerification();
     void retryOrFail(const QString &reason);
     void handleFatalFailure(const QString &reason);
@@ -118,7 +120,6 @@ private:
     QFile m_downloadFile;
 
     ReleaseAsset m_selectedAsset;
-    QString m_checksumUrl;
     QString m_expectedSha256;
 
     QTemporaryDir *m_tempDir = nullptr;

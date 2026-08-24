@@ -23,7 +23,6 @@ $ProjectDir     = "Z:\$ProjectName"                    # <-- source project fold
 $ExeName        = "$ProjectName.exe"                             # <-- built executable name
 
 $DeploymentFile = "$ProjectDir\release\$ProjectName-$Version-win.zip" # <-- final zip file (full path incl. filename)
-$HashFile       = "$ProjectDir\release\$ProjectName-$Version-win.sha256.txt"
 $InstallerDir   = "$ProjectDir\release"
 $InstallerFile  = "$ProjectName-$Version-win"
 
@@ -204,14 +203,6 @@ try {
     Compress-Archive -Path (Join-Path $DeployDir "*") -DestinationPath $DeploymentFile
 
     Write-Host "==> Deployment zip created: $DeploymentFile"
-
-
-    # ============================================================
-    # 7) Create zip hash file
-    # ============================================================
-    Write-Host "==> Creating zip hash file $DeploymentFile..."
-
-    Get-FileHash $DeploymentFile -Algorithm SHA256 | Out-File -FilePath $HashFile
 
     # ============================================================
     # 8) Create installer using ISS

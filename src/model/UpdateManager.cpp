@@ -16,9 +16,9 @@
 #include <QUrl>
 
 UpdateManager::UpdateManager(QString repoOwner,
-                         QString repoName,
-                         QString currentVersion,
-                         QObject *parent)
+                             QString repoName,
+                             QString currentVersion,
+                             QObject *parent)
     : QObject(parent)
     , m_owner(std::move(repoOwner))
     , m_repo(std::move(repoName))
@@ -60,7 +60,6 @@ void UpdateManager::checkForUpdates(){
     m_attemptsUsed = 0;
     m_updateReady = false;
     m_expectedSha256.clear();
-    m_checksumUrl.clear();
     emit checkStarted();
     fetchReleaseInfo();
 }
@@ -131,7 +130,7 @@ void UpdateManager::onReleaseInfoReceived(){
     }
 
     ReleaseAsset chosen;
-    QString checksumUrl;
+    QString chosenDigest;
     const QJsonArray assets = releaseObj.value(QStringLiteral("assets")).toArray();
     for (const QJsonValue &v : assets) {
         const QJsonObject a = v.toObject();
@@ -143,22 +142,31 @@ void UpdateManager::onReleaseInfoReceived(){
         const QString lower = name.toLower();
         const bool looksLikeInstaller = lower.contains(QStringLiteral(".exe")) || lower.contains(QStringLiteral(".msi"));
         const bool looksLikeCompressedFolder = lower.contains(QStringLiteral(".zip")) || lower.contains(QStringLiteral(".tar.gz"));
-        const bool looksLikeChecksum = lower.contains(QStringLiteral("sha256"));
 
-        if (chosen.name.isEmpty() && looksLikeCompressedFolder && !looksLikeInstaller && !looksLikeChecksum &&
+        if (chosen.name.isEmpty() && looksLikeCompressedFolder && !looksLikeInstaller &&
             (m_assetNameFilter.isEmpty() || lower.contains(m_assetNameFilter.toLower()))) {
             chosen.name = name;
             chosen.downloadUrl = url;
             chosen.size = a.value(QStringLiteral("size")).toVariant().toLongLong();
-        }
-        if (checksumUrl.isEmpty() && looksLikeChecksum && !looksLikeInstaller) {
-            checksumUrl = url;
+            // GitHub reports a "digest" field (e.g. "sha256:<hex>") for each
+            // asset directly -- no separate checksum file needs to be
+            // published alongside the release.
+            chosenDigest = a.value(QStringLiteral("digest")).toString();
         }
     }
 
     if (chosen.name.isEmpty()) {
         handleFatalFailure(tr("Release %1 has no asset matching \"%2\".").arg(tag, m_assetNameFilter));
         return;
+    }
+
+    m_expectedSha256.clear();
+    if (chosenDigest.startsWith(QStringLiteral("sha256:"), Qt::CaseInsensitive)) {
+        const QString candidate = chosenDigest.mid(7).trimmed().toLower();
+        static const QRegularExpression sha256Re(QStringLiteral("^[0-9a-f]{64}$"));
+        if (sha256Re.match(candidate).hasMatch()) {
+            m_expectedSha256 = candidate;
+        }
     }
 
     if (!isDirectoryWritable(m_installDir)) {
@@ -168,7 +176,6 @@ void UpdateManager::onReleaseInfoReceived(){
     }
 
     m_selectedAsset = chosen;
-    m_checksumUrl = checksumUrl;
     m_newVersion = tag;
 
     delete m_tempDir;
@@ -247,65 +254,14 @@ void UpdateManager::onAssetDownloadFinished(){
         return;
     }
 
-    if (!m_checksumUrl.isEmpty()) {
-        startChecksumDownload();
-    } else {
-        finalizeVerification();
-    }
-}
-
-void UpdateManager::startChecksumDownload(){
-    QNetworkRequest request{QUrl(m_checksumUrl)};
-    request.setRawHeader("User-Agent", QStringLiteral("%1-GitHubUpdater").arg(m_repo).toUtf8());
-    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
-                         QVariant::fromValue(QNetworkRequest::NoLessSafeRedirectPolicy));
-    m_currentReply = m_netManager.get(request);
-    connect(m_currentReply, &QNetworkReply::finished, this, &UpdateManager::onChecksumDownloadFinished);
-}
-
-void UpdateManager::onChecksumDownloadFinished(){
-    QNetworkReply *reply = m_currentReply;
-    if (!reply) {
-        return;
-    }
-    reply->deleteLater();
-    m_currentReply = nullptr;
-
-    if (reply->error() != QNetworkReply::NoError) {
-        // Non-fatal: the size check already passed, proceed without the
-        // stronger checksum guarantee.
-        finalizeVerification();
-        return;
-    }
-
-    const QString content = QString::fromUtf8(reply->readAll());
-    static const QRegularExpression hashRe(QStringLiteral("\\b[0-9a-fA-F]{64}\\b"));
-    static const QRegularExpression lineSplitRe(QStringLiteral("[\\r\\n]+"));
-
-    m_expectedSha256.clear();
-    const QStringList lines = content.split(lineSplitRe, Qt::SkipEmptyParts);
-    for (const QString &line : lines) {
-        if (lines.size() > 1 && !line.contains(m_selectedAsset.name, Qt::CaseInsensitive)) {
-            continue; // multi-entry checksum file: only the line for our asset matters
-        }
-        const QRegularExpressionMatch m = hashRe.match(line);
-        if (m.hasMatch()) {
-            m_expectedSha256 = m.captured(0).toLower();
-            break;
+    if (!m_expectedSha256.isEmpty()) {
+        if (!verifyChecksum(&verifyError)) {
+            retryOrFail(verifyError);
+            return;
         }
     }
-
-    if (m_expectedSha256.isEmpty()) {
-        // Could not parse a usable hash; fall back to the size check.
-        finalizeVerification();
-        return;
-    }
-
-    QString verifyError;
-    if (!verifyChecksum(&verifyError)) {
-        retryOrFail(verifyError);
-        return;
-    }
+    // If GitHub did not report a digest for this asset, verification falls
+    // back to the size check that already passed above.
 
     finalizeVerification();
 }
