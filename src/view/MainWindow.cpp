@@ -8,7 +8,6 @@
 #include "../model/RemotesAutocompleter.h"
 #include "../model/LocalPathAutocompleter.h"
 #include "../wizard/SetupWizard.h"
-#include "../wizard/SetupWizard.h"
 #include <QFileDialog>
 #include <QCloseEvent>
 #include <QUuid>
@@ -53,13 +52,8 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     // ---- Setup wizard, errors, warnings and messages ----
-    if(dryRun){
-        m_wizard = new SetupWizard(&m_manager, this);
-        m_wizard->show();
-    }else{
-        ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
-        ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
-    }
+    checkDependencies();
+    if(dryRun) openSetupWizard();
 
     ui->updateFrame->hide();
 
@@ -78,10 +72,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->settingsSave,         &QPushButton::clicked, this, &MainWindow::onSettingsSave);
     connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
     connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &MainWindow::onRcloneConfClicked);
-    connect(ui->settingsWizard,       &QPushButton::clicked, this, [this](){
-        m_wizard = new SetupWizard(&m_manager);
-        m_wizard->show();
-    });
+    connect(ui->settingsWizard,       &QPushButton::clicked, this, &MainWindow::openSetupWizard);
 
     // ---- List tab ----
     // populated when adding jobs
@@ -184,6 +175,19 @@ void MainWindow::saveUiToSettings(){
 
     // check rclone again
     ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
+}
+void MainWindow::openSetupWizard(){
+    m_wizard = new SetupWizard(&m_manager, this);
+    connect(m_wizard, &SetupWizard::setupFinished, this, [this](){
+        ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
+        ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
+    });
+    m_wizard->show();
+
+}
+void MainWindow::checkDependencies(){
+    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
+    ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
 }
 
 void MainWindow::onSettingsSave(){

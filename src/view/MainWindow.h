@@ -61,6 +61,8 @@ private:
     // Settings
     void loadSettingsToUi();
     void saveUiToSettings();
+    void openSetupWizard();
+    void checkDependencies();
 
     // Job details
     void openDetails(Job* job);

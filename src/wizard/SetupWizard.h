@@ -21,6 +21,9 @@ public:
 
     void show();
 
+signals:
+    void setupFinished();
+
 private:
     // QPointer so we can safely tell, in the destructor, whether the
     // wizard has already deleted itself (WA_DeleteOnClose) or not.
