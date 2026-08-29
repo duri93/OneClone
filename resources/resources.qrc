@@ -19,5 +19,6 @@
         <file>app.ico</file>
         <file>logo.svg</file>
         <file>favicon.svg</file>
+        <file>icons/help.svg</file>
     </qresource>
 </RCC>

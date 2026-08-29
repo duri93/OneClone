@@ -26,6 +26,7 @@ qt_add_executable(OneClone
     src/view/MainWindow.h               src/view/MainWindow.cpp             src/view/MainWindow.ui
     src/view/JobWidget.h                src/view/JobWidget.cpp              src/view/JobWidget.ui
     src/view/JobListWidget.h            src/view/JobListWidget.cpp
+    src/view/QLabelInstantTooltip.h
 
     src/wizard/SetupWizard.h            src/wizard/SetupWizard.cpp
     src/wizard/SetupWizardPage0.h     src/wizard/SetupWizardPage0.cpp     src/wizard/SetupWizardPage0.ui
