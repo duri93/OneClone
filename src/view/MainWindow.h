@@ -57,6 +57,8 @@ private slots:
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
     void onTrayMenuAboutToShow();    // rebuilds service list in menu
 
+    void on_detailsType_currentIndexChanged(int index);
+
 private:
     // Settings
     void loadSettingsToUi();

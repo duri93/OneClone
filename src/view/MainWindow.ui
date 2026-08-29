@@ -439,12 +439,12 @@
            <widget class="QLabelInstantTooltip" name="jobsHelp">
             <property name="maximumSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>16</width>
+              <height>16</height>
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This screen shows the list of jobs you can run. &lt;/p&gt;&lt;p&gt;Double click a job to edit it.&lt;/p&gt;&lt;p&gt;Click &lt;span style=&quot; font-weight:700;&quot;&gt;Add&lt;/span&gt; to create a new job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This screen shows the list of jobs you can run. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Double click&lt;/span&gt; a job to edit it.&lt;/p&gt;&lt;p&gt;Click &lt;span style=&quot; font-weight:700;&quot;&gt;Add&lt;/span&gt; to create a new job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string/>
@@ -534,7 +534,7 @@
         <item row="8" column="1">
          <widget class="QCheckBox" name="detailsReadOnly">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only&lt;/p&gt;&lt;p&gt;NOTE 1: this is for mount jobs only, not relevant for sync jobs.&lt;/p&gt;&lt;p&gt;NOTE 2: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only (mount jobs only).&lt;/p&gt;&lt;p&gt;NOTE: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Read only</string>
@@ -612,8 +612,8 @@
          <widget class="QLabelInstantTooltip" name="detailsTypeHelp">
           <property name="maximumSize">
            <size>
-            <width>20</width>
-            <height>20</height>
+            <width>16</width>
+            <height>16</height>
            </size>
           </property>
           <property name="toolTip">
@@ -634,8 +634,8 @@
          <widget class="QLabelInstantTooltip" name="detailsLocalHelp">
           <property name="maximumSize">
            <size>
-            <width>20</width>
-            <height>20</height>
+            <width>16</width>
+            <height>16</height>
            </size>
           </property>
           <property name="toolTip">
@@ -656,8 +656,8 @@
          <widget class="QLabelInstantTooltip" name="detailsRemoteHelp">
           <property name="maximumSize">
            <size>
-            <width>20</width>
-            <height>20</height>
+            <width>16</width>
+            <height>16</height>
            </size>
           </property>
           <property name="toolTip">

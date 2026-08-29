@@ -57,8 +57,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->updateFrame->hide();
 
-    connect(ui->errorRcloneClose, &QPushButton::clicked, ui->errorRcloneClose, &QFrame::hide);
-    connect(ui->errorWinfspClose, &QPushButton::clicked, ui->errorWinfspClose, &QFrame::hide);
+    connect(ui->errorRcloneClose, &QPushButton::clicked, ui->errorRcloneFrame, &QFrame::hide);
+    connect(ui->errorWinfspClose, &QPushButton::clicked, ui->errorWinfspFrame, &QFrame::hide);
     connect(ui->updateClose,      &QPushButton::clicked, ui->updateFrame,      &QFrame::hide);
 
     // ---- Settings tab ----
@@ -497,3 +497,9 @@ void MainWindow::activate(){
     raise();
     activateWindow();
 }
+
+void MainWindow::on_detailsType_currentIndexChanged(int index)
+{
+    ui->detailsReadOnly->setEnabled(index == ui->detailsType->findText("mount"));
+}
+
