@@ -68,6 +68,7 @@ public:
     void stop();
 
     bool openLogFile();
+    void openLocalFolder();
 
 public slots:
     void toggle(bool swapSides = false);

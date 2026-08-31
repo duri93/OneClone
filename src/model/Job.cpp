@@ -292,6 +292,9 @@ bool Job::openLogFile(){
 
     return true;
 }
+void Job::openLocalFolder(){
+    QDesktopServices::openUrl(QUrl::fromLocalFile(this->m_local));
+}
 
 void Job::fromJson(const QJsonValue& json){
     this->m_id        = json["id"].toString();
