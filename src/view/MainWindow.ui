@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>687</height>
+    <height>640</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -335,7 +335,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tabJobs">
        <attribute name="title">
@@ -365,7 +365,7 @@
              <x>0</x>
              <y>0</y>
              <width>388</width>
-             <height>332</height>
+             <height>285</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -1184,6 +1184,44 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <header>src/view/QLabelInstantTooltip.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>errorRcloneClose</tabstop>
+  <tabstop>errorWinfspClose</tabstop>
+  <tabstop>updateClose</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>settingsRclone</tabstop>
+  <tabstop>settingsRcloneButton</tabstop>
+  <tabstop>settingsAutostart</tabstop>
+  <tabstop>settingsAdvanced</tabstop>
+  <tabstop>settingsAdvancedScrollarea</tabstop>
+  <tabstop>settingsCacheMode</tabstop>
+  <tabstop>settingsCacheMaxSize</tabstop>
+  <tabstop>settingsCacheMinFreeSpace</tabstop>
+  <tabstop>settingsCacheMaxAge</tabstop>
+  <tabstop>settingsReadChunkSize</tabstop>
+  <tabstop>settingsReadChunkSizeLimit</tabstop>
+  <tabstop>settingsBufferSize</tabstop>
+  <tabstop>settingsTransfers</tabstop>
+  <tabstop>settingsCheckers</tabstop>
+  <tabstop>settingsLinks</tabstop>
+  <tabstop>settingsRcloneConf</tabstop>
+  <tabstop>settingsWizard</tabstop>
+  <tabstop>settingsSave</tabstop>
+  <tabstop>detailsName</tabstop>
+  <tabstop>detailsType</tabstop>
+  <tabstop>detailsAutostart</tabstop>
+  <tabstop>detailsLocal</tabstop>
+  <tabstop>detailsLocalButton</tabstop>
+  <tabstop>detailsRemote</tabstop>
+  <tabstop>detailsReadOnly</tabstop>
+  <tabstop>detailsOutput</tabstop>
+  <tabstop>detailsOpenLog</tabstop>
+  <tabstop>detailsSave</tabstop>
+  <tabstop>detailsDelete</tabstop>
+  <tabstop>jobsScrollArea</tabstop>
+  <tabstop>jobsAdd</tabstop>
+  <tabstop>helpText</tabstop>
+ </tabstops>
  <resources>
   <include location="../../resources/resources.qrc"/>
  </resources>
