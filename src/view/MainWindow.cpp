@@ -5,7 +5,6 @@
 #include "../model/Job.h"
 #include "../model/Config.h"
 #include "../model/UpdateManager.h"
-#include "../model/RemotesAutocompleter.h"
 #include "../model/LocalPathAutocompleter.h"
 #include "../wizard/SetupWizard.h"
 #include <QFileDialog>
@@ -319,6 +318,7 @@ void MainWindow::openDetails(Job* job){
     // show autocomplete
     QString rclonePath = m_manager.shared()->rclonePath();
 
+    delete m_remotesAutocompleter;
     RemotesAutocompleter::attach(ui->detailsRemote, rclonePath);
 
     // show details tab
@@ -472,7 +472,7 @@ void MainWindow::onTrayMenuAboutToShow(){
 }
 void MainWindow::onTrayActivated(QSystemTrayIcon::ActivationReason reason){
 
-    if (QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
+    if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
         if (isVisible()) {
             hide();
         } else {

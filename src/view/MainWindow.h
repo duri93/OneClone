@@ -1,5 +1,6 @@
 #pragma once
 #include "../model/Manager.h"
+#include "../model/RemotesAutocompleter.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 
@@ -95,4 +96,6 @@ private:
     QAction*         m_trayOpen    = nullptr;
     QAction*         m_trayClose   = nullptr;
     // service actions are rebuilt dynamically in onTrayMenuAboutToShow
+
+    RemotesAutocompleter* m_remotesAutocompleter = nullptr;
 };

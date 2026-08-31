@@ -72,27 +72,34 @@ JobWidget::~JobWidget() {
 // ---------------------------------------------------------------------------
 bool JobWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    auto* me = static_cast<QMouseEvent*>(event);
+    switch (event->type()) {
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick: {
+        auto* me = static_cast<QMouseEvent*>(event);
 
-    // normal flow if the click was on a button
-    if (ui->button1->geometry().contains(me->pos()) &&
-        ui->button2->geometry().contains(me->pos())) {
-        return QWidget::eventFilter(watched, event);
+        // normal flow if the click was on a button
+        if (ui->button1->geometry().contains(me->pos()) ||
+            ui->button2->geometry().contains(me->pos())) {
+            return QWidget::eventFilter(watched, event);
+        }
+
+        if (watched == this && event->type() == QEvent::MouseButtonRelease) {
+            m_job->openLocalFolder();
+
+            return true;
+        }
+
+        if (watched == this && event->type() == QEvent::MouseButtonDblClick) {
+            emit openDetailsRequested(m_job->id());
+            return true;
+        }
+        break;
+    }
+    default:
+        break;
     }
 
-    // single click
-    if (watched == this && event->type() == QEvent::MouseButtonRelease) {
-        m_job->openLocalFolder();
-        return true;
-    }
-
-    // double click
-    if (watched == this && event->type() == QEvent::MouseButtonDblClick) {
-        emit openDetailsRequested(m_job->id());
-        return true;
-    }
-
-    return false;
+    return QWidget::eventFilter(watched, event);
 }
 void JobWidget::enterEvent(QEnterEvent* event)
 {
