@@ -471,7 +471,8 @@ void MainWindow::onTrayMenuAboutToShow(){
     }
 }
 void MainWindow::onTrayActivated(QSystemTrayIcon::ActivationReason reason){
-    if (reason == QSystemTrayIcon::DoubleClick) {
+
+    if (QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
         if (isVisible()) {
             hide();
         } else {
