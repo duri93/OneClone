@@ -1,5 +1,5 @@
-#include "model/Config.h"
-#include "view/MainWindow.h"
+#include "src/common/Config.h"
+#include "src/ui/MainWindow.h"
 #include <QApplication>
 
 #include <QLocalServer>

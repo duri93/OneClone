@@ -1,5 +1,5 @@
 #include "Manager.h"
-#include "Config.h"
+#include "src/common/Config.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QJsonArray>

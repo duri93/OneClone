@@ -1,7 +1,7 @@
 #pragma once
-#include "../model/Manager.h"
-#include "../model/RemotesAutocompleter.h"
-#include "../model/Status.h"
+#include "src/core/Manager.h"
+#include "src/core/Status.h"
+#include "src/providers/rclone/RemotesAutocompleter.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 

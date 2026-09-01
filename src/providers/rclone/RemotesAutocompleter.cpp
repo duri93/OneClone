@@ -1,6 +1,4 @@
 #include "RemotesAutocompleter.h"
-
-// #include "RemotesLookupWorker.h"
 #include <QStringListModel>
 #include <QCompleter>
 #include <QLineEdit>

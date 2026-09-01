@@ -1,6 +1,6 @@
 #include "SetupWizardPage1.h"
-#include "../model/Manager.h"
-#include "../model/LocalPathAutocompleter.h"
+#include "src/core/Manager.h"
+#include "src/common/LocalPathAutocompleter.h"
 #include <QFileDialog>
 #include <QDir>
 #include <QTimer>

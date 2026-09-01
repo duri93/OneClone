@@ -1,5 +1,5 @@
 #include "LogFile.h"
-#include "Config.h"
+#include "src/common/Config.h"
 
 #include <QCoreApplication>
 #include <QDateTime>

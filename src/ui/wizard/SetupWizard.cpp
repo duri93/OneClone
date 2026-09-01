@@ -3,7 +3,7 @@
 #include "SetupWizardPage1.h"
 #include "SetupWizardPage2.h"
 #include "SetupWizardPage3.h"
-#include "../model/Manager.h"
+#include "src/core/Manager.h"
 #include <QWidget>
 
 

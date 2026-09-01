@@ -1175,13 +1175,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <customwidget>
    <class>JobListWidget</class>
    <extends>QWidget</extends>
-   <header>src/view/JobListWidget.h</header>
+   <header>src/ui/widgets/JobListWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>QLabelInstantTooltip</class>
    <extends>QLabel</extends>
-   <header>src/view/QLabelInstantTooltip.h</header>
+   <header>src/ui/widgets/QLabelInstantTooltip.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

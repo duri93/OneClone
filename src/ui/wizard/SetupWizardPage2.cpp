@@ -1,6 +1,6 @@
 #include "SetupWizardPage2.h"
-#include "../model/Status.h"
-#include "../model/Manager.h"
+#include "src/core/Status.h"
+#include "src/core/Manager.h"
 #include <QProcess>
 
 SetupWizardPage2::SetupWizardPage2(Manager* manager, QWidget* parent)

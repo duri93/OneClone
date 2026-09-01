@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../model/Job.h"
+#include "src/core/Job.h"
 
 #include <QWidget>
 

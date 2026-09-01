@@ -1,7 +1,7 @@
 #include "Job.h"
 
-#include "Config.h"
-#include "Status.h"
+#include "src/common/Config.h"
+#include "src/core/Status.h"
 #include <QUuid>
 #include <QTimer>
 #include <QDir>

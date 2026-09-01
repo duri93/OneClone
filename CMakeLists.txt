@@ -11,29 +11,31 @@ set(CMAKE_AUTORCC ON)
 
 qt_add_executable(OneClone
     WIN32 MACOSX_BUNDLE
-    src/main.cpp
+    src/app/main.cpp
 
-    src/model/Config.h
-    src/model/Status.h
-    src/model/Job.h                     src/model/Job.cpp
-    src/model/LocalPathAutocompleter.h  src/model/LocalPathAutocompleter.cpp
-    src/model/LogFile.h                 src/model/LogFile.cpp
-    src/model/Manager.h                 src/model/Manager.cpp
-    src/model/RemotesAutocompleter.h    src/model/RemotesAutocompleter.cpp
-    src/model/RemotesLookupWorker.h     src/model/RemotesLookupWorker.cpp
-    src/model/UpdateManager.h           src/model/UpdateManager.cpp
-    src/model/SharedSettings.h          src/model/SharedSettings.cpp
+    src/common/Config.h
+    src/common/LocalPathAutocompleter.h  src/common/LocalPathAutocompleter.cpp
+    src/common/UpdateManager.h           src/common/UpdateManager.cpp
 
-    src/view/MainWindow.h               src/view/MainWindow.cpp             src/view/MainWindow.ui
-    src/view/JobWidget.h                src/view/JobWidget.cpp              src/view/JobWidget.ui
-    src/view/JobListWidget.h            src/view/JobListWidget.cpp
-    src/view/QLabelInstantTooltip.h
+    src/core/Status.h
+    src/core/Job.h                     src/core/Job.cpp
+    src/core/LogFile.h                 src/core/LogFile.cpp
+    src/core/Manager.h                 src/core/Manager.cpp
+    src/core/SharedSettings.h          src/core/SharedSettings.cpp
 
-    src/wizard/SetupWizard.h            src/wizard/SetupWizard.cpp
-    src/wizard/SetupWizardPage0.h       src/wizard/SetupWizardPage0.cpp     src/wizard/SetupWizardPage0.ui
-    src/wizard/SetupWizardPage1.h       src/wizard/SetupWizardPage1.cpp     src/wizard/SetupWizardPage1.ui
-    src/wizard/SetupWizardPage2.h       src/wizard/SetupWizardPage2.cpp     src/wizard/SetupWizardPage2.ui
-    src/wizard/SetupWizardPage3.h       src/wizard/SetupWizardPage3.cpp     src/wizard/SetupWizardPage3.ui
+    src/providers/rclone/RemotesAutocompleter.h     src/providers/rclone/RemotesAutocompleter.cpp
+    src/providers/rclone/RemotesLookupWorker.h      src/providers/rclone/RemotesLookupWorker.cpp
+
+    src/ui/MainWindow.h                     src/ui/MainWindow.cpp               src/ui/MainWindow.ui
+    src/ui/widgets/JobWidget.h              src/ui/widgets/JobWidget.cpp        src/ui/widgets/JobWidget.ui
+    src/ui/widgets/JobListWidget.h          src/ui/widgets/JobListWidget.cpp
+    src/ui/widgets/QLabelInstantTooltip.h
+
+    src/ui/wizard/SetupWizard.h         src/ui/wizard/SetupWizard.cpp
+    src/ui/wizard/SetupWizardPage0.h    src/ui/wizard/SetupWizardPage0.cpp  src/ui/wizard/SetupWizardPage0.ui
+    src/ui/wizard/SetupWizardPage1.h    src/ui/wizard/SetupWizardPage1.cpp  src/ui/wizard/SetupWizardPage1.ui
+    src/ui/wizard/SetupWizardPage2.h    src/ui/wizard/SetupWizardPage2.cpp  src/ui/wizard/SetupWizardPage2.ui
+    src/ui/wizard/SetupWizardPage3.h    src/ui/wizard/SetupWizardPage3.cpp  src/ui/wizard/SetupWizardPage3.ui
 
     resources/resources.qrc
     resources/main.rc

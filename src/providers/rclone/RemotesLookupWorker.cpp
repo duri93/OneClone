@@ -1,5 +1,4 @@
 #include "RemotesLookupWorker.h"
-
 #include <QProcess>
 #include <QStringList>
 #include <QRegularExpression>

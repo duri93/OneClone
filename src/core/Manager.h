@@ -1,5 +1,5 @@
 #pragma once
-#include "SharedSettings.h"
+#include "src/core/SharedSettings.h"
 #include <memory>
 #include <QObject>
 

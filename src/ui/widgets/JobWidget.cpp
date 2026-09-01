@@ -1,4 +1,4 @@
-#include "../model/Config.h"
+#include "src/common/Config.h"
 #include "JobWidget.h"
 #include "src/view/ui_JobWidget.h"
 
