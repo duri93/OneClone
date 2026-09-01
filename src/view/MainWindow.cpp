@@ -9,16 +9,11 @@
 #include "../wizard/SetupWizard.h"
 #include <QFileDialog>
 #include <QCloseEvent>
-#include <QUuid>
-#include <QListView>
 #include <QSettings>
-#include <QPainter>
 #include <QDir>
 #include <QRect>
 #include <QSize>
 #include <QScreen>
-#include <QStandardPaths>
-#include <QProcess>
 #include <QString>
 #include <QMenu>
 
@@ -47,7 +42,7 @@ MainWindow::MainWindow(QWidget* parent)
     bool dryRun = !m_manager.load();
 
     if (dryRun) {
-        statusBar()->showMessage("Could not load settings file — using defaults.", Config::STATUS_DURATION);
+        Status::notify("Could not load settings file — using defaults.", Status::Level::Warning);
     }
 
     // ---- Setup wizard, errors, warnings and messages ----
@@ -92,10 +87,13 @@ MainWindow::MainWindow(QWidget* parent)
     openDetails(nullptr);
     ui->tabWidget->setCurrentWidget(ui->tabJobs);
 
-    // ---- setup tray ----
+    // ---- Setup tray ----
     setupTray();
 
-    // ---- updater ----
+    // ---- Status bar
+    connect(&Status::instance(), &Status::statusMessage, this, &MainWindow::onStatusMessage);
+
+    // ---- Updater ----
     auto *updater = new UpdateManager(Config::APP_AUTHOR, Config::APP_NAME, Config::APP_VERSION, this);
 
     connect(updater, &UpdateManager::updateReady, this, [this](const QString &v) {
@@ -193,9 +191,9 @@ void MainWindow::onSettingsSave(){
     saveUiToSettings();
 
     if(m_manager.save()){
-        statusBar()->showMessage("Settings saved.", Config::STATUS_DURATION);
+        Status::notify("Settings saved.", Status::Level::Success);
     }else{
-        statusBar()->showMessage("Error saving settings.", Config::STATUS_DURATION);
+        Status::notify("Error saving settings.", Status::Level::Error);
     }
 }
 void MainWindow::onRcloneSelectClicked(){
@@ -214,28 +212,9 @@ void MainWindow::onSettingsAdvanced(){
     }
 }
 
-bool startDetachedClean(const QString &program, const QStringList &arguments){
-    QProcess process;
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-
-    // Strip Qt Creator / Qt kit injected paths that cause ABI mismatches
-    // in system-installed Qt apps like konsole.
-    env.remove("LD_LIBRARY_PATH");
-    env.remove("LD_PRELOAD");
-    env.remove("QT_PLUGIN_PATH");
-    env.remove("QML2_IMPORT_PATH");
-    env.remove("QML_IMPORT_PATH");
-
-    process.setProgram(program);
-    process.setArguments(arguments);
-    process.setProcessEnvironment(env);
-
-    qint64 pid = 0;
-    return process.startDetached(&pid);
-}
 void MainWindow::onRcloneConfClicked(){
     if(!m_manager.openRcloneConf()){
-        statusBar()->showMessage("Failed to run 'rclone config'.", Config::STATUS_DURATION);
+        Status::notify("Failed to run 'rclone config'.", Status::Level::Error);
     }
 }
 
@@ -266,8 +245,9 @@ void MainWindow::onJobMoved(const QString& id, int newIndex){
         m_jobWidgets.append(w);
     }
 
-    if (!m_manager.save())
-        statusBar()->showMessage("Warning: failed to save settings.", Config::STATUS_DURATION);
+    if (!m_manager.save()){
+        Status::notify("Warning: failed to save settings.", Status::Level::Error);
+    }
 }
 JobWidget* MainWindow::findOrCreateJobWidget(Job* job){
     for (JobWidget*& w : m_jobWidgets)
@@ -334,7 +314,9 @@ void MainWindow::clearDetails(){
     ui->detailsReadOnly->setChecked(false);
     ui->detailsOutput->clear();
 }
-
+void MainWindow::onDetailsTypeChanged(int index){
+    ui->detailsReadOnly->setEnabled(index == ui->detailsType->findText("mount"));
+}
 void MainWindow::onDetailsOpenLog(){
     if(!m_currentJobDetails) return;
     Job* job = m_currentJobDetails;
@@ -342,7 +324,7 @@ void MainWindow::onDetailsOpenLog(){
     bool status = job->openLogFile();
 
     if(!status){
-         statusBar()->showMessage("Error opening job log file (run the job at least once first).", Config::STATUS_DURATION);
+         Status::notify("Error opening job log file (run the job at least once first).", Status::Level::Error);
     }
 }
 void MainWindow::onDetailsSave(){
@@ -359,10 +341,10 @@ void MainWindow::onDetailsSave(){
     ui->detailsOutput->setText(job->getCommand(false).join(' '));
 
     if(m_manager.save()){
-        statusBar()->showMessage("Job saved.", Config::STATUS_DURATION);
+        Status::notify("Job saved.", Status::Level::Success);
         ui->tabWidget->setCurrentWidget(ui->tabJobs);
     }else{
-        statusBar()->showMessage("Error saving job.", Config::STATUS_DURATION);
+        Status::notify("Error saving job.", Status::Level::Error);
     }
 }
 void MainWindow::onDetailsDelete(){
@@ -373,13 +355,13 @@ void MainWindow::onDetailsDelete(){
     m_manager.removeJob(toRemove);
 
     if(m_manager.save()){
-        statusBar()->showMessage("Job removed.", Config::STATUS_DURATION);
+        Status::notify("Job removed.", Status::Level::Success);
 
         clearDetails();
         openDetails(nullptr);
         ui->tabWidget->setCurrentWidget(ui->tabJobs);
     }else{
-        statusBar()->showMessage("Error removing job.", Config::STATUS_DURATION);
+        Status::notify("Error removing job.", Status::Level::Error);
     }
 
 }
@@ -499,8 +481,22 @@ void MainWindow::activate(){
     activateWindow();
 }
 
-void MainWindow::on_detailsType_currentIndexChanged(int index)
-{
-    ui->detailsReadOnly->setEnabled(index == ui->detailsType->findText("mount"));
+// ---------------------------------------------------------------------------
+// Status bar
+// ---------------------------------------------------------------------------
+void MainWindow::onStatusMessage(const QString& message, Status::Level level){
+    // Optional: prefix/style by severity. Simplest version just forwards text.
+    switch (level) {
+    case Status::Level::Error:
+        statusBar()->setStyleSheet("color: #c0392b;");
+        break;
+    case Status::Level::Warning:
+        statusBar()->setStyleSheet("color: #e67e22;");
+        break;
+    default:
+        statusBar()->setStyleSheet("");
+        break;
+    }
+    statusBar()->showMessage(message, Config::STATUS_DURATION);
 }
 

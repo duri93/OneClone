@@ -1,9 +1,6 @@
 #include "RemotesAutocompleter.h"
 
-#include "RemotesLookupWorker.h"
-#include <QLoggingCategory>
-#include <QProcess>
-#include <QRegularExpression>
+// #include "RemotesLookupWorker.h"
 #include <QStringListModel>
 #include <QCompleter>
 #include <QLineEdit>

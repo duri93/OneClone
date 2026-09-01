@@ -14,6 +14,7 @@ qt_add_executable(OneClone
     src/main.cpp
 
     src/model/Config.h
+    src/model/Status.h
     src/model/Job.h                     src/model/Job.cpp
     src/model/LocalPathAutocompleter.h  src/model/LocalPathAutocompleter.cpp
     src/model/LogFile.h                 src/model/LogFile.cpp
@@ -29,7 +30,7 @@ qt_add_executable(OneClone
     src/view/QLabelInstantTooltip.h
 
     src/wizard/SetupWizard.h            src/wizard/SetupWizard.cpp
-    src/wizard/SetupWizardPage0.h     src/wizard/SetupWizardPage0.cpp     src/wizard/SetupWizardPage0.ui
+    src/wizard/SetupWizardPage0.h       src/wizard/SetupWizardPage0.cpp     src/wizard/SetupWizardPage0.ui
     src/wizard/SetupWizardPage1.h       src/wizard/SetupWizardPage1.cpp     src/wizard/SetupWizardPage1.ui
     src/wizard/SetupWizardPage2.h       src/wizard/SetupWizardPage2.cpp     src/wizard/SetupWizardPage2.ui
     src/wizard/SetupWizardPage3.h       src/wizard/SetupWizardPage3.cpp     src/wizard/SetupWizardPage3.ui

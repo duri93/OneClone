@@ -6,7 +6,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <QFile>
 
 enum class JobStatus{
     Stopped,
@@ -68,7 +67,7 @@ public:
     void stop();
 
     bool openLogFile();
-    void openLocalFolder();
+    bool openLocalFolder();
 
 public slots:
     void toggle(bool swapSides = false);

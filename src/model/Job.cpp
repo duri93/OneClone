@@ -1,9 +1,9 @@
 #include "Job.h"
 
 #include "Config.h"
+#include "Status.h"
 #include <QUuid>
 #include <QTimer>
-#include <QCoreApplication>
 #include <QDir>
 #include <QDesktopServices>
 
@@ -292,8 +292,22 @@ bool Job::openLogFile(){
 
     return true;
 }
-void Job::openLocalFolder(){
-    QDesktopServices::openUrl(QUrl::fromLocalFile(this->m_local));
+bool Job::openLocalFolder(){
+    if(m_local.isEmpty()){
+        Status::notify(
+            tr("Job \"%1\" has no local folder configured.").arg(m_name),
+            Status::Level::Warning);
+        return false;
+    }
+
+    if(!QDesktopServices::openUrl(QUrl::fromLocalFile(this->m_local))){
+        Status::notify(
+            tr("Could not open local folder for \"%1\".").arg(m_name),
+            Status::Level::Error);
+        return false;
+    }
+
+    return true;
 }
 
 void Job::fromJson(const QJsonValue& json){

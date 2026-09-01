@@ -1,6 +1,7 @@
 #pragma once
 #include "../model/Manager.h"
 #include "../model/RemotesAutocompleter.h"
+#include "../model/Status.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 
@@ -49,6 +50,7 @@ private slots:
     void onDetailsSave();
     void onDetailsDelete();
     void onLocalSelectClicked();
+    void onDetailsTypeChanged(int index);
 
     // Job model events
     void onJobAdded(Job* job);
@@ -58,7 +60,8 @@ private slots:
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
     void onTrayMenuAboutToShow();    // rebuilds service list in menu
 
-    void on_detailsType_currentIndexChanged(int index);
+    // Status bar
+    void onStatusMessage(const QString& message, Status::Level level);
 
 private:
     // Settings

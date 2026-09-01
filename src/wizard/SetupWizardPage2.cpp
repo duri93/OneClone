@@ -1,4 +1,5 @@
 #include "SetupWizardPage2.h"
+#include "../model/Status.h"
 #include "../model/Manager.h"
 #include <QProcess>
 
@@ -13,7 +14,11 @@ SetupWizardPage2::SetupWizardPage2(Manager* manager, QWidget* parent)
     ui.configConsoleButton->setIcon(icon);
 
     connect(ui.configFileButton, &QPushButton::clicked, this, [this](){
-        m_manager->openRcloneConfFile();
+        if (!m_manager->openRcloneConfFile()) {
+            Status::instance().notify(
+                tr("Could not locate or open the rclone config file."),
+                Status::Level::Error);
+        }
     });
 
     connect(ui.configConsoleButton, &QPushButton::clicked, this, [this](){
@@ -22,6 +27,8 @@ SetupWizardPage2::SetupWizardPage2(Manager* manager, QWidget* parent)
         // when the user closes the config console, instead of polling.
         QProcess* process = m_manager->openRcloneConf();
         if (!process) {
+            Status::instance().notify(
+                tr("Failed to launch 'rclone config'."), Status::Level::Error);
             return;
         }
         connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),

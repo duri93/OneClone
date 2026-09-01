@@ -10,7 +10,6 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QSvgRenderer>
-#include <QMessageBox>
 
 // ---------------------------------------------------------------------------
 // Constructor and helpers
