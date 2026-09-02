@@ -18,7 +18,6 @@ namespace Config {
 
     // display
     inline constexpr int STATUS_DURATION = 5000;
-    inline constexpr int MAX_OUTPUT_LINES = 2000;
     inline constexpr int SMALL_FONT_SIZE = 8;
 
     //logs

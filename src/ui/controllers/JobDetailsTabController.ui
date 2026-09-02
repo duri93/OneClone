@@ -44,7 +44,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="QComboBox" name="type">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select job type:&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt;: connect the remote folder to this pc and access it like a normal folder;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;copy&lt;/span&gt;: copy files between two folders;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;sync&lt;/span&gt;: ensure two folders are exacly the same by copying new and modified files, and deleting files in the destination folder if they're not present in the source folder. This is often referred to as one-way synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -109,14 +109,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
-    <widget class="Line" name="line0">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="typeLabel">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select job type:&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt;: connect the remote folder to this pc and access it like a normal folder;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;copy&lt;/span&gt;: copy files between two folders;&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;sync&lt;/span&gt;: ensure two folders are exacly the same by copying new and modified files, and deleting files in the destination folder if they're not present in the source folder. This is often referred to as one-way synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -133,6 +126,16 @@
      </property>
      <property name="text">
       <string>Local</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="autostart">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the job will run automatically when you open the app.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Run automatically when app starts</string>
      </property>
     </widget>
    </item>
@@ -159,7 +162,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="2">
+   <item row="4" column="2">
     <widget class="QLabelInstantTooltip" name="tpeHelp">
      <property name="maximumSize">
       <size>
@@ -210,13 +213,6 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1" colspan="2">
-    <widget class="Line" name="lne1">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
    <item row="9" column="0" colspan="3">
     <widget class="Line" name="line2">
      <property name="orientation">
@@ -225,41 +221,9 @@
     </widget>
    </item>
    <item row="11" column="0" colspan="3">
-    <widget class="Line" name="line">
+    <widget class="Line" name="line3">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QCheckBox" name="autostart">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the job will run automatically when you open the app.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Run automatically when app starts</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2">
-    <widget class="QLabelInstantTooltip" name="localHelp">
-     <property name="maximumSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap resource="../../../resources/resources.qrc">:/icons/help.svg</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -335,6 +299,35 @@
      </item>
     </layout>
    </item>
+   <item row="6" column="2">
+    <widget class="QLabelInstantTooltip" name="localHelp">
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="../../../resources/resources.qrc">:/icons/help.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="3">
+    <widget class="Line" name="line1">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -344,6 +337,19 @@
    <header>src/ui/widgets/QLabelInstantTooltip.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>name</tabstop>
+  <tabstop>autostart</tabstop>
+  <tabstop>type</tabstop>
+  <tabstop>local</tabstop>
+  <tabstop>localButton</tabstop>
+  <tabstop>remote</tabstop>
+  <tabstop>readOnly</tabstop>
+  <tabstop>command</tabstop>
+  <tabstop>save</tabstop>
+  <tabstop>openLog</tabstop>
+  <tabstop>remove</tabstop>
+ </tabstops>
  <resources>
   <include location="../../../resources/resources.qrc"/>
  </resources>

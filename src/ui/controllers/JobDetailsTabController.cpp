@@ -1,6 +1,5 @@
 #include "JobDetailsTabController.h"
 
-#include "src/common/Config.h"
 #include "src/common/LocalPathAutocompleter.h"
 #include "src/core/Job.h"
 #include "src/core/Status.h"
@@ -16,8 +15,7 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
     , m_appContext(appContext)
 {
     ui->setupUi(this);
-
-    ui->command->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
+    setJob(nullptr);
     LocalPathAutocompleter::attach(ui->local);
 
     connect(ui->openLog,     &QPushButton::clicked,           this, &JobDetailsTabController::onOpenLogClicked);
