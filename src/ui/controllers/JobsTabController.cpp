@@ -18,6 +18,8 @@ JobsTabController::JobsTabController(AppContext* appContext, QWidget* parent)
 
     connect(m_appContext, &AppContext::added, this, &JobsTabController::onJobAdded);
     connect(m_appContext, &AppContext::removed, this, &JobsTabController::onJobRemoved);
+
+    populateJobList();
 }
 
 JobsTabController::~JobsTabController()
@@ -36,26 +38,36 @@ void JobsTabController::onJobMoved(const QString& id, int newIndex)
 {
     m_appContext->moveJob(id, newIndex);
 
-    // rebuild the visual order from m_jobs, which is now authoritative
-    QLayout* l = ui->list->layout();
-    for (JobWidget*& w : m_jobWidgets) {
-        l->removeWidget(w);
-        w->hide();
-    }
-
-    m_jobWidgets.clear();
-    for (Job* job : m_appContext->jobs()) {
-        JobWidget* w = findOrCreateJobWidget(job);
-        l->addWidget(w);
-        w->show();
-        m_jobWidgets.append(w);
-    }
+    populateJobList();
 
     if (!m_appContext->save()) {
         Status::notify("Warning: failed to save settings.", Status::Level::Error);
     }
 }
 
+void JobsTabController::populateJobList()
+{
+
+    // detach currently-shown widgets
+    QLayout* l = ui->list->layout();
+    for (JobWidget*& w : m_jobWidgets) {
+        l->removeWidget(w);
+        w->hide();
+    }
+
+    // recreate list
+    QVector<JobWidget*> ordered;
+    ordered.reserve(m_appContext->jobs().size());
+    for (Job* job : m_appContext->jobs()) {
+        JobWidget* w = findOrCreateJobWidget(job);
+        l->addWidget(w);
+        w->show();
+        ordered.append(w);
+    }
+
+    // only replace once rebuilt, so lookups above still worked
+    m_jobWidgets = ordered;
+}
 JobWidget* JobsTabController::findOrCreateJobWidget(Job* job)
 {
     for (JobWidget*& w : m_jobWidgets)

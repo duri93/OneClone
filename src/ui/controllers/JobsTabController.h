@@ -39,6 +39,7 @@ private slots:
     void onJobRemoved(const QString& jobId);
 
 private:
+    void populateJobList();
     JobWidget* findOrCreateJobWidget(Job* job);
 
     Ui::JobsTabController* ui;

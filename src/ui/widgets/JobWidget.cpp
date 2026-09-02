@@ -41,24 +41,8 @@ JobWidget::JobWidget(Job *job) : QWidget(nullptr), ui(new Ui::JobWidget) {
     connect(job, &Job::progressUpdated, this, &JobWidget::onProgress);
     connect(job, &Job::warning,         this, &JobWidget::onWarning);
 
-    connect(ui->button1, &QPushButton::clicked, this, [this]() {
-        this->jobInvert = false;
-
-        if(m_job->type() == "mount" || m_job->active()){
-            this->confirmEvent();
-        }else{
-            this->showConfirm();
-        }
-    });
-    connect(ui->button2, &QPushButton::clicked, this, [this]() {
-        this->jobInvert = true;
-
-        if(m_job->type() == "mount" || m_job->active()){
-            this->confirmEvent();
-        }else{
-            this->showConfirm();
-        }
-    });
+    connect(ui->button1, &QPushButton::clicked, this, [this]() { buttonClicked(false); });
+    connect(ui->button2, &QPushButton::clicked, this, [this]() { buttonClicked(true);  });
     connect(ui->cancel, &QPushButton::clicked, this, &JobWidget::hideConfirm);
     connect(ui->confirm, &QPushButton::clicked, this, &JobWidget::confirmEvent);
 }
@@ -72,31 +56,25 @@ JobWidget::~JobWidget() {
 // ---------------------------------------------------------------------------
 bool JobWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    switch (event->type()) {
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick: {
-        auto* me = static_cast<QMouseEvent*>(event);
-
-        // normal flow if the click was on a button
-        if (ui->button1->geometry().contains(me->pos()) ||
-            ui->button2->geometry().contains(me->pos())) {
-            return QWidget::eventFilter(watched, event);
-        }
-
-        if (watched == this && event->type() == QEvent::MouseButtonRelease) {
-            m_job->openLocalFolder();
-
-            return true;
-        }
-
-        if (watched == this && event->type() == QEvent::MouseButtonDblClick) {
-            emit openDetailsRequested(m_job->id());
-            return true;
-        }
-        break;
+    if( event->type() != QEvent::MouseButtonDblClick &&
+        event->type() != QEvent::MouseButtonRelease){
+        return QWidget::eventFilter(watched, event);
     }
-    default:
-        break;
+
+    auto* me = static_cast<QMouseEvent*>(event);
+
+    // name doubleclick: open job details
+    if( event->type() == QEvent::MouseButtonDblClick &&
+        ui->name->geometry().contains(me->pos()) ){
+        emit openDetailsRequested(m_job->id());
+        return true;
+    }
+
+    // icon doubleclick: open local folder
+    if( event->type() == QEvent::MouseButtonRelease &&
+        ui->jobIcon->geometry().contains(me->pos()) ){
+        m_job->openLocalFolder();
+        return true;
     }
 
     return QWidget::eventFilter(watched, event);
@@ -110,13 +88,13 @@ void JobWidget::enterEvent(QEnterEvent* event)
     setPalette(pal);
     QWidget::enterEvent(event);
 }
-
 void JobWidget::leaveEvent(QEvent* event)
 {
     setAutoFillBackground(false);
     setPalette(QApplication::palette());
     QWidget::leaveEvent(event);
 }
+
 
 // ---------------------------------------------------------------------------
 // Job spec, status and progress
@@ -242,6 +220,15 @@ void JobWidget::setProgressVisibility(){
 // ---------------------------------------------------------------------------
 // Click events
 // ---------------------------------------------------------------------------
+void JobWidget::buttonClicked(bool swap){
+    this->jobInvert = swap;
+
+    if(m_job->type() == "mount" || m_job->active()){
+        this->confirmEvent();
+    }else{
+        this->showConfirm();
+    }
+}
 void JobWidget::showConfirm(){
     QString label = "Confirm starting %1 job?\nFrom: %2\nTo: %3\n";
     label = label.arg(m_job->type(),

@@ -20,13 +20,14 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
 
     connect(ui->openLog,     &QPushButton::clicked,           this, &JobDetailsTabController::onOpenLogClicked);
     connect(ui->save,        &QPushButton::clicked,           this, &JobDetailsTabController::onSaveClicked);
+    connect(ui->cancel,      &QPushButton::clicked,           this, &JobDetailsTabController::onCancelClicked);
     connect(ui->remove,      &QPushButton::clicked,           this, &JobDetailsTabController::onDeleteClicked);
     connect(ui->localButton, &QToolButton::clicked,           this, &JobDetailsTabController::onLocalSelectClicked);
     connect(ui->type,        &QComboBox::currentIndexChanged, this, &JobDetailsTabController::onTypeChanged);
 
     // Keep the generated command preview in sync with every field that
     // feeds into it, so it updates instantly as the user edits the job.
-    connect(ui->type,     &QComboBox::currentIndexChanged, this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->type,     &QComboBox::currentIndexChanged,  this, &JobDetailsTabController::updateCommandPreview);
     connect(ui->local,    &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
     connect(ui->remote,   &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
     connect(ui->readOnly, &QCheckBox::toggled,              this, &JobDetailsTabController::updateCommandPreview);
@@ -187,10 +188,16 @@ void JobDetailsTabController::onSaveClicked()
     if (m_appContext->save()) {
         Status::notify("Job saved.", Status::Level::Success);
         updateUnsavedIndicator();
-        emit closeRequested();
+        onCancelClicked(); // resets job and closes
     } else {
         Status::notify("Error saving job.", Status::Level::Error);
     }
+}
+
+void JobDetailsTabController::onCancelClicked()
+{
+    setJob(nullptr);
+    emit closeRequested();
 }
 
 void JobDetailsTabController::onDeleteClicked()

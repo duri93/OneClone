@@ -38,6 +38,7 @@ signals:
 private slots:
     void onTypeChanged(int index);
     void onOpenLogClicked();
+    void onCancelClicked();
     void onSaveClicked();
     void onDeleteClicked();
     void onLocalSelectClicked();

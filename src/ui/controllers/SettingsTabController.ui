@@ -365,6 +365,26 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>rclone</tabstop>
+  <tabstop>rcloneButton</tabstop>
+  <tabstop>autostart</tabstop>
+  <tabstop>advanced</tabstop>
+  <tabstop>advancedScrollarea</tabstop>
+  <tabstop>cacheMode</tabstop>
+  <tabstop>cacheMaxSize</tabstop>
+  <tabstop>cacheMinFreeSpace</tabstop>
+  <tabstop>cacheMaxAge</tabstop>
+  <tabstop>readChunkSize</tabstop>
+  <tabstop>readChunkSizeLimit</tabstop>
+  <tabstop>bufferSize</tabstop>
+  <tabstop>transfers</tabstop>
+  <tabstop>checkers</tabstop>
+  <tabstop>symlinks</tabstop>
+  <tabstop>save</tabstop>
+  <tabstop>openRcloneConf</tabstop>
+  <tabstop>openWizard</tabstop>
+ </tabstops>
  <resources>
   <include location="../../../resources/resources.qrc"/>
  </resources>

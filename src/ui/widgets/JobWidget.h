@@ -22,8 +22,8 @@ public:
     explicit JobWidget(Job* job);
     ~JobWidget() override;
 
-    Job*    job () { return m_job; };
-    const Job*    job () const { return m_job; };
+    Job*       job ()       { return m_job; };
+    const Job* job () const { return m_job; };
 
     // Connected to Job's signals to keep the widget in sync
     void onSpecChange();
@@ -39,11 +39,12 @@ signals:
 
 private:
     Ui::JobWidget* ui;
-    Job*       m_job;
-    QPoint m_dragStartPos;
+    Job*           m_job;
+    QPoint         m_dragStartPos;
 
     void setProgressVisibility();
 protected:
+    void buttonClicked(bool swap);
     bool jobInvert = false;
     void showConfirm();
     void hideConfirm();

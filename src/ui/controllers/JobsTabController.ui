@@ -113,7 +113,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This screen shows the list of jobs you can run. &lt;/p&gt;&lt;p&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;Click&lt;/span&gt; a job to open the local folder.&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;Double click&lt;/span&gt; a job to edit it.&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;Drag&lt;/span&gt; jobs to reorder them.&lt;br/&gt;- Click &lt;span style=&quot; font-weight:700;&quot;&gt;Add&lt;/span&gt; to create a new job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This screen shows the list of jobs you can run. &lt;/p&gt;&lt;p&gt;- Click &lt;span style=&quot; font-weight:700;&quot;&gt;Add&lt;/span&gt; to create a new job.&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;Click&lt;/span&gt; a job icon open its local folder.&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;Double click&lt;/span&gt; a job name to edit it.&lt;br/&gt;- &lt;span style=&quot; font-weight:700;&quot;&gt;Drag&lt;/span&gt; jobs from their icons to reorder them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string/>
