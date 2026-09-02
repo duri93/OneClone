@@ -1,22 +1,25 @@
 #include "RemotesAutocompleter.h"
-#include <QStringListModel>
+
+#include "src/providers/rclone/RemotesLookupWorker.h"
+
 #include <QCompleter>
 #include <QLineEdit>
+#include <QStringListModel>
 
 // ---------------------------------------------------------------------------
 // RemotesAutocompleter
 // ---------------------------------------------------------------------------
 
-RemotesAutocompleter *RemotesAutocompleter::attach(QLineEdit *lineEdit, const QString &rclonePath)
+RemotesAutocompleter *RemotesAutocompleter::attach(QLineEdit *lineEdit, RCloneProvider *rcloneProvider, const QString &rclonePath)
 {
     if (!lineEdit)
         return nullptr;
 
     // Parented to lineEdit: destroyed automatically along with it.
-    return new RemotesAutocompleter(lineEdit, rclonePath, lineEdit);
+    return new RemotesAutocompleter(lineEdit, rcloneProvider, rclonePath, lineEdit);
 }
 
-RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, QString rclonePath, QObject *parent)
+RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, RCloneProvider *rcloneProvider, QString rclonePath, QObject *parent)
     : QObject(parent)
     , m_lineEdit(lineEdit)
 {
@@ -34,8 +37,7 @@ RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, QString rclonePa
     if (lineEdit)
         lineEdit->setCompleter(m_completer);
 
-#ifdef Q_OS_WIN
-    auto *worker = new RemotesLookupWorker(std::move(rclonePath));
+    auto *worker = new RemotesLookupWorker(rcloneProvider, std::move(rclonePath));
     worker->moveToThread(&m_workerThread);
 
     connect(&m_workerThread, &QThread::started, worker, &RemotesLookupWorker::run);
@@ -46,9 +48,6 @@ RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, QString rclonePa
     connect(&m_workerThread, &QThread::finished, worker, &QObject::deleteLater);
 
     m_workerThread.start();
-#else
-    Q_UNUSED(rclonePath)
-#endif
 }
 
 RemotesAutocompleter::~RemotesAutocompleter()

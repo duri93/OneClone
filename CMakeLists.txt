@@ -11,24 +11,36 @@ set(CMAKE_AUTORCC ON)
 
 qt_add_executable(OneClone
     WIN32 MACOSX_BUNDLE
+
     src/app/main.cpp
+    src/app/SingleInstanceGuard.h       src/app/SingleInstanceGuard.cpp
 
     src/common/Config.h
     src/common/LocalPathAutocompleter.h  src/common/LocalPathAutocompleter.cpp
     src/common/UpdateManager.h           src/common/UpdateManager.cpp
 
-    src/core/Status.h
+    src/core/AppContext.h              src/core/AppContext.cpp
     src/core/Job.h                     src/core/Job.cpp
     src/core/LogFile.h                 src/core/LogFile.cpp
-    src/core/Manager.h                 src/core/Manager.cpp
     src/core/SharedSettings.h          src/core/SharedSettings.cpp
+    src/core/Status.h
 
+    src/providers/platform/AutostartManager.h       src/providers/platform/AutostartManager.cpp
+    src/providers/platform/MountBackendDetector.h
+    src/providers/platform/WinFspDetector.h         src/providers/platform/WinFspDetector.cpp
+
+    src/providers/rclone/RCloneProvider.h
+    src/providers/rclone/RCloneProviderWindows.h    src/providers/rclone/RCloneProviderWindows.cpp
     src/providers/rclone/RemotesAutocompleter.h     src/providers/rclone/RemotesAutocompleter.cpp
     src/providers/rclone/RemotesLookupWorker.h      src/providers/rclone/RemotesLookupWorker.cpp
 
-    src/ui/MainWindow.h                     src/ui/MainWindow.cpp               src/ui/MainWindow.ui
-    src/ui/widgets/JobWidget.h              src/ui/widgets/JobWidget.cpp        src/ui/widgets/JobWidget.ui
+    src/ui/controllers/JobDetailsTabController.h    src/ui/controllers/JobDetailsTabController.cpp
+    src/ui/controllers/JobsTabController.h          src/ui/controllers/JobsTabController.cpp
+    src/ui/controllers/SettingsTabController.h      src/ui/controllers/SettingsTabController.cpp
+    src/ui/controllers/TrayController.h             src/ui/controllers/TrayController.cpp
+
     src/ui/widgets/JobListWidget.h          src/ui/widgets/JobListWidget.cpp
+    src/ui/widgets/JobWidget.h              src/ui/widgets/JobWidget.cpp        src/ui/widgets/JobWidget.ui
     src/ui/widgets/QLabelInstantTooltip.h
 
     src/ui/wizard/SetupWizard.h         src/ui/wizard/SetupWizard.cpp
@@ -36,6 +48,8 @@ qt_add_executable(OneClone
     src/ui/wizard/SetupWizardPage1.h    src/ui/wizard/SetupWizardPage1.cpp  src/ui/wizard/SetupWizardPage1.ui
     src/ui/wizard/SetupWizardPage2.h    src/ui/wizard/SetupWizardPage2.cpp  src/ui/wizard/SetupWizardPage2.ui
     src/ui/wizard/SetupWizardPage3.h    src/ui/wizard/SetupWizardPage3.cpp  src/ui/wizard/SetupWizardPage3.ui
+
+    src/ui/MainWindow.h                     src/ui/MainWindow.cpp               src/ui/MainWindow.ui
 
     resources/resources.qrc
     resources/main.rc

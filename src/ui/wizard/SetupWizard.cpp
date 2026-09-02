@@ -1,22 +1,23 @@
 #include "SetupWizard.h"
-#include "SetupWizardPage0.h"
-#include "SetupWizardPage1.h"
-#include "SetupWizardPage2.h"
-#include "SetupWizardPage3.h"
-#include "src/core/Manager.h"
+
+#include "src/core/AppContext.h"
+#include "src/ui/wizard/SetupWizardPage0.h"
+#include "src/ui/wizard/SetupWizardPage1.h"
+#include "src/ui/wizard/SetupWizardPage2.h"
+#include "src/ui/wizard/SetupWizardPage3.h"
+
 #include <QWidget>
 
-
-SetupWizard::SetupWizard(Manager* manager, QWidget* parent)
-    : QObject(nullptr), m_manager(manager)
+SetupWizard::SetupWizard(AppContext* appContext, QWidget* parent)
+    : QObject(nullptr), m_appContext(appContext)
 {
     m_wizard = new QWizard(parent);
     m_wizard->setWizardStyle(QWizard::ModernStyle);
     m_wizard->setWindowTitle(tr("OneClone setup wizard"));
 
     m_page0 = new SetupWizardPage0(m_wizard);
-    m_page1 = new SetupWizardPage1(m_manager, m_wizard);
-    m_page2 = new SetupWizardPage2(m_manager, m_wizard);
+    m_page1 = new SetupWizardPage1(m_appContext, m_wizard);
+    m_page2 = new SetupWizardPage2(m_appContext, m_wizard);
     m_page3 = new SetupWizardPage3(m_wizard);
 
     m_wizard->addPage(m_page0);

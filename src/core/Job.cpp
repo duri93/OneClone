@@ -2,10 +2,12 @@
 
 #include "src/common/Config.h"
 #include "src/core/Status.h"
-#include <QUuid>
-#include <QTimer>
-#include <QDir>
+
+#include <atomic>
 #include <QDesktopServices>
+#include <QDir>
+#include <QTimer>
+#include <QUuid>
 
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
@@ -13,8 +15,8 @@
 #endif
 static std::atomic<int> s_ctrlSuppressCount{0};
 
-Job::Job(SharedSettings* shared, QObject* parent)
-    : QObject(parent), m_shared(shared){
+Job::Job(SharedSettings* shared, RCloneProvider* rcloneProvider, QObject* parent)
+    : QObject(parent), m_shared(shared), m_rcloneProvider(rcloneProvider){
 
     m_id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     m_name = "New job";
@@ -115,7 +117,7 @@ void Job::start(bool swapSides){
     // start process
     setStatus(JobStatus::Starting);
 
-    m_process.setProgram(m_shared->rclonePath());
+    m_process.setProgram(m_rcloneProvider->resolveExecutable(m_shared->rclonePath()));
     m_process.setArguments(args);
     m_process.start();
 
@@ -162,7 +164,6 @@ void Job::onReadyRead(){
 }
 void Job::onProcessError(QProcess::ProcessError error){
     Q_UNUSED(error)
-    //if (m_status != JobStatus::Stopping) {
 
     if(error == QProcess::FailedToStart){
         processLineOutput(QString("[ERROR] Failed to start: %1").arg(m_process.errorString()));
@@ -171,7 +172,6 @@ void Job::onProcessError(QProcess::ProcessError error){
     }
 
     setStatus(JobStatus::Errored);
-    //}
 }
 void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus){
     Q_UNUSED(exitStatus)
@@ -187,8 +187,7 @@ void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus){
     onReadyRead();
 
     if (m_status == JobStatus::Errored) {
-        // Process was stopped because of an error match — keep Errored status
-        //setStatus(JobStatus::Errored);
+        // already Errored from a matched error pattern — leave status as-is
     } else if(m_status == JobStatus::Stopping){
         setStatus(JobStatus::Stopped);
     } else if (exitCode != 0) {

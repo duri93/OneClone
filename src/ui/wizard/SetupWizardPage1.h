@@ -1,8 +1,10 @@
 #pragma once
-#include "ui_SetupWizardPage1.h"
+
+#include "src/ui/wizard/ui_SetupWizardPage1.h"
+
 #include <QWizardPage>
 
-class Manager;
+class AppContext;
 class QTimer;
 
 // Page 1: checks for rclone / WinFsp, lets the user point at the
@@ -11,7 +13,7 @@ class QTimer;
 class SetupWizardPage1 : public QWizardPage {
     Q_OBJECT
 public:
-    explicit SetupWizardPage1(Manager* manager, QWidget* parent = nullptr);
+    explicit SetupWizardPage1(AppContext* appContext, QWidget* parent = nullptr);
 
     bool isComplete() const override;
 
@@ -23,6 +25,6 @@ private:
     void refresh();
 
     Ui::SetupWizardPage1 ui;
-    Manager* m_manager = nullptr;
+    AppContext* m_appContext = nullptr;
     QTimer* m_timer = nullptr;
 };

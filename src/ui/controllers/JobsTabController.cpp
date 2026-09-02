@@ -1,0 +1,90 @@
+#include "JobsTabController.h"
+
+#include "src/core/Job.h"
+#include "src/core/Status.h"
+#include "src/ui/ui_JobsTabController.h"
+#include "src/ui/widgets/JobListWidget.h"
+#include "src/ui/widgets/JobWidget.h"
+
+JobsTabController::JobsTabController(AppContext* appContext, QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::JobsTabController)
+    , m_appContext(appContext)
+{
+    ui->setupUi(this);
+
+    connect(ui->jobsAdd, &QPushButton::clicked, this, &JobsTabController::onAddClicked);
+    connect(ui->jobsList, &JobListWidget::jobMoved, this, &JobsTabController::onJobMoved);
+
+    connect(m_appContext, &AppContext::added, this, &JobsTabController::onJobAdded);
+    connect(m_appContext, &AppContext::removed, this, &JobsTabController::onJobRemoved);
+}
+
+JobsTabController::~JobsTabController()
+{
+    delete ui;
+}
+
+void JobsTabController::onAddClicked()
+{
+    Job* job = new Job(m_appContext->shared(), m_appContext->rcloneProvider());
+    m_appContext->addJob(job);
+    emit openDetailsRequested(job->id());
+}
+
+void JobsTabController::onJobMoved(const QString& id, int newIndex)
+{
+    m_appContext->moveJob(id, newIndex);
+
+    // rebuild the visual order from m_jobs, which is now authoritative
+    QLayout* l = ui->jobsList->layout();
+    for (JobWidget*& w : m_jobWidgets) {
+        l->removeWidget(w);
+        w->hide();
+    }
+
+    m_jobWidgets.clear();
+    for (Job* job : m_appContext->jobs()) {
+        JobWidget* w = findOrCreateJobWidget(job);
+        l->addWidget(w);
+        w->show();
+        m_jobWidgets.append(w);
+    }
+
+    if (!m_appContext->save()) {
+        Status::notify("Warning: failed to save settings.", Status::Level::Error);
+    }
+}
+
+JobWidget* JobsTabController::findOrCreateJobWidget(Job* job)
+{
+    for (JobWidget*& w : m_jobWidgets)
+        if (w->job() == job) return w;
+
+    // not found — create fresh (same as onJobAdded)
+    JobWidget* w = new JobWidget(job);
+    w->setProperty("jobId", job->id());
+    connect(w, &JobWidget::openDetailsRequested, this, &JobsTabController::openDetailsRequested);
+    return w;
+}
+
+void JobsTabController::onJobAdded(Job* job)
+{
+    JobWidget* w = new JobWidget(job);
+
+    connect(w, &JobWidget::openDetailsRequested, this, &JobsTabController::openDetailsRequested);
+
+    m_jobWidgets.append(w);
+    ui->jobsList->layout()->addWidget(w);
+}
+
+void JobsTabController::onJobRemoved(const QString& jobId)
+{
+    for (int i = 0; i < m_jobWidgets.size(); ++i) {
+        if (m_jobWidgets[i]->job()->id() == jobId) {
+            delete m_jobWidgets[i];
+            m_jobWidgets.removeAt(i);
+            break;
+        }
+    }
+}

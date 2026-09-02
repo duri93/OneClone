@@ -1,15 +1,15 @@
 #pragma once
 
-#include <QObject>
 #include <QFile>
+#include <QObject>
 #include <QString>
 
-// Simple append-only logger.
-// - File is created on first write() call (lazy open).
-// - File lives at <applicationDirPath>/logs/<jobName>-<timestamp>.log
-// - Keeps at most kMaxLogFiles files in the logs directory (oldest deleted first).
-// - Each line is prefixed with [timestamp].
-// - No buffering: every write() goes straight to disk.
+// ---------------------------------------------------------------------------
+// LogFile
+// Simple append-only, unbuffered logger for a single job. Writes to
+// <applicationDirPath>/logs/<jobName>-<timestamp>.log, created lazily on
+// first write(); keeps only the newest Config::MAX_LOG_FILES per directory.
+// ---------------------------------------------------------------------------
 class LogFile : public QObject
 {
     Q_OBJECT

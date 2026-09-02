@@ -1,16 +1,16 @@
 #pragma once
-#include "src/core/Manager.h"
-#include "src/core/Status.h"
-#include "src/providers/rclone/RemotesAutocompleter.h"
-#include <QMainWindow>
-#include <QSystemTrayIcon>
 
-class Job;
-class JobWidget;
-class SetupWizard;
+#include "src/core/AppContext.h"
+#include "src/core/Status.h"
+#include "src/ui/controllers/JobDetailsTabController.h"
+#include "src/ui/controllers/JobsTabController.h"
+#include "src/ui/controllers/SettingsTabController.h"
+#include "src/ui/controllers/TrayController.h"
+
+#include <QMainWindow>
+
 class QString;
-class QMenu;
-class QAction;
+class SetupWizard;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,7 +18,8 @@ QT_END_NAMESPACE
 
 // ---------------------------------------------------------------------------
 // MainWindow
-// Wires the .ui widgets to SettingsManager and ServiceListModel.
+// Top-level window: hosts the tab controllers, tray icon, and setup wizard,
+// and wires them to the shared AppContext.
 // Follows a simple signals-&-slots architecture — no extra MVP layer.
 // ---------------------------------------------------------------------------
 class MainWindow : public QMainWindow
@@ -35,70 +36,30 @@ protected:
     void closeEvent(QCloseEvent* event) override;
 
 private slots:
-    // Settings tab
-    void onSettingsSave();
-    void onRcloneSelectClicked();
-    void onSettingsAdvanced();
-    void onRcloneConfClicked();
-
     // Jobs list tab
-    void onAddJobClicked();
-    void onJobMoved(const QString& id, int newIndex);
-
-    // Job details tab
-    void onDetailsOpenLog();
-    void onDetailsSave();
-    void onDetailsDelete();
-    void onLocalSelectClicked();
-    void onDetailsTypeChanged(int index);
-
-    // Job model events
-    void onJobAdded(Job* job);
-    void onJobRemoved(const QString& jobId);
-
-    // Tray icon
-    void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
-    void onTrayMenuAboutToShow();    // rebuilds service list in menu
+    void onJobsOpenDetailsRequested(const QString& id);
 
     // Status bar
     void onStatusMessage(const QString& message, Status::Level level);
 
 private:
     // Settings
-    void loadSettingsToUi();
-    void saveUiToSettings();
     void openSetupWizard();
     void checkDependencies();
-
-    // Job details
-    void openDetails(Job* job);
-    void clearDetails();
 
     // Window management
     void moveWindowToBottomRight();
 
     // Properties
     Ui::MainWindow*  ui;
-    Manager  m_manager;
+    AppContext  m_appContext;
 
-    Job*                m_currentJobDetails = nullptr;
-    QVector<JobWidget*> m_jobWidgets;
+    SettingsTabController*    m_settingsTab = nullptr;
+    JobsTabController*        m_jobsTab     = nullptr;
+    JobDetailsTabController*  m_detailsTab  = nullptr;
+    TrayController*           m_trayController = nullptr;
 
 private:
     // setup wizard
     SetupWizard* m_wizard = nullptr;
-
-    // list
-    JobWidget* findOrCreateJobWidget(Job* job);
-
-    // tray icon
-    void setupTray();
-
-    QSystemTrayIcon* m_trayIcon    = nullptr;
-    QMenu*           m_trayMenu    = nullptr;
-    QAction*         m_trayOpen    = nullptr;
-    QAction*         m_trayClose   = nullptr;
-    // service actions are rebuilt dynamically in onTrayMenuAboutToShow
-
-    RemotesAutocompleter* m_remotesAutocompleter = nullptr;
 };

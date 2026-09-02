@@ -1,15 +1,17 @@
 #include "SetupWizardPage1.h"
-#include "src/core/Manager.h"
+
 #include "src/common/LocalPathAutocompleter.h"
-#include <QFileDialog>
+#include "src/core/AppContext.h"
+
 #include <QDir>
+#include <QFileDialog>
 #include <QTimer>
 
-SetupWizardPage1::SetupWizardPage1(Manager* manager, QWidget* parent)
-    : QWizardPage(parent), m_manager(manager), m_timer(new QTimer(this))
+SetupWizardPage1::SetupWizardPage1(AppContext* appContext, QWidget* parent)
+    : QWizardPage(parent), m_appContext(appContext), m_timer(new QTimer(this))
 {
     ui.setupUi(this);
-    ui.rclonePath->setText(m_manager->shared()->rclonePath());
+    ui.rclonePath->setText(m_appContext->shared()->rclonePath());
 
     LocalPathAutocompleter::attach(ui.rclonePath,
                                    LocalPathAutocompleter::Mode::FoldersAndFiles,
@@ -22,11 +24,11 @@ SetupWizardPage1::SetupWizardPage1(Manager* manager, QWidget* parent)
 
         if (!path.isEmpty()) {
             ui.rclonePath->setText(QDir::toNativeSeparators(path));
-            m_manager->shared()->setRclonePath(QDir::toNativeSeparators(path));
+            m_appContext->shared()->setRclonePath(QDir::toNativeSeparators(path));
         }
     });
     connect(ui.rclonePath, &QLineEdit::editingFinished, this, [this](){
-        m_manager->shared()->setRclonePath(QDir::toNativeSeparators(ui.rclonePath->text()));
+        m_appContext->shared()->setRclonePath(QDir::toNativeSeparators(ui.rclonePath->text()));
     });
 
     m_timer->setInterval(2000);
@@ -47,18 +49,18 @@ void SetupWizardPage1::cleanupPage(){
 }
 
 bool SetupWizardPage1::isComplete() const {
-    return m_manager->isRcloneInstalled() && m_manager->isWinFspInstalled();
+    return m_appContext->rcloneProvider()->isAvailable(m_appContext->shared()->rclonePath()) && m_appContext->mountBackendDetector()->isAvailable();
 }
 
 void SetupWizardPage1::refresh(){
     static const QPixmap okPixmap(QString::fromUtf8(":/icons/success.svg"));
     static const QPixmap noPixmap(QString::fromUtf8(":/icons/errored.svg"));
 
-    bool rcloneOk = m_manager->isRcloneInstalled();
+    bool rcloneOk = m_appContext->rcloneProvider()->isAvailable(m_appContext->shared()->rclonePath());
     ui.rcloneStatus->setText(rcloneOk ? tr("Found") : tr("Not found"));
     ui.rcloneIcon->setPixmap(rcloneOk ? okPixmap : noPixmap);
 
-    bool winfspOk = m_manager->isWinFspInstalled();
+    bool winfspOk = m_appContext->mountBackendDetector()->isAvailable();
     ui.winfspStatus->setText(winfspOk ? tr("Found") : tr("Not found"));
     ui.winfspIcon->setPixmap(winfspOk ? okPixmap : noPixmap);
 

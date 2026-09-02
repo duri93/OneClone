@@ -1,14 +1,20 @@
 #pragma once
-#include <QLabel>
+
 #include <QEvent>
+#include <QLabel>
 #include <QToolTip>
 
+// ---------------------------------------------------------------------------
+// QLabelInstantTooltip
+// A QLabel that shows its tooltip immediately on hover, instead of waiting
+// for Qt's default delay.
+// ---------------------------------------------------------------------------
 class QLabelInstantTooltip : public QLabel {
     Q_OBJECT
 
 public:
-    // Add this constructor accepting an optional parent pointer
     explicit QLabelInstantTooltip(QWidget *parent = nullptr) : QLabel(parent) {}
+
 protected:
     bool event(QEvent *e) override {
         if (e->type() == QEvent::ToolTip) {

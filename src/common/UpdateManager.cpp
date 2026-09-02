@@ -1,19 +1,20 @@
 #include "UpdateManager.h"
-#include <QNetworkReply>
-#include <QTemporaryDir>
+
 #include <QCoreApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonParseError>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QFileInfo>
-#include <QTemporaryFile>
-#include <QCryptographicHash>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QNetworkReply>
 #include <QProcess>
 #include <QRegularExpression>
-#include <QUuid>
+#include <QTemporaryDir>
+#include <QTemporaryFile>
 #include <QUrl>
+#include <QUuid>
 
 UpdateManager::UpdateManager(QString repoOwner,
                              QString repoName,

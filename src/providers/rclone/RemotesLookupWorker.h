@@ -1,13 +1,22 @@
 #pragma once
 
-#include <QObject>
+#include "src/providers/rclone/RCloneProvider.h"
 
+#include <QObject>
+#include <QString>
+#include <QStringList>
+
+// ---------------------------------------------------------------------------
+// RemotesLookupWorker
+// Runs on a background thread and asks an RCloneProvider for the configured
+// remotes and their top-level directories, emitting results incrementally.
+// ---------------------------------------------------------------------------
 class RemotesLookupWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit RemotesLookupWorker(QString rclonePath);
+    explicit RemotesLookupWorker(RCloneProvider* rcloneProvider, QString rclonePath);
 
 public slots:
     void run();
@@ -18,10 +27,6 @@ signals:
     void finished();
 
 private:
-    static bool runRclone(const QString &rclonePath, const QStringList &arguments, QString *stdoutText);
-    static QStringList listRemotes(const QString &rclonePath);
-
-    static QStringList listDirs(const QString &rclonePath, const QString &remote);
-
+    RCloneProvider* m_rcloneProvider;
     QString m_rclonePath;
 };

@@ -1,5 +1,3 @@
-// LocalPathAutocompleter.cpp
-
 #include "LocalPathAutocompleter.h"
 
 #include <QAbstractItemView>
@@ -9,7 +7,6 @@
 #include <QFileInfo>
 #include <QFileSystemModel>
 #include <QKeyEvent>
-
 
 namespace {
 
@@ -134,5 +131,4 @@ void LocalPathAutocompleter::onCompletionActivated(const QString &text)
     m_completer->setCompletionPrefix(path);
     m_completer->complete();
 }
-
 

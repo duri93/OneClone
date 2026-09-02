@@ -1,7 +1,8 @@
 #pragma once
 
-#include "SharedSettings.h"
-#include "LogFile.h"
+#include "src/core/LogFile.h"
+#include "src/core/SharedSettings.h"
+#include "src/providers/rclone/RCloneProvider.h"
 
 #include <QObject>
 #include <QProcess>
@@ -23,12 +24,17 @@ struct JobProgress{
     QString eta = "";
 };
 
+// ---------------------------------------------------------------------------
+// Job
+// A single rclone operation (mount/copy/sync) with its settings, live
+// status/progress, and the QProcess that runs it.
+// ---------------------------------------------------------------------------
 class Job : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Job(SharedSettings* shared, QObject* parent = nullptr);
+    explicit Job(SharedSettings* shared, RCloneProvider* rcloneProvider, QObject* parent = nullptr);
     ~Job() override;
 
     // property accessors
@@ -99,6 +105,7 @@ private:
     bool m_readOnly   = false;
 
     SharedSettings*  m_shared;
+    RCloneProvider*  m_rcloneProvider;
     JobStatus        m_status = JobStatus::Stopped;
     QVector<QString> m_warnings;
     JobProgress      m_progress;

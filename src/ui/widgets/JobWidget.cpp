@@ -1,13 +1,14 @@
-#include "src/common/Config.h"
 #include "JobWidget.h"
-#include "src/view/ui_JobWidget.h"
+
+#include "src/common/Config.h"
+#include "src/ui/widgets/ui_JobWidget.h"
 
 #include <QApplication>
-#include <QMouseEvent>
+#include <QDrag>
 #include <QEnterEvent>
 #include <QFont>
-#include <QDrag>
 #include <QMimeData>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QSvgRenderer>
 
@@ -136,7 +137,6 @@ void JobWidget::onStatusChange(){
 
     // status label
     ui->jobIcon->setPixmap(getJobIcon());
-    //ui->statusIcon->setPixmap(getStatusIcon());
     ui->statusIcon->setIcon(QIcon(getStatusIcon()));
 
     // button labels

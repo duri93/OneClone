@@ -1,4 +1,5 @@
 #include "LogFile.h"
+
 #include "src/common/Config.h"
 
 #include <QCoreApplication>

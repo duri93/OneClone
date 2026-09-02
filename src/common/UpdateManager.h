@@ -1,44 +1,19 @@
 #pragma once
-#include <QNetworkAccessManager>
-#include <QPointer>
+
 #include <QFile>
+#include <QNetworkAccessManager>
+#include <QObject>
+#include <QPointer>
+
+class QNetworkReply;
 class QTemporaryDir;
 
-/**
- * GitHubUpdater
- * =============
- * A small, self-contained auto-updater for Qt desktop applications that are
- * published as GitHub Releases.
- *
- * Flow:
- *   1. checkForUpdates() asks the GitHub API for the latest release and
- *      compares its tag against the current version.
- *   2. If newer, the matching release asset is downloaded to a temporary
- *      directory (HTTP redirects are followed automatically).
- *   3. The download is verified (size, and SHA-256 using the "digest"
- *      field GitHub reports for each release asset, when present).
- *      Corrupted downloads are retried up to setMaxDownloadAttempts()
- *      times.
- *   4. Once verified, updateReady() is emitted so the application can tell
- *      the user. The update is applied automatically the next time the
- *      application quits (via QCoreApplication::aboutToQuit), by handing
- *      off to a small, freshly-generated platform-native script that waits
- *      for this process to exit, replaces the installed files, and
- *      restarts the application.
- *
- * Everything is asynchronous and non-blocking. No settings are persisted
- * to disk by this class -- setMaxDownloadAttempts() only affects the
- * current process and always resets to its default on the next launch.
- *
- * Requirements on the release assets (see accompanying guide):
- *   - Windows asset: a .zip archive containing the full application folder.
- *   - Linux asset:   a .tar.gz archive containing the full application folder.
- *   - No separate checksum asset is required: GitHub computes and reports
- *     a SHA-256 "digest" for each uploaded asset via the Releases API,
- *     which is used for strong integrity verification automatically. If
- *     GitHub does not report a digest for a given asset, verification
- *     falls back to the size check alone.
- */
+// ---------------------------------------------------------------------------
+// UpdateManager
+// Self-contained, asynchronous auto-updater for apps published as GitHub
+// Releases: checks for a newer release, downloads and verifies it, then
+// applies it automatically the next time the application quits.
+// ---------------------------------------------------------------------------
 class UpdateManager : public QObject
 {
     Q_OBJECT

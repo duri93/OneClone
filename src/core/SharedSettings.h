@@ -1,8 +1,13 @@
 #pragma once
 
-#include <QString>
 #include <QJsonObject>
+#include <QString>
 
+// ---------------------------------------------------------------------------
+// SharedSettings
+// The rclone/VFS settings shared by every job (cache, transfer tuning,
+// etc.), with JSON (de)serialization for persistence via AppContext.
+// ---------------------------------------------------------------------------
 class SharedSettings
 {
 public:

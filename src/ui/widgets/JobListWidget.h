@@ -1,6 +1,12 @@
 #pragma once
+
 #include <QWidget>
 
+// ---------------------------------------------------------------------------
+// JobListWidget
+// Container for the JobWidget rows, supporting drag-and-drop reordering
+// with a visual insertion-point indicator.
+// ---------------------------------------------------------------------------
 class JobListWidget : public QWidget
 {
     Q_OBJECT

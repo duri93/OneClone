@@ -1,21 +1,3 @@
-/*
-// A folder-picker field (e.g. "where should backups go")
-LocalPathAutocompleter::attach(destinationLineEdit);
-
-// The rclone.exe field: navigate folders as normal, but only rclone.exe
-// itself ever shows up as a completable file
-LocalPathAutocompleter::attach(rclonePathLineEdit,
-                                LocalPathAutocompleter::Mode::FoldersAndFiles,
-                                {"rclone.exe"});
-
-// Or any executable, if you don't want to hardcode the name:
-LocalPathAutocompleter::attach(rclonePathLineEdit,
-                                LocalPathAutocompleter::Mode::FoldersAndFiles,
-                                {"*.exe"});
-LocalPathAutocompleter::applyUsageHint(pathLineEdit);
-// sets placeholder text + tooltip to:
-// "Enter a local path (e.g. D:\Backups) or a remote one (e.g. myremote:myfolder)"
-*/
 #pragma once
 
 #include <QCompleter>
@@ -25,17 +7,17 @@ LocalPathAutocompleter::applyUsageHint(pathLineEdit);
 
 class QFileSystemModel;
 
+// ---------------------------------------------------------------------------
+// LocalPathAutocompleter
 // Attaches a QCompleter to a QLineEdit that autocompletes local Windows
-// paths (drive letters, then one path segment at a time - e.g.
-// "C:\Us" -> "C:\Users" -> "C:\Users\Public" ...).
-//
-// Backed by QFileSystemModel, which lists each directory's contents lazily
-// and on a background thread as the user navigates deeper, so typing never
-// blocks the UI even on slow (e.g. network) drives.
+// paths one path segment at a time (e.g. "C:\Us" -> "C:\Users" -> ...),
+// backed by a QFileSystemModel so it never blocks the UI even on slow
+// (e.g. network) drives.
 //
 // Lifetime: LocalPathAutocompleter::attach() parents the object to the
 // QLineEdit, so it is cleaned up automatically when the line edit is
 // destroyed.
+// ---------------------------------------------------------------------------
 class LocalPathAutocompleter : public QObject
 {
     Q_OBJECT

@@ -8,6 +8,12 @@ namespace Ui {
 class JobWidget;
 }
 
+// ---------------------------------------------------------------------------
+// JobWidget
+// A single row in the jobs list: shows a job's icon, status, and progress,
+// and exposes controls to start/stop it, view its details, and reorder it
+// via drag-and-drop.
+// ---------------------------------------------------------------------------
 class JobWidget : public QWidget
 {
     Q_OBJECT
@@ -19,7 +25,7 @@ public:
     Job*    job () { return m_job; };
     const Job*    job () const { return m_job; };
 
-    // Called from MainWindow slots
+    // Connected to Job's signals to keep the widget in sync
     void onSpecChange();
     void onStatusChange();
     void onProgress();

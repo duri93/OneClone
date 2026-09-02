@@ -1,5 +1,6 @@
 #include "JobListWidget.h"
-#include "JobWidget.h"
+
+#include "src/ui/widgets/JobWidget.h"
 
 #include <QDragEnterEvent>
 #include <QDropEvent>

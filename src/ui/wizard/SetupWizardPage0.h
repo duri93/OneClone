@@ -1,10 +1,10 @@
 #pragma once
-#include "ui_SetupWizardPage0.h"
+
+#include "src/ui/wizard/ui_SetupWizardPage0.h"
+
 #include <QWizardPage>
 
-// Page 1: checks for rclone / WinFsp, lets the user point at the
-// rclone executable. Polls while visible; the poll stops as soon as
-// both dependencies are found.
+// Page 0: welcome/intro page with the app logo.
 class SetupWizardPage0 : public QWizardPage {
     Q_OBJECT
 public:

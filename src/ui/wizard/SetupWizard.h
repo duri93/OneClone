@@ -1,9 +1,10 @@
 #pragma once
-#include <QObject>
-#include <QWizard>
-#include <QPointer>
 
-class Manager;
+#include <QObject>
+#include <QPointer>
+#include <QWizard>
+
+class AppContext;
 class QWizard;
 class SetupWizardPage0;
 class SetupWizardPage1;
@@ -16,7 +17,7 @@ class SetupWizardPage3;
 class SetupWizard : public QObject {
     Q_OBJECT
 public:
-    explicit SetupWizard(Manager* manager, QWidget* parent = nullptr);
+    explicit SetupWizard(AppContext* appContext, QWidget* parent = nullptr);
     ~SetupWizard();
 
     void show();
@@ -36,5 +37,5 @@ private:
     SetupWizardPage2* m_page2 = nullptr;
     SetupWizardPage3* m_page3 = nullptr;
 
-    Manager* m_manager = nullptr;
+    AppContext* m_appContext = nullptr;
 };

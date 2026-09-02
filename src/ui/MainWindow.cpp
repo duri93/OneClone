@@ -1,21 +1,16 @@
-#include "src/ui/ui_MainWindow.h"
-#include "src/ui/MainWindow.h"
-#include "src/ui/widgets/JobWidget.h"
-#include "src/ui/widgets/JobListWidget.h"
-#include "src/core/Job.h"
+#include "MainWindow.h"
+
 #include "src/common/Config.h"
 #include "src/common/UpdateManager.h"
-#include "src/common/LocalPathAutocompleter.h"
+#include "src/ui/ui_MainWindow.h"
 #include "src/ui/wizard/SetupWizard.h"
-#include <QFileDialog>
+
 #include <QCloseEvent>
-#include <QSettings>
-#include <QDir>
 #include <QRect>
-#include <QSize>
 #include <QScreen>
+#include <QSettings>
+#include <QSize>
 #include <QString>
-#include <QMenu>
 
 // ---------------------------------------------------------------------------
 // Constructor / Destructor
@@ -36,10 +31,7 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     // ---- Load settings (generates defaults on first run) ----
-    connect(&m_manager, &Manager::added, this, &MainWindow::onJobAdded);
-    connect(&m_manager, &Manager::removed, this, &MainWindow::onJobRemoved);
-
-    bool dryRun = !m_manager.load();
+    bool dryRun = !m_appContext.load();
 
     if (dryRun) {
         Status::notify("Could not load settings file — using defaults.", Status::Level::Warning);
@@ -56,39 +48,31 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->updateClose,      &QPushButton::clicked, ui->updateFrame,      &QFrame::hide);
 
     // ---- Settings tab ----
-    ui->settingsAdvancedScrollarea->hide();
-    LocalPathAutocompleter::attach(ui->settingsRclone,
-                                   LocalPathAutocompleter::Mode::FoldersAndFiles,
-                                   {"rclone.exe"});
-
-    loadSettingsToUi();
-    connect(ui->settingsAdvanced,     &QCheckBox::checkStateChanged, this, &MainWindow::onSettingsAdvanced);
-    connect(ui->settingsSave,         &QPushButton::clicked, this, &MainWindow::onSettingsSave);
-    connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &MainWindow::onRcloneSelectClicked);
-    connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &MainWindow::onRcloneConfClicked);
-    connect(ui->settingsWizard,       &QPushButton::clicked, this, &MainWindow::openSetupWizard);
+    m_settingsTab = new SettingsTabController(&m_appContext, this);
+    ui->tabSettings->layout()->addWidget(m_settingsTab);
+    connect(m_settingsTab, &SettingsTabController::wizardRequested, this, &MainWindow::openSetupWizard);
+    connect(m_settingsTab, &SettingsTabController::settingsSaved, this, &MainWindow::checkDependencies);
 
     // ---- List tab ----
-    // populated when adding jobs
-    connect(ui->jobsAdd, &QPushButton::clicked, this, &MainWindow::onAddJobClicked);
-    connect(ui->jobsList, &JobListWidget::jobMoved, this, &MainWindow::onJobMoved);
+    m_jobsTab = new JobsTabController(&m_appContext, this);
+    ui->tabJobs->layout()->addWidget(m_jobsTab);
+    connect(m_jobsTab, &JobsTabController::openDetailsRequested, this, &MainWindow::onJobsOpenDetailsRequested);
 
     // ---- Details tab ----
-    ui->detailsOutput->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
-    LocalPathAutocompleter::attach(ui->detailsLocal);
-
-    connect(ui->detailsOpenLog,        &QPushButton::clicked, this, &MainWindow::onDetailsOpenLog);
-    connect(ui->detailsSave,           &QPushButton::clicked, this, &MainWindow::onDetailsSave);
-    connect(ui->detailsDelete,         &QPushButton::clicked, this, &MainWindow::onDetailsDelete);
-    connect(ui->detailsLocalButton,    &QToolButton::clicked, this, &MainWindow::onLocalSelectClicked);
+    m_detailsTab = new JobDetailsTabController(&m_appContext, this);
+    ui->tabDetails->layout()->addWidget(m_detailsTab);
+    connect(m_detailsTab, &JobDetailsTabController::detailsOpened, this, [this](){
+        ui->tabWidget->setCurrentWidget(ui->tabDetails);
+    });
+    connect(m_detailsTab, &JobDetailsTabController::closeRequested, this, [this](){
+        ui->tabWidget->setCurrentWidget(ui->tabJobs);
+    });
 
     // ---- Start on the list tab ----
-    clearDetails();
-    openDetails(nullptr);
     ui->tabWidget->setCurrentWidget(ui->tabJobs);
 
     // ---- Setup tray ----
-    setupTray();
+    m_trayController = new TrayController(this, m_jobsTab, this);
 
     // ---- Status bar
     connect(&Status::instance(), &Status::statusMessage, this, &MainWindow::onStatusMessage);
@@ -123,347 +107,29 @@ void MainWindow::closeEvent(QCloseEvent* event){
 }
 
 // ---------------------------------------------------------------------------
-// Settings tab
+// Setup wizard / dependency checks
 // ---------------------------------------------------------------------------
-void MainWindow::loadSettingsToUi(){
-    QSettings reg("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
-    bool isRegistered = reg.contains(Config::APP_ID);
-
-    const SharedSettings* s = m_manager.shared();
-    ui->settingsRclone            ->setText   (s->rclonePath());
-    ui->settingsAdvanced          ->setChecked(s->advanced());
-    ui->settingsBufferSize        ->setValue  (s->bufferSize());
-    ui->settingsCacheMaxSize      ->setValue  (s->cacheMaxSize());
-    ui->settingsCacheMinFreeSpace ->setValue  (s->cacheMinFreeSpace());
-    ui->settingsCacheMaxAge       ->setValue  (s->cacheMaxAge());
-    ui->settingsReadChunkSize     ->setValue  (s->readChunkSize());
-    ui->settingsReadChunkSizeLimit->setValue  (s->readChunkSizeLimit());
-    ui->settingsTransfers         ->setValue  (s->transfers());
-    ui->settingsCheckers          ->setValue  (s->checkers());
-    ui->settingsLinks             ->setChecked(s->links());
-    ui->settingsAutostart         ->setChecked(isRegistered);
-
-    // settingsCacheMode combobox: find matching text
-    int idx = ui->settingsCacheMode->findText(s->cacheMode());
-    if (idx >= 0) ui->settingsCacheMode->setCurrentIndex(idx);
-}
-void MainWindow::saveUiToSettings(){
-    SharedSettings* s = m_manager.shared();
-    s->setRclonePath(ui->settingsRclone->text());
-    s->setAdvanced(ui->settingsAdvanced->isChecked());
-    s->setCacheMode(ui->settingsCacheMode->currentText());
-    s->setCacheMaxSize(ui->settingsCacheMaxSize->value());
-    s->setCacheMinFreeSpace(ui->settingsCacheMinFreeSpace->value());
-    s->setCacheMaxAge(ui->settingsCacheMaxAge->value());
-    s->setReadChunkSize(ui->settingsReadChunkSize->value());
-    s->setReadChunkSizeLimit(ui->settingsReadChunkSizeLimit->value());
-    s->setBufferSize(ui->settingsBufferSize->value());
-    s->setTransfers(ui->settingsTransfers->value());
-    s->setCheckers(ui->settingsCheckers->value());
-    s->setLinks(ui->settingsLinks->isChecked());
-
-    // register or unregister startup
-    QSettings reg("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
-    if(ui->settingsAutostart->isChecked()){
-        reg.setValue(Config::APP_ID, QCoreApplication::applicationFilePath().replace('/', '\\') + " --tray");
-    }else{
-        reg.remove(Config::APP_ID);
-    }
-
-    // check rclone again
-    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
-}
 void MainWindow::openSetupWizard(){
-    m_wizard = new SetupWizard(&m_manager, this);
+    m_wizard = new SetupWizard(&m_appContext, this);
     connect(m_wizard, &SetupWizard::setupFinished, this, [this](){
-        ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
-        ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
+        ui->errorRcloneFrame->setVisible(!m_appContext.rcloneProvider()->isAvailable(m_appContext.shared()->rclonePath()));
+        ui->errorWinfspFrame->setVisible(!m_appContext.mountBackendDetector()->isAvailable());
     });
     m_wizard->show();
 
 }
 void MainWindow::checkDependencies(){
-    ui->errorRcloneFrame->setVisible(!m_manager.isRcloneInstalled());
-    ui->errorWinfspFrame->setVisible(!m_manager.isWinFspInstalled());
-}
-
-void MainWindow::onSettingsSave(){
-    saveUiToSettings();
-
-    if(m_manager.save()){
-        Status::notify("Settings saved.", Status::Level::Success);
-    }else{
-        Status::notify("Error saving settings.", Status::Level::Error);
-    }
-}
-void MainWindow::onRcloneSelectClicked(){
-    QString path = QFileDialog::getOpenFileName(
-        this, "Select rclone.exe", ui->settingsRclone->text(),
-        "Executable (*.exe);;All files (*.*)");
-    if (!path.isEmpty()) {
-        ui->settingsRclone->setText(QDir::toNativeSeparators(path));
-    }
-}
-void MainWindow::onSettingsAdvanced(){
-    if(ui->settingsAdvanced->isChecked()){
-        ui->settingsAdvancedScrollarea->show();
-    }else{
-        ui->settingsAdvancedScrollarea->hide();
-    }
-}
-
-void MainWindow::onRcloneConfClicked(){
-    if(!m_manager.openRcloneConf()){
-        Status::notify("Failed to run 'rclone config'.", Status::Level::Error);
-    }
-}
-
-
-// ---------------------------------------------------------------------------
-// Jobs list tab
-// ---------------------------------------------------------------------------
-void MainWindow::onAddJobClicked(){
-    Job* job = new Job(m_manager.shared());
-    m_manager.addJob(job);
-    openDetails(job);
-}
-void MainWindow::onJobMoved(const QString& id, int newIndex){
-    m_manager.moveJob(id, newIndex);
-
-    // rebuild the visual order from m_jobs, which is now authoritative
-    QLayout* l = ui->jobsList->layout();
-    for (JobWidget*& w : m_jobWidgets){
-        l->removeWidget(w);
-        w->hide();
-    }
-
-    m_jobWidgets.clear();
-    for (Job* job : m_manager.jobs()) {   // see note below
-        JobWidget* w = findOrCreateJobWidget(job);
-        l->addWidget(w);
-        w->show();
-        m_jobWidgets.append(w);
-    }
-
-    if (!m_manager.save()){
-        Status::notify("Warning: failed to save settings.", Status::Level::Error);
-    }
-}
-JobWidget* MainWindow::findOrCreateJobWidget(Job* job){
-    for (JobWidget*& w : m_jobWidgets)
-        if (w->job() == job) return w;
-
-    // not found — create fresh (same as onJobAdded)
-    JobWidget* w = new JobWidget(job);
-    w->setProperty("jobId", job->id());
-    connect(w, &JobWidget::openDetailsRequested, this, [this](const QString& id) {
-        openDetails(m_manager.getJob(id));
-    });
-    return w;
+    ui->errorRcloneFrame->setVisible(!m_appContext.rcloneProvider()->isAvailable(m_appContext.shared()->rclonePath()));
+    ui->errorWinfspFrame->setVisible(!m_appContext.mountBackendDetector()->isAvailable());
 }
 
 // ---------------------------------------------------------------------------
-// Job details tab
+// Tab routing / window geometry
 // ---------------------------------------------------------------------------
-void MainWindow::openDetails(Job* job){
-    // enable / disable panel
-    bool validJob = (bool) job;
-
-    ui->detailsName     ->setEnabled(validJob);
-    ui->detailsType     ->setEnabled(validJob);
-    ui->detailsLocal    ->setEnabled(validJob);
-    ui->detailsRemote   ->setEnabled(validJob);
-    ui->detailsAutostart->setEnabled(validJob);
-    ui->detailsReadOnly ->setEnabled(validJob);
-    ui->detailsSave     ->setEnabled(validJob);
-    ui->detailsDelete   ->setEnabled(validJob);
-    ui->detailsOpenLog  ->setEnabled(validJob);
-
-    if(!validJob) return;
-
-    // save current job
-    m_currentJobDetails = job;
-
-    // update ui
-    ui->detailsName->setText(job->name());
-    ui->detailsType->setCurrentIndex(ui->detailsType->findText(job->type()));
-    ui->detailsLocal->setText(job->local());
-    ui->detailsRemote->setText(job->remote());
-    ui->detailsAutostart->setChecked(job->autostart());
-    ui->detailsReadOnly->setChecked(job->readOnly());
-
-    // populate output log
-    ui->detailsOutput->setText(job->getCommand(false).join(' '));
-
-    // show autocomplete
-    QString rclonePath = m_manager.shared()->rclonePath();
-
-    delete m_remotesAutocompleter;
-    RemotesAutocompleter::attach(ui->detailsRemote, rclonePath);
-
-    // show details tab
-    ui->tabWidget->setCurrentWidget(ui->tabDetails);
-}
-void MainWindow::clearDetails(){
-    m_currentJobDetails = nullptr;
-
-    ui->detailsName->clear();
-    ui->detailsLocal->clear();
-    ui->detailsRemote->clear();
-    ui->detailsAutostart->setChecked(false);
-    ui->detailsReadOnly->setChecked(false);
-    ui->detailsOutput->clear();
-}
-void MainWindow::onDetailsTypeChanged(int index){
-    ui->detailsReadOnly->setEnabled(index == ui->detailsType->findText("mount"));
-}
-void MainWindow::onDetailsOpenLog(){
-    if(!m_currentJobDetails) return;
-    Job* job = m_currentJobDetails;
-
-    bool status = job->openLogFile();
-
-    if(!status){
-         Status::notify("Error opening job log file (run the job at least once first).", Status::Level::Error);
-    }
-}
-void MainWindow::onDetailsSave(){
-    if(!m_currentJobDetails) return;
-    Job* job = m_currentJobDetails;
-
-    job->setName(ui->detailsName->text());
-    job->setType(ui->detailsType->currentText());
-    job->setLocal(ui->detailsLocal->text());
-    job->setRemote(ui->detailsRemote->text());
-    job->setAutostart(ui->detailsAutostart->isChecked());
-    job->setReadOnly(ui->detailsReadOnly->isChecked());
-
-    ui->detailsOutput->setText(job->getCommand(false).join(' '));
-
-    if(m_manager.save()){
-        Status::notify("Job saved.", Status::Level::Success);
-        ui->tabWidget->setCurrentWidget(ui->tabJobs);
-    }else{
-        Status::notify("Error saving job.", Status::Level::Error);
-    }
-}
-void MainWindow::onDetailsDelete(){
-    if (!m_currentJobDetails) return;
-
-    Job* toRemove = m_currentJobDetails;
-    m_currentJobDetails = nullptr;   // clear before deletion
-    m_manager.removeJob(toRemove);
-
-    if(m_manager.save()){
-        Status::notify("Job removed.", Status::Level::Success);
-
-        clearDetails();
-        openDetails(nullptr);
-        ui->tabWidget->setCurrentWidget(ui->tabJobs);
-    }else{
-        Status::notify("Error removing job.", Status::Level::Error);
-    }
-
-}
-void MainWindow::onLocalSelectClicked(){
-    QString path = QFileDialog::getExistingDirectory(
-        this, "Select local folder or mount point", ui->detailsLocal->text());
-    if (!path.isEmpty()) {
-        ui->detailsLocal->setText(QDir::toNativeSeparators(path));
-    }
+void MainWindow::onJobsOpenDetailsRequested(const QString& id){
+    m_detailsTab->setJob(m_appContext.getJob(id));
 }
 
-// ---------------------------------------------------------------------------
-// Model events
-// ---------------------------------------------------------------------------
-void MainWindow::onJobAdded(Job* job){
-    JobWidget* w = new JobWidget(job);
-
-    connect(w, &JobWidget::openDetailsRequested, this, [this](const QString& id) {
-        openDetails(m_manager.getJob(id));
-    });
-
-    m_jobWidgets.append(w);
-    ui->jobsList->layout()->addWidget(w);
-}
-void MainWindow::onJobRemoved(const QString& jobId){
-    for (int i = 0; i < m_jobWidgets.size(); ++i) {
-        if (m_jobWidgets[i]->job()->id() == jobId) {
-            delete m_jobWidgets[i];
-            m_jobWidgets.removeAt(i);
-            break;
-        }
-    }
-};
-
-// ---------------------------------------------------------------------------
-// Tray icon
-// ---------------------------------------------------------------------------
-void MainWindow::setupTray(){
-    m_trayIcon = new QSystemTrayIcon(this);
-
-    // Placeholder icon — replace with your actual app icon
-    m_trayIcon->setIcon(QIcon(":/favicon.svg"));
-    m_trayIcon->setToolTip(Config::APP_NAME);
-
-    m_trayMenu  = new QMenu(this);
-    m_trayOpen  = m_trayMenu->addAction("Open");
-    m_trayMenu->addSeparator();
-    // Service actions are inserted here dynamically (see onTrayMenuAboutToShow)
-    m_trayMenu->addSeparator();
-    m_trayClose = m_trayMenu->addAction("Quit");
-
-    connect(m_trayOpen,  &QAction::triggered,         this, &MainWindow::show);
-    connect(m_trayClose, &QAction::triggered,         qApp, &QApplication::quit);
-    connect(m_trayMenu,  &QMenu::aboutToShow,         this, &MainWindow::onTrayMenuAboutToShow);
-    connect(m_trayIcon,  &QSystemTrayIcon::activated, this, &MainWindow::onTrayActivated);
-
-    m_trayIcon->setContextMenu(m_trayMenu);
-    m_trayIcon->show();
-}
-void MainWindow::onTrayMenuAboutToShow(){
-    // Remove all actions between the first separator and the last separator
-    // (i.e. the dynamically added service actions from last time)
-    QList<QAction*> actions = m_trayMenu->actions();
-    QAction* lastSep  = nullptr;
-    bool inside = false;
-    for (QAction*& a : actions) {
-        if (a->isSeparator()) {
-            lastSep = a;
-            inside = !inside;
-        }else if (inside){
-            m_trayMenu->removeAction(a);
-            delete a;
-        }
-    }
-
-    // Re-insert current service actions before lastSep
-    for(JobWidget*& jw : m_jobWidgets){
-        Job* job = jw->job();
-        QPixmap icon = QPixmap(jw->getStatusIcon());
-
-        QAction* act = new QAction(icon, job->name(), m_trayMenu);
-
-        // Toggle on click
-        connect(act, &QAction::triggered, this, [job]() {
-            job->toggle();
-        });
-
-        m_trayMenu->insertAction(lastSep, act);
-    }
-}
-void MainWindow::onTrayActivated(QSystemTrayIcon::ActivationReason reason){
-
-    if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
-        if (isVisible()) {
-            hide();
-        } else {
-            show();
-            raise();
-            activateWindow();
-        }
-    }
-}
 void MainWindow::moveWindowToBottomRight(){
     // position window in bottom-right corner
     QScreen* screen = QGuiApplication::primaryScreen();

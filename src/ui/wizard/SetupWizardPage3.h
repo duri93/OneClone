@@ -1,5 +1,7 @@
 #pragma once
-#include "ui_SetupWizardPage3.h"
+
+#include "src/ui/wizard/ui_SetupWizardPage3.h"
+
 #include <QWizardPage>
 
 // Page 3: intentionally empty for now.

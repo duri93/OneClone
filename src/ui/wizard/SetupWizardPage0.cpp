@@ -1,6 +1,7 @@
 #include "SetupWizardPage0.h"
-#include <QSvgWidget>
+
 #include <QSvgRenderer>
+#include <QSvgWidget>
 
 SetupWizardPage0::SetupWizardPage0(QWidget* parent) : QWizardPage(parent){
     ui.setupUi(this);
