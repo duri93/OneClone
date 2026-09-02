@@ -16,8 +16,9 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
     , m_appContext(appContext)
 {
     ui->setupUi(this);
+
+    ui->command->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
     LocalPathAutocompleter::attach(ui->local);
-    ui->unsaved->hide();
 
     connect(ui->openLog,     &QPushButton::clicked,           this, &JobDetailsTabController::onOpenLogClicked);
     connect(ui->save,        &QPushButton::clicked,           this, &JobDetailsTabController::onSaveClicked);
@@ -31,6 +32,16 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
     connect(ui->local,    &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
     connect(ui->remote,   &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
     connect(ui->readOnly, &QCheckBox::toggled,              this, &JobDetailsTabController::updateCommandPreview);
+
+    // Keep the "unsaved changes" indicator in sync with every field the
+    // user can edit, so it reflects whether the form still matches the
+    // stored job.
+    connect(ui->name,      &QLineEdit::textChanged,          this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->type,      &QComboBox::currentIndexChanged,  this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->local,     &QLineEdit::textChanged,          this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->remote,    &QLineEdit::textChanged,          this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->autostart, &QCheckBox::toggled,              this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->readOnly,  &QCheckBox::toggled,              this, &JobDetailsTabController::updateUnsavedIndicator);
 
     clear();
 }
@@ -55,8 +66,6 @@ void JobDetailsTabController::setJob(Job* job)
     ui->remove     ->setEnabled(validJob);
     ui->openLog    ->setEnabled(validJob);
 
-    ui->unsaved->hide();
-
     if (!validJob) {
         clear();
         return;
@@ -73,6 +82,9 @@ void JobDetailsTabController::setJob(Job* job)
 
     // populate command preview
     updateCommandPreview();
+
+    // form now mirrors the stored job, so there's nothing unsaved yet
+    updateUnsavedIndicator();
 
     // show autocomplete
     delete m_remotesAutocompleter;
@@ -92,6 +104,9 @@ void JobDetailsTabController::clear()
     ui->autostart->setChecked(false);
     ui->readOnly->setChecked(false);
     ui->command->clear();
+
+    // no job loaded (or panel disabled) -> nothing to be unsaved
+    updateUnsavedIndicator();
 }
 
 void JobDetailsTabController::onTypeChanged(int index)
@@ -130,6 +145,24 @@ void JobDetailsTabController::updateCommandPreview()
     ui->command->setText(command.join(' '));
 }
 
+void JobDetailsTabController::updateUnsavedIndicator()
+{
+    if (!m_currentJob) {
+        ui->unsaved->setVisible(false);
+        return;
+    }
+
+    const bool dirty =
+        ui->name->text()           != m_currentJob->name()      ||
+        ui->type->currentText()    != m_currentJob->type()      ||
+        ui->local->text()          != m_currentJob->local()     ||
+        ui->remote->text()         != m_currentJob->remote()    ||
+        ui->autostart->isChecked() != m_currentJob->autostart() ||
+        ui->readOnly->isChecked()  != m_currentJob->readOnly();
+
+    ui->unsaved->setVisible(dirty);
+}
+
 void JobDetailsTabController::onOpenLogClicked()
 {
     if (!m_currentJob) return;
@@ -155,6 +188,7 @@ void JobDetailsTabController::onSaveClicked()
 
     if (m_appContext->save()) {
         Status::notify("Job saved.", Status::Level::Success);
+        updateUnsavedIndicator();
         emit closeRequested();
     } else {
         Status::notify("Error saving job.", Status::Level::Error);

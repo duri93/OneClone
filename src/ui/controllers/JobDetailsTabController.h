@@ -42,6 +42,7 @@ private slots:
     void onDeleteClicked();
     void onLocalSelectClicked();
     void updateCommandPreview();
+    void updateUnsavedIndicator();
 
 private:
     void clear();

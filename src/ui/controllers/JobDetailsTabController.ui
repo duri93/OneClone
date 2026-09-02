@@ -241,8 +241,43 @@
      </property>
     </widget>
    </item>
-   <item row="14" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="buttonsLayout" stretch="0,1,0,0,0">
+   <item row="6" column="2">
+    <widget class="QLabelInstantTooltip" name="localHelp">
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="../../../resources/resources.qrc">:/icons/help.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="0" colspan="3">
+    <layout class="QHBoxLayout" name="buttonsLayout" stretch="0,0,1,0,0">
+     <item>
+      <widget class="QPushButton" name="remove">
+       <property name="toolTip">
+        <string>Permanently delete the job.</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset theme="QIcon::ThemeIcon::EditDelete"/>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="openLog">
        <property name="toolTip">
@@ -298,39 +333,7 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="remove">
-       <property name="toolTip">
-        <string>Permanently delete the job.</string>
-       </property>
-       <property name="text">
-        <string>Delete</string>
-       </property>
-      </widget>
-     </item>
     </layout>
-   </item>
-   <item row="6" column="2">
-    <widget class="QLabelInstantTooltip" name="localHelp">
-     <property name="maximumSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap resource="../../../resources/resources.qrc">:/icons/help.svg</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
