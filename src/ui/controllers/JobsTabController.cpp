@@ -13,8 +13,8 @@ JobsTabController::JobsTabController(AppContext* appContext, QWidget* parent)
 {
     ui->setupUi(this);
 
-    connect(ui->jobsAdd, &QPushButton::clicked, this, &JobsTabController::onAddClicked);
-    connect(ui->jobsList, &JobListWidget::jobMoved, this, &JobsTabController::onJobMoved);
+    connect(ui->add, &QPushButton::clicked, this, &JobsTabController::onAddClicked);
+    connect(ui->list, &JobListWidget::jobMoved, this, &JobsTabController::onJobMoved);
 
     connect(m_appContext, &AppContext::added, this, &JobsTabController::onJobAdded);
     connect(m_appContext, &AppContext::removed, this, &JobsTabController::onJobRemoved);
@@ -37,7 +37,7 @@ void JobsTabController::onJobMoved(const QString& id, int newIndex)
     m_appContext->moveJob(id, newIndex);
 
     // rebuild the visual order from m_jobs, which is now authoritative
-    QLayout* l = ui->jobsList->layout();
+    QLayout* l = ui->list->layout();
     for (JobWidget*& w : m_jobWidgets) {
         l->removeWidget(w);
         w->hide();
@@ -75,7 +75,7 @@ void JobsTabController::onJobAdded(Job* job)
     connect(w, &JobWidget::openDetailsRequested, this, &JobsTabController::openDetailsRequested);
 
     m_jobWidgets.append(w);
-    ui->jobsList->layout()->addWidget(w);
+    ui->list->layout()->addWidget(w);
 }
 
 void JobsTabController::onJobRemoved(const QString& jobId)

@@ -262,7 +262,6 @@ bool Job::processLineProgress(const QString& line){
     if (!m.hasMatch()) return false;
 
     // TODO: recognize as number and format number of significant digits?
-    // TODO: limit refresh rate?
     m_progress.bytes   = m.captured(1);   // e.g. "123.45 MiB"
     m_progress.percent = m.captured(2).toInt();
     m_progress.speed   = m.captured(3);   // e.g. "1.23 MiB/s"

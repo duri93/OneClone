@@ -18,18 +18,16 @@ SettingsTabController::SettingsTabController(AppContext* appContext, QWidget* pa
 {
     ui->setupUi(this);
 
-    ui->settingsAdvancedScrollarea->hide();
-    LocalPathAutocompleter::attach(ui->settingsRclone,
-                                   LocalPathAutocompleter::Mode::FoldersAndFiles,
-                                   {"rclone.exe"});
+    ui->advancedScrollarea->hide();
+    LocalPathAutocompleter::attach(ui->rclone, LocalPathAutocompleter::Mode::FoldersAndFiles, {"rclone.exe"});
 
     loadFromSettings();
 
-    connect(ui->settingsAdvanced,     &QCheckBox::checkStateChanged, this, &SettingsTabController::onAdvancedToggled);
-    connect(ui->settingsSave,         &QPushButton::clicked, this, &SettingsTabController::onSave);
-    connect(ui->settingsRcloneButton, &QToolButton::clicked, this, &SettingsTabController::onRcloneSelectClicked);
-    connect(ui->settingsRcloneConf,   &QPushButton::clicked, this, &SettingsTabController::onRcloneConfClicked);
-    connect(ui->settingsWizard,       &QPushButton::clicked, this, &SettingsTabController::wizardRequested);
+    connect(ui->advanced,       &QCheckBox::checkStateChanged, this, &SettingsTabController::onAdvancedToggled);
+    connect(ui->save,           &QPushButton::clicked, this, &SettingsTabController::onSave);
+    connect(ui->rcloneButton,   &QToolButton::clicked, this, &SettingsTabController::onRcloneSelectClicked);
+    connect(ui->openRcloneConf, &QPushButton::clicked, this, &SettingsTabController::onRcloneConfClicked);
+    connect(ui->openWizard,     &QPushButton::clicked, this, &SettingsTabController::wizardRequested);
 }
 
 SettingsTabController::~SettingsTabController()
@@ -42,42 +40,42 @@ void SettingsTabController::loadFromSettings()
     bool isRegistered = AutostartManager::isEnabled(Config::APP_ID);
 
     const SharedSettings* s = m_appContext->shared();
-    ui->settingsRclone            ->setText   (s->rclonePath());
-    ui->settingsAdvanced          ->setChecked(s->advanced());
-    ui->settingsBufferSize        ->setValue  (s->bufferSize());
-    ui->settingsCacheMaxSize      ->setValue  (s->cacheMaxSize());
-    ui->settingsCacheMinFreeSpace ->setValue  (s->cacheMinFreeSpace());
-    ui->settingsCacheMaxAge       ->setValue  (s->cacheMaxAge());
-    ui->settingsReadChunkSize     ->setValue  (s->readChunkSize());
-    ui->settingsReadChunkSizeLimit->setValue  (s->readChunkSizeLimit());
-    ui->settingsTransfers         ->setValue  (s->transfers());
-    ui->settingsCheckers          ->setValue  (s->checkers());
-    ui->settingsLinks             ->setChecked(s->links());
-    ui->settingsAutostart         ->setChecked(isRegistered);
+    ui->rclone            ->setText   (s->rclonePath());
+    ui->advanced          ->setChecked(s->advanced());
+    ui->bufferSize        ->setValue  (s->bufferSize());
+    ui->cacheMaxSize      ->setValue  (s->cacheMaxSize());
+    ui->cacheMinFreeSpace ->setValue  (s->cacheMinFreeSpace());
+    ui->cacheMaxAge       ->setValue  (s->cacheMaxAge());
+    ui->readChunkSize     ->setValue  (s->readChunkSize());
+    ui->readChunkSizeLimit->setValue  (s->readChunkSizeLimit());
+    ui->transfers         ->setValue  (s->transfers());
+    ui->checkers          ->setValue  (s->checkers());
+    ui->symlinks          ->setChecked(s->links());
+    ui->autostart         ->setChecked(isRegistered);
 
     // settingsCacheMode combobox: find matching text
-    int idx = ui->settingsCacheMode->findText(s->cacheMode());
-    if (idx >= 0) ui->settingsCacheMode->setCurrentIndex(idx);
+    int idx = ui->cacheMode->findText(s->cacheMode());
+    if (idx >= 0) ui->cacheMode->setCurrentIndex(idx);
 }
 
 void SettingsTabController::saveToSettings()
 {
     SharedSettings* s = m_appContext->shared();
-    s->setRclonePath(ui->settingsRclone->text());
-    s->setAdvanced(ui->settingsAdvanced->isChecked());
-    s->setCacheMode(ui->settingsCacheMode->currentText());
-    s->setCacheMaxSize(ui->settingsCacheMaxSize->value());
-    s->setCacheMinFreeSpace(ui->settingsCacheMinFreeSpace->value());
-    s->setCacheMaxAge(ui->settingsCacheMaxAge->value());
-    s->setReadChunkSize(ui->settingsReadChunkSize->value());
-    s->setReadChunkSizeLimit(ui->settingsReadChunkSizeLimit->value());
-    s->setBufferSize(ui->settingsBufferSize->value());
-    s->setTransfers(ui->settingsTransfers->value());
-    s->setCheckers(ui->settingsCheckers->value());
-    s->setLinks(ui->settingsLinks->isChecked());
+    s->setRclonePath(ui->rclone->text());
+    s->setAdvanced(ui->advanced->isChecked());
+    s->setCacheMode(ui->cacheMode->currentText());
+    s->setCacheMaxSize(ui->cacheMaxSize->value());
+    s->setCacheMinFreeSpace(ui->cacheMinFreeSpace->value());
+    s->setCacheMaxAge(ui->cacheMaxAge->value());
+    s->setReadChunkSize(ui->readChunkSize->value());
+    s->setReadChunkSizeLimit(ui->readChunkSizeLimit->value());
+    s->setBufferSize(ui->bufferSize->value());
+    s->setTransfers(ui->transfers->value());
+    s->setCheckers(ui->checkers->value());
+    s->setLinks(ui->symlinks->isChecked());
 
     // register or unregister startup
-    AutostartManager::setEnabled(Config::APP_ID, ui->settingsAutostart->isChecked());
+    AutostartManager::setEnabled(Config::APP_ID, ui->autostart->isChecked());
 }
 
 void SettingsTabController::onSave()
@@ -96,19 +94,19 @@ void SettingsTabController::onSave()
 void SettingsTabController::onRcloneSelectClicked()
 {
     QString path = QFileDialog::getOpenFileName(
-        this, "Select rclone.exe", ui->settingsRclone->text(),
+        this, "Select rclone.exe", ui->rclone->text(),
         "Executable (*.exe);;All files (*.*)");
     if (!path.isEmpty()) {
-        ui->settingsRclone->setText(QDir::toNativeSeparators(path));
+        ui->rclone->setText(QDir::toNativeSeparators(path));
     }
 }
 
 void SettingsTabController::onAdvancedToggled()
 {
-    if (ui->settingsAdvanced->isChecked()) {
-        ui->settingsAdvancedScrollarea->show();
+    if (ui->advanced->isChecked()) {
+        ui->advancedScrollarea->show();
     } else {
-        ui->settingsAdvancedScrollarea->hide();
+        ui->advancedScrollarea->hide();
     }
 }
 

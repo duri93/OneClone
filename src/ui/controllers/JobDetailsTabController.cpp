@@ -16,19 +16,14 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
 {
     ui->setupUi(this);
 
-    ui->detailsOutput->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
-    LocalPathAutocompleter::attach(ui->detailsLocal);
+    ui->command->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
+    LocalPathAutocompleter::attach(ui->local);
 
-    connect(ui->detailsOpenLog,     &QPushButton::clicked, this, &JobDetailsTabController::onOpenLogClicked);
-    connect(ui->detailsSave,        &QPushButton::clicked, this, &JobDetailsTabController::onSaveClicked);
-    connect(ui->detailsDelete,      &QPushButton::clicked, this, &JobDetailsTabController::onDeleteClicked);
-    connect(ui->detailsLocalButton, &QToolButton::clicked, this, &JobDetailsTabController::onLocalSelectClicked);
-
-    // FIXME: onTypeChanged() is never wired to detailsType's signal in the
-    // original code, so detailsReadOnly's enabled state never updates when
-    // the job type changes. Carried over as-is; connect
-    // ui->detailsType::currentIndexChanged here once that's confirmed to be
-    // intentional to fix.
+    connect(ui->openLog,     &QPushButton::clicked,           this, &JobDetailsTabController::onOpenLogClicked);
+    connect(ui->save,        &QPushButton::clicked,           this, &JobDetailsTabController::onSaveClicked);
+    connect(ui->remove,      &QPushButton::clicked,           this, &JobDetailsTabController::onDeleteClicked);
+    connect(ui->localButton, &QToolButton::clicked,           this, &JobDetailsTabController::onLocalSelectClicked);
+    connect(ui->type,        &QComboBox::currentIndexChanged, this, &JobDetailsTabController::onTypeChanged);
 
     clear();
 }
@@ -42,15 +37,16 @@ void JobDetailsTabController::setJob(Job* job)
 {
     bool validJob = (bool) job;
 
-    ui->detailsName     ->setEnabled(validJob);
-    ui->detailsType     ->setEnabled(validJob);
-    ui->detailsLocal    ->setEnabled(validJob);
-    ui->detailsRemote   ->setEnabled(validJob);
-    ui->detailsAutostart->setEnabled(validJob);
-    ui->detailsReadOnly ->setEnabled(validJob);
-    ui->detailsSave     ->setEnabled(validJob);
-    ui->detailsDelete   ->setEnabled(validJob);
-    ui->detailsOpenLog  ->setEnabled(validJob);
+    ui->name       ->setEnabled(validJob);
+    ui->type       ->setEnabled(validJob);
+    ui->local      ->setEnabled(validJob);
+    ui->localButton->setEnabled(validJob);
+    ui->remote     ->setEnabled(validJob);
+    ui->autostart  ->setEnabled(validJob);
+    ui->readOnly   ->setEnabled(validJob);
+    ui->save       ->setEnabled(validJob);
+    ui->remove     ->setEnabled(validJob);
+    ui->openLog    ->setEnabled(validJob);
 
     if (!validJob) {
         clear();
@@ -59,20 +55,20 @@ void JobDetailsTabController::setJob(Job* job)
 
     m_currentJob = job;
 
-    ui->detailsName->setText(job->name());
-    ui->detailsType->setCurrentIndex(ui->detailsType->findText(job->type()));
-    ui->detailsLocal->setText(job->local());
-    ui->detailsRemote->setText(job->remote());
-    ui->detailsAutostart->setChecked(job->autostart());
-    ui->detailsReadOnly->setChecked(job->readOnly());
+    ui->name->setText(job->name());
+    ui->type->setCurrentIndex(ui->type->findText(job->type()));
+    ui->local->setText(job->local());
+    ui->remote->setText(job->remote());
+    ui->autostart->setChecked(job->autostart());
+    ui->readOnly->setChecked(job->readOnly());
 
     // populate output log
-    ui->detailsOutput->setText(job->getCommand(false).join(' '));
+    ui->command->setText(job->getCommand(false).join(' '));
 
     // show autocomplete
     delete m_remotesAutocompleter;
     m_remotesAutocompleter = RemotesAutocompleter::attach(
-        ui->detailsRemote, m_appContext->rcloneProvider(), m_appContext->shared()->rclonePath());
+        ui->remote, m_appContext->rcloneProvider(), m_appContext->shared()->rclonePath());
 
     emit detailsOpened();
 }
@@ -81,17 +77,17 @@ void JobDetailsTabController::clear()
 {
     m_currentJob = nullptr;
 
-    ui->detailsName->clear();
-    ui->detailsLocal->clear();
-    ui->detailsRemote->clear();
-    ui->detailsAutostart->setChecked(false);
-    ui->detailsReadOnly->setChecked(false);
-    ui->detailsOutput->clear();
+    ui->name->clear();
+    ui->local->clear();
+    ui->remote->clear();
+    ui->autostart->setChecked(false);
+    ui->readOnly->setChecked(false);
+    ui->command->clear();
 }
 
 void JobDetailsTabController::onTypeChanged(int index)
 {
-    ui->detailsReadOnly->setEnabled(index == ui->detailsType->findText("mount"));
+    ui->readOnly->setEnabled(index == ui->type->findText("mount"));
 }
 
 void JobDetailsTabController::onOpenLogClicked()
@@ -108,14 +104,14 @@ void JobDetailsTabController::onSaveClicked()
     if (!m_currentJob) return;
     Job* job = m_currentJob;
 
-    job->setName(ui->detailsName->text());
-    job->setType(ui->detailsType->currentText());
-    job->setLocal(ui->detailsLocal->text());
-    job->setRemote(ui->detailsRemote->text());
-    job->setAutostart(ui->detailsAutostart->isChecked());
-    job->setReadOnly(ui->detailsReadOnly->isChecked());
+    job->setName(ui->name->text());
+    job->setType(ui->type->currentText());
+    job->setLocal(ui->local->text());
+    job->setRemote(ui->remote->text());
+    job->setAutostart(ui->autostart->isChecked());
+    job->setReadOnly(ui->readOnly->isChecked());
 
-    ui->detailsOutput->setText(job->getCommand(false).join(' '));
+    ui->command->setText(job->getCommand(false).join(' '));
 
     if (m_appContext->save()) {
         Status::notify("Job saved.", Status::Level::Success);
@@ -145,8 +141,8 @@ void JobDetailsTabController::onDeleteClicked()
 void JobDetailsTabController::onLocalSelectClicked()
 {
     QString path = QFileDialog::getExistingDirectory(
-        this, "Select local folder or mount point", ui->detailsLocal->text());
+        this, "Select local folder or mount point", ui->local->text());
     if (!path.isEmpty()) {
-        ui->detailsLocal->setText(QDir::toNativeSeparators(path));
+        ui->local->setText(QDir::toNativeSeparators(path));
     }
 }

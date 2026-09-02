@@ -2,18 +2,26 @@
 <ui version="4.0">
  <class>SettingsTabController</class>
  <widget class="QWidget" name="SettingsTabController">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>266</width>
+    <height>589</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <layout class="QHBoxLayout" name="settingsRcloneLayout">
+    <layout class="QHBoxLayout" name="rcloneLayout">
      <item>
-      <widget class="QLabel" name="settingsRcloneLabel">
+      <widget class="QLabel" name="rcloneLabel">
        <property name="text">
         <string>rclone.exe path</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="settingsRclone">
+      <widget class="QLineEdit" name="rclone">
        <property name="toolTip">
         <string>Path to the rclone executable</string>
        </property>
@@ -23,7 +31,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="settingsRcloneButton">
+      <widget class="QToolButton" name="rcloneButton">
        <property name="text">
         <string>...</string>
        </property>
@@ -32,7 +40,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="settingsAutostart">
+    <widget class="QCheckBox" name="autostart">
      <property name="toolTip">
       <string>Make OneClone start automatically with your pc.</string>
      </property>
@@ -42,7 +50,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="settingsAdvanced">
+    <widget class="QCheckBox" name="advanced">
      <property name="toolTip">
       <string>Show advanced RClone's settings.</string>
      </property>
@@ -52,29 +60,29 @@
     </widget>
    </item>
    <item>
-    <widget class="QScrollArea" name="settingsAdvancedScrollarea">
+    <widget class="QScrollArea" name="advancedScrollarea">
      <property name="widgetResizable">
       <bool>true</bool>
      </property>
-     <widget class="QWidget" name="settingsAdvancedLayout">
+     <widget class="QWidget" name="advancedLayout">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>364</width>
+        <width>246</width>
         <height>333</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout_2">
        <item row="0" column="0">
-        <widget class="QLabel" name="settingsCacheModeLabel">
+        <widget class="QLabel" name="cacheModeLabel">
          <property name="text">
           <string>vfs-cache-mode</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QSpinBox" name="settingsCacheMaxSize">
+        <widget class="QSpinBox" name="cacheMaxSize">
          <property name="suffix">
           <string>G</string>
          </property>
@@ -87,14 +95,14 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="settingsCacheMaxSizeLabel">
+        <widget class="QLabel" name="cacheMaxSizeLabel">
          <property name="text">
           <string>vfs-cache-max-size</string>
          </property>
         </widget>
        </item>
        <item row="10" column="0">
-        <widget class="QCheckBox" name="settingsLinks">
+        <widget class="QCheckBox" name="symlinks">
          <property name="text">
           <string>enable symlinks</string>
          </property>
@@ -104,42 +112,42 @@
         </widget>
        </item>
        <item row="9" column="0">
-        <widget class="QLabel" name="settingsCheckersLabel">
+        <widget class="QLabel" name="checkersLabel">
          <property name="text">
           <string>checkers</string>
          </property>
         </widget>
        </item>
        <item row="9" column="1">
-        <widget class="QSpinBox" name="settingsCheckers">
+        <widget class="QSpinBox" name="checkers">
          <property name="value">
           <number>16</number>
          </property>
         </widget>
        </item>
        <item row="8" column="0">
-        <widget class="QLabel" name="settingsTransfersLabel">
+        <widget class="QLabel" name="transfersLabel">
          <property name="text">
           <string>transfers</string>
          </property>
         </widget>
        </item>
        <item row="8" column="1">
-        <widget class="QSpinBox" name="settingsTransfers">
+        <widget class="QSpinBox" name="transfers">
          <property name="value">
           <number>16</number>
          </property>
         </widget>
        </item>
        <item row="7" column="0">
-        <widget class="QLabel" name="settingsBufferSizeLabel">
+        <widget class="QLabel" name="bufferSizeLabel">
          <property name="text">
           <string>buffer-size</string>
          </property>
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="QSpinBox" name="settingsBufferSize">
+        <widget class="QSpinBox" name="bufferSize">
          <property name="suffix">
           <string>M</string>
          </property>
@@ -152,14 +160,14 @@
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="settingsReadChunkSizeLimitLabel">
+        <widget class="QLabel" name="readChunkSizeLimitLabel">
          <property name="text">
           <string>vfs-read-chunk-size-limit</string>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QSpinBox" name="settingsReadChunkSizeLimit">
+        <widget class="QSpinBox" name="readChunkSizeLimit">
          <property name="suffix">
           <string>M</string>
          </property>
@@ -172,14 +180,14 @@
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="settingsReadChunkSizeLabel">
+        <widget class="QLabel" name="readChunkSizeLabel">
          <property name="text">
           <string>vfs-read-chunk-size</string>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QSpinBox" name="settingsReadChunkSize">
+        <widget class="QSpinBox" name="readChunkSize">
          <property name="suffix">
           <string>M</string>
          </property>
@@ -192,14 +200,14 @@
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="settingsCacheMaxAgeLabel">
+        <widget class="QLabel" name="cacheMaxAgeLabel">
          <property name="text">
           <string>vfs-cache-max-age</string>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QSpinBox" name="settingsCacheMaxAge">
+        <widget class="QSpinBox" name="cacheMaxAge">
          <property name="suffix">
           <string>h</string>
          </property>
@@ -212,14 +220,14 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="settingsCacheMinFreeSpaceLabel">
+        <widget class="QLabel" name="cacheMinFreeSpaceLabel">
          <property name="text">
           <string>vfs-cache-min-free-space</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QSpinBox" name="settingsCacheMinFreeSpace">
+        <widget class="QSpinBox" name="cacheMinFreeSpace">
          <property name="suffix">
           <string>G</string>
          </property>
@@ -232,7 +240,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="settingsCacheMode">
+        <widget class="QComboBox" name="cacheMode">
          <property name="currentIndex">
           <number>3</number>
          </property>
@@ -263,7 +271,7 @@
     </widget>
    </item>
    <item>
-    <spacer name="settingsSpacer">
+    <spacer name="spacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
@@ -289,9 +297,9 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="buttonsLayout">
      <item row="0" column="0">
-      <widget class="QPushButton" name="settingsRcloneConf">
+      <widget class="QPushButton" name="openRcloneConf">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -302,13 +310,13 @@
         <string>Open rclone conf</string>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/resources.qrc">
+        <iconset resource="../../../resources/resources.qrc">
          <normaloff>:/icons/open.svg</normaloff>:/icons/open.svg</iconset>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <spacer name="settingsNavSpacer">
+      <spacer name="buttonsSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
@@ -321,7 +329,7 @@
       </spacer>
      </item>
      <item row="1" column="0">
-      <widget class="QPushButton" name="settingsWizard">
+      <widget class="QPushButton" name="openWizard">
        <property name="toolTip">
         <string>Start OneClone's setup wizard.</string>
        </property>
@@ -329,13 +337,13 @@
         <string>Run Setup Wizard</string>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/resources.qrc">
+        <iconset resource="../../../resources/resources.qrc">
          <normaloff>:/icons/open.svg</normaloff>:/icons/open.svg</iconset>
        </property>
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QPushButton" name="settingsSave">
+      <widget class="QPushButton" name="save">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -358,7 +366,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../resources/resources.qrc"/>
+  <include location="../../../resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
