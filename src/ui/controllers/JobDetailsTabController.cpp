@@ -4,6 +4,7 @@
 #include "src/common/LocalPathAutocompleter.h"
 #include "src/core/Job.h"
 #include "src/core/Status.h"
+#include "src/providers/rclone/RCloneProvider.h"
 #include "src/ui/ui_JobDetailsTabController.h"
 
 #include <QDir>
@@ -15,15 +16,21 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
     , m_appContext(appContext)
 {
     ui->setupUi(this);
-
-    ui->command->document()->setMaximumBlockCount(Config::MAX_OUTPUT_LINES);
     LocalPathAutocompleter::attach(ui->local);
+    ui->unsaved->hide();
 
     connect(ui->openLog,     &QPushButton::clicked,           this, &JobDetailsTabController::onOpenLogClicked);
     connect(ui->save,        &QPushButton::clicked,           this, &JobDetailsTabController::onSaveClicked);
     connect(ui->remove,      &QPushButton::clicked,           this, &JobDetailsTabController::onDeleteClicked);
     connect(ui->localButton, &QToolButton::clicked,           this, &JobDetailsTabController::onLocalSelectClicked);
     connect(ui->type,        &QComboBox::currentIndexChanged, this, &JobDetailsTabController::onTypeChanged);
+
+    // Keep the generated command preview in sync with every field that
+    // feeds into it, so it updates instantly as the user edits the job.
+    connect(ui->type,     &QComboBox::currentIndexChanged, this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->local,    &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->remote,   &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->readOnly, &QCheckBox::toggled,              this, &JobDetailsTabController::updateCommandPreview);
 
     clear();
 }
@@ -48,6 +55,8 @@ void JobDetailsTabController::setJob(Job* job)
     ui->remove     ->setEnabled(validJob);
     ui->openLog    ->setEnabled(validJob);
 
+    ui->unsaved->hide();
+
     if (!validJob) {
         clear();
         return;
@@ -62,8 +71,8 @@ void JobDetailsTabController::setJob(Job* job)
     ui->autostart->setChecked(job->autostart());
     ui->readOnly->setChecked(job->readOnly());
 
-    // populate output log
-    ui->command->setText(job->getCommand(false).join(' '));
+    // populate command preview
+    updateCommandPreview();
 
     // show autocomplete
     delete m_remotesAutocompleter;
@@ -90,6 +99,37 @@ void JobDetailsTabController::onTypeChanged(int index)
     ui->readOnly->setEnabled(index == ui->type->findText("mount"));
 }
 
+void JobDetailsTabController::updateCommandPreview()
+{
+    if (!m_currentJob) {
+        ui->command->clear();
+        return;
+    }
+
+    const SharedSettings* shared = m_appContext->shared();
+
+    RcloneCommandParams params;
+    params.type      = ui->type->currentText();
+    params.local     = ui->local->text();
+    params.remote    = ui->remote->text();
+    params.readOnly  = ui->readOnly->isChecked();
+    params.swapSides = false;
+
+    params.cacheMode          = shared->cacheMode();
+    params.cacheMaxSize       = shared->cacheMaxSize();
+    params.cacheMinFreeSpace  = shared->cacheMinFreeSpace();
+    params.cacheMaxAge        = shared->cacheMaxAge();
+    params.readChunkSize      = shared->readChunkSize();
+    params.readChunkSizeLimit = shared->readChunkSizeLimit();
+    params.bufferSize         = shared->bufferSize();
+    params.transfers          = shared->transfers();
+    params.checkers           = shared->checkers();
+    params.links              = shared->links();
+
+    QStringList command = m_appContext->rcloneProvider()->buildCommand(params);
+    ui->command->setText(command.join(' '));
+}
+
 void JobDetailsTabController::onOpenLogClicked()
 {
     if (!m_currentJob) return;
@@ -111,7 +151,7 @@ void JobDetailsTabController::onSaveClicked()
     job->setAutostart(ui->autostart->isChecked());
     job->setReadOnly(ui->readOnly->isChecked());
 
-    ui->command->setText(job->getCommand(false).join(' '));
+    updateCommandPreview();
 
     if (m_appContext->save()) {
         Status::notify("Job saved.", Status::Level::Success);

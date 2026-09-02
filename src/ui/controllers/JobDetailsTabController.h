@@ -41,6 +41,7 @@ private slots:
     void onSaveClicked();
     void onDeleteClicked();
     void onLocalSelectClicked();
+    void updateCommandPreview();
 
 private:
     void clear();

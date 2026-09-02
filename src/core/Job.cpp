@@ -60,33 +60,25 @@ const QString Job::statusString() const{
 // start / stop
 // ---------------------------------------------------------------------------
 QStringList Job::getCommand(bool swapSides){
-    QStringList command;
+    RcloneCommandParams params;
+    params.type      = m_type;
+    params.local     = m_local;
+    params.remote    = m_remote;
+    params.readOnly  = m_readOnly;
+    params.swapSides = swapSides;
 
-    if(m_type == "mount"){
-        command << "mount" << m_remote << m_local;
-        if (m_readOnly) command << "--read-only";
-        command << "--vfs-cache-mode"              << m_shared->cacheMode();
-        command << "--vfs-cache-max-size"          << QString::number(m_shared->cacheMaxSize())       + "G";
-        command << "--vfs-cache-min-free-space"    << QString::number(m_shared->cacheMinFreeSpace())  + "G";
-        command << "--vfs-cache-max-age"           << QString::number(m_shared->cacheMaxAge())        + "h";
-        command << "--vfs-read-chunk-size"         << QString::number(m_shared->readChunkSize())      + "M";
-        command << "--vfs-read-chunk-size-limit"   << QString::number(m_shared->readChunkSizeLimit()) + "M";
-    }else{
-        command << m_type;
-        if(swapSides){
-            command << m_remote << m_local;
-        }else{
-            command << m_local << m_remote;
-        }
-        command << "--progress" << "--delete-before";
-    }
+    params.cacheMode          = m_shared->cacheMode();
+    params.cacheMaxSize       = m_shared->cacheMaxSize();
+    params.cacheMinFreeSpace  = m_shared->cacheMinFreeSpace();
+    params.cacheMaxAge        = m_shared->cacheMaxAge();
+    params.readChunkSize      = m_shared->readChunkSize();
+    params.readChunkSizeLimit = m_shared->readChunkSizeLimit();
+    params.bufferSize         = m_shared->bufferSize();
+    params.transfers          = m_shared->transfers();
+    params.checkers           = m_shared->checkers();
+    params.links              = m_shared->links();
 
-    command << "--buffer-size"                 << QString::number(m_shared->bufferSize())         + "M";
-    command << "--transfers"                   << QString::number(m_shared->transfers());
-    command << "--checkers"                    << QString::number(m_shared->checkers());
-    if (m_shared->links()) command << "--links";
-
-    return command;
+    return m_rcloneProvider->buildCommand(params);
 }
 
 void Job::toggle(bool swapSides){

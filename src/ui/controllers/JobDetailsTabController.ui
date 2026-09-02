@@ -11,37 +11,36 @@
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="6" column="1">
-    <layout class="QHBoxLayout" name="localLayout">
-     <item>
-      <widget class="QLineEdit" name="local">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="placeholderText">
-        <string>Local folder, new drive (e.g., X:\) or network (e.g., \\allas\folder)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="localButton">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>...</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="localLabel">
+   <item row="7" column="0">
+    <widget class="QLabel" name="remoteLabel">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>Local</string>
+      <string>Remote</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QCheckBox" name="readOnly">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only (mount jobs only).&lt;/p&gt;&lt;p&gt;NOTE: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Read only</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="commandLabel">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The auto-generated rclone command that will actually run when you start the job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
      </property>
     </widget>
    </item>
@@ -76,15 +75,29 @@
      </item>
     </widget>
    </item>
-   <item row="8" column="1">
-    <widget class="QCheckBox" name="readOnly">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the mounted folder will be read-only (mount jobs only).&lt;/p&gt;&lt;p&gt;NOTE: some programs like office may not work, as they need writing permissions just to open files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Read only</string>
-     </property>
-    </widget>
+   <item row="6" column="1">
+    <layout class="QHBoxLayout" name="localLayout">
+     <item>
+      <widget class="QLineEdit" name="local">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>Local folder, new drive (e.g., X:\) or network (e.g., \\allas\folder)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="localButton">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="nmeLabel">
@@ -93,6 +106,13 @@
      </property>
      <property name="text">
       <string>Name</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="Line" name="line0">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -106,30 +126,29 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="remoteLabel">
+   <item row="6" column="0">
+    <widget class="QLabel" name="localLabel">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>Remote</string>
+      <string>Local</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QCheckBox" name="autostart">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the job will run automatically when you open the app.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   <item row="10" column="1" colspan="2">
+    <widget class="QTextBrowser" name="command">
+     <property name="enabled">
+      <bool>false</bool>
      </property>
-     <property name="text">
-      <string>Run automatically when app starts</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="name">
      <property name="toolTip">
-      <string>Give a name to the job, for your reference.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The auto-generated rclone command that will actually run when you start the job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="acceptRichText">
+      <bool>false</bool>
+     </property>
+     <property name="openLinks">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -137,19 +156,6 @@
     <widget class="QLineEdit" name="remote">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify the remote folder of the job, e.g., allas:folder&lt;/p&gt;&lt;p&gt;NOTE: RClone needs to be configured correctly to work with the remote.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="commandLabel">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The auto-generated rclone command that will actually run when you start the job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
      </property>
     </widget>
    </item>
@@ -175,25 +181,10 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
-    <widget class="QLabelInstantTooltip" name="localHelp">
-     <property name="maximumSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="name">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap resource="../../../resources/resources.qrc">:/icons/help.svg</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
+      <string>Give a name to the job, for your reference.</string>
      </property>
     </widget>
    </item>
@@ -219,13 +210,6 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
-    <widget class="Line" name="line0">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
    <item row="5" column="1" colspan="2">
     <widget class="Line" name="lne1">
      <property name="orientation">
@@ -240,24 +224,25 @@
      </property>
     </widget>
    </item>
-   <item row="10" column="1" colspan="2">
-    <widget class="QTextBrowser" name="command">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The auto-generated rclone command that will actually run when you start the job.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="acceptRichText">
-      <bool>false</bool>
-     </property>
-     <property name="openLinks">
-      <bool>false</bool>
+   <item row="11" column="0" colspan="3">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item row="11" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="buttonsLayout" stretch="0,1,0,0">
+   <item row="4" column="1">
+    <widget class="QCheckBox" name="autostart">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the job will run automatically when you open the app.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Run automatically when app starts</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="1" colspan="2">
+    <layout class="QHBoxLayout" name="buttonsLayout" stretch="0,1,0,0,0">
      <item>
       <widget class="QPushButton" name="openLog">
        <property name="toolTip">
@@ -282,6 +267,28 @@
       </spacer>
      </item>
      <item>
+      <widget class="QLabelInstantTooltip" name="unsaved">
+       <property name="maximumSize">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>There are unsaved changes. Remember to save!</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../../../resources/resources.qrc">:/icons/message.svg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="save">
        <property name="toolTip">
         <string>Save the job details</string>
@@ -294,7 +301,7 @@
      <item>
       <widget class="QPushButton" name="remove">
        <property name="toolTip">
-        <string>Permanently delete the job from job list</string>
+        <string>Permanently delete the job.</string>
        </property>
        <property name="text">
         <string>Delete</string>
@@ -302,6 +309,28 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="6" column="2">
+    <widget class="QLabelInstantTooltip" name="localHelp">
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;mount&lt;/span&gt; jobs, specify either:&lt;br/&gt;- an empty local folder (should be empty), e.g., &amp;quot;C:\Users\Desktop\My Folder&amp;quot;)&lt;br/&gt;- a new drive letter (e.g., &amp;quot;X\&amp;quot;)&lt;br/&gt;- a new network mount location (e.g., &amp;quot;\\allas\folder&amp;quot;)&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:700;&quot;&gt;copy and sync &lt;/span&gt;jobs, specify an &lt;span style=&quot; font-weight:700;&quot;&gt;existing&lt;/span&gt; folder in the local pc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="../../../resources/resources.qrc">:/icons/help.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

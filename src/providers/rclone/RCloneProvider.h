@@ -9,6 +9,34 @@ class QProcess;
 QT_END_NAMESPACE
 
 // ---------------------------------------------------------------------------
+// RcloneCommandParams
+// Every parameter needed to build the rclone command line for a job,
+// decoupled from the Job/SharedSettings classes so the command can be
+// generated from arbitrary (e.g. not-yet-saved) UI input as well.
+// ---------------------------------------------------------------------------
+struct RcloneCommandParams
+{
+    // job-specific
+    QString type;              // "mount", "sync" or "copy"
+    QString local;
+    QString remote;
+    bool    readOnly  = false; // mount only
+    bool    swapSides = false; // sync/copy only
+
+    // shared / vfs settings
+    QString cacheMode;
+    int     cacheMaxSize       = 0;   // GB
+    int     cacheMinFreeSpace  = 0;   // GB
+    int     cacheMaxAge        = 0;   // hours
+    int     readChunkSize      = 0;   // MB
+    int     readChunkSizeLimit = 0;   // MB
+    int     bufferSize         = 0;   // MB
+    int     transfers          = 0;
+    int     checkers           = 0;
+    bool    links               = false;
+};
+
+// ---------------------------------------------------------------------------
 // RCloneProvider
 // Abstract interface for every touchpoint the app has with the rclone
 // binary: availability checks, the interactive config tool, remote/dir
@@ -20,6 +48,11 @@ class RCloneProvider
 {
 public:
     virtual ~RCloneProvider() = default;
+
+    // Builds the rclone command-line arguments (excluding the executable
+    // itself) for the given parameters. Pure string-building, so it is not
+    // platform-specific and is shared by every RCloneProvider implementation.
+    QStringList buildCommand(const RcloneCommandParams& params) const;
 
     // Returns true if rclonePath points to a usable rclone executable
     // (either directly, or found on the system PATH).

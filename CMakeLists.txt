@@ -29,7 +29,7 @@ qt_add_executable(OneClone
     src/providers/platform/MountBackendDetector.h
     src/providers/platform/WinFspDetector.h         src/providers/platform/WinFspDetector.cpp
 
-    src/providers/rclone/RCloneProvider.h
+    src/providers/rclone/RCloneProvider.h           src/providers/rclone/RCloneProvider.cpp
     src/providers/rclone/RCloneProviderWindows.h    src/providers/rclone/RCloneProviderWindows.cpp
     src/providers/rclone/RemotesAutocompleter.h     src/providers/rclone/RemotesAutocompleter.cpp
     src/providers/rclone/RemotesLookupWorker.h      src/providers/rclone/RemotesLookupWorker.cpp
