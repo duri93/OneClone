@@ -31,9 +31,12 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     // ---- Load settings (generates defaults on first run) ----
-    bool dryRun = !m_appContext.load();
+    const AppContext::LoadResult loadResult = m_appContext.load();
+    const bool dryRun = (loadResult != AppContext::LoadResult::Loaded);
 
-    if (dryRun) {
+    if (loadResult == AppContext::LoadResult::LoadError) {
+        // A settings file existed but couldn't be read/parsed (unreadable
+        // or corrupt) — worth warning about, unlike a benign first run.
         Status::notify("Could not load settings file — using defaults.", Status::Level::Warning);
     }
 

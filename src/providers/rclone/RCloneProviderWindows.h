@@ -25,6 +25,8 @@ public:
     bool openConfigFile(const QString& rclonePath) const override;
     QStringList listRemotes(const QString& rclonePath) const override;
     QStringList listDirs(const QString& rclonePath, const QString& remote) const override;
+    bool requestGracefulStop(QProcess& process) const override;
+    void notifyProcessFinished(QProcess& process) const override;
 
 private:
     // Runs rclone synchronously and captures stdout. Returns false on

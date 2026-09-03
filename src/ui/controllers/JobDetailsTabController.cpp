@@ -128,24 +128,13 @@ void JobDetailsTabController::updateCommandPreview()
 
     const SharedSettings* shared = m_appContext->shared();
 
-    RcloneCommandParams params;
+    RcloneCommandParams params = shared->toCommandParams();
     params.type         = ui->type->currentText();
     params.local        = ui->local->text();
     params.remote       = ui->remote->text();
     params.readOnly     = ui->readOnly->isChecked();
     params.deleteBefore = ui->deleteBefore->isChecked();
-    params.swapSides = false;
-
-    params.cacheMode          = shared->cacheMode();
-    params.cacheMaxSize       = shared->cacheMaxSize();
-    params.cacheMinFreeSpace  = shared->cacheMinFreeSpace();
-    params.cacheMaxAge        = shared->cacheMaxAge();
-    params.readChunkSize      = shared->readChunkSize();
-    params.readChunkSizeLimit = shared->readChunkSizeLimit();
-    params.bufferSize         = shared->bufferSize();
-    params.transfers          = shared->transfers();
-    params.checkers           = shared->checkers();
-    params.links              = shared->links();
+    params.swapSides    = false;
 
     QStringList command = m_appContext->rcloneProvider()->buildCommand(params);
     ui->command->setText(command.join(' '));
@@ -190,7 +179,7 @@ void JobDetailsTabController::onSaveClicked()
     job->setRemote(ui->remote->text());
     job->setAutostart(ui->autostart->isChecked());
     job->setReadOnly(ui->readOnly->isChecked());
-    job->setDeleteBefore(ui->readOnly->isChecked());
+    job->setDeleteBefore(ui->deleteBefore->isChecked());
 
     updateCommandPreview();
 

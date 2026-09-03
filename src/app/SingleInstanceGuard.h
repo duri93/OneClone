@@ -28,8 +28,12 @@ public:
     bool tryNotifyExisting();
 
     // Starts listening for future instances. Call only after
-    // tryNotifyExisting() returned false.
-    void listen();
+    // tryNotifyExisting() returned false. Returns false if the listen
+    // socket could not be created (e.g. a stale lock that removeServer()
+    // couldn't clear) — in that case future launches will silently start
+    // second instances instead of notifying this one, so the caller should
+    // surface that to the user.
+    bool listen();
 
 signals:
     // Emitted whenever a second instance is launched and should be shown.

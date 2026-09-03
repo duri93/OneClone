@@ -75,4 +75,18 @@ public:
 
     // Returns the top-level directory names inside the given remote.
     virtual QStringList listDirs(const QString& rclonePath, const QString& remote) const = 0;
+
+    // Attempts a graceful stop of a running job process (e.g. sending
+    // CTRL+C on Windows instead of a hard kill). Returns true if a stop
+    // signal was actually sent, in which case the caller should still
+    // arrange a kill() fallback in case the process doesn't exit in time.
+    // The default implementation does nothing and returns false, so
+    // platforms without a graceful mechanism just kill() immediately.
+    virtual bool requestGracefulStop(QProcess& process) const { Q_UNUSED(process); return false; }
+
+    // Called once a process is finished, to let a provider clean up any
+    // platform-specific state left behind by requestGracefulStop() (e.g.
+    // Windows' console control handler suppression). Safe to call even if
+    // requestGracefulStop() was never called or returned false.
+    virtual void notifyProcessFinished(QProcess& process) const { Q_UNUSED(process); }
 };

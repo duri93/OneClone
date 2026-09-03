@@ -70,7 +70,8 @@ void JobListWidget::dropEvent(QDropEvent* event)
     QLayout* l = layout();
     for (int i = 0; i < l->count(); i++) {
         QWidget* w = l->itemAt(i)->widget();
-        if (w && qobject_cast<JobWidget*>(w)->job()->id() == id) {
+        JobWidget* jw = w ? qobject_cast<JobWidget*>(w) : nullptr;
+        if (jw && jw->job()->id() == id) {
             if (targetIndex > i) targetIndex--;
             break;
         }

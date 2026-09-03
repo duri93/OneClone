@@ -31,6 +31,7 @@ void JobsTabController::onAddClicked()
 {
     Job* job = new Job(m_appContext->shared(), m_appContext->rcloneProvider());
     m_appContext->addJob(job);
+    m_appContext->save();
     emit openDetailsRequested(job->id());
 }
 
@@ -68,23 +69,26 @@ void JobsTabController::populateJobList()
     // only replace once rebuilt, so lookups above still worked
     m_jobWidgets = ordered;
 }
-JobWidget* JobsTabController::findOrCreateJobWidget(Job* job)
+JobWidget* JobsTabController::createJobWidget(Job* job)
 {
-    for (JobWidget*& w : m_jobWidgets)
-        if (w->job() == job) return w;
-
-    // not found — create fresh (same as onJobAdded)
     JobWidget* w = new JobWidget(job);
     w->setProperty("jobId", job->id());
     connect(w, &JobWidget::openDetailsRequested, this, &JobsTabController::openDetailsRequested);
     return w;
 }
 
+JobWidget* JobsTabController::findOrCreateJobWidget(Job* job)
+{
+    for (JobWidget*& w : m_jobWidgets)
+        if (w->job() == job) return w;
+
+    // not found — create fresh
+    return createJobWidget(job);
+}
+
 void JobsTabController::onJobAdded(Job* job)
 {
-    JobWidget* w = new JobWidget(job);
-
-    connect(w, &JobWidget::openDetailsRequested, this, &JobsTabController::openDetailsRequested);
+    JobWidget* w = createJobWidget(job);
 
     m_jobWidgets.append(w);
     ui->list->layout()->addWidget(w);

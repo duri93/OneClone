@@ -39,7 +39,6 @@ void AppContext::addJob(Job* newJob){
     }
 
     m_jobs.append(newJob);
-    save();
 
     emit added(newJob);
 }
@@ -69,19 +68,19 @@ void AppContext::removeJob(Job* job){
     removeJob(job->id());
 }
 
-bool AppContext::load()
+AppContext::LoadResult AppContext::load()
 {
     QFile file(m_filePath);
 
-    // create settings file on first run
+    // create settings file on first run — expected/benign, not an error
     if (!file.exists()) {
         save();
-        return false;
+        return LoadResult::FirstRun;
     }
 
     // read settings file to json object
     if (!file.open(QIODevice::ReadOnly)) {
-        return false;
+        return LoadResult::LoadError;
     }
 
     QJsonParseError err;
@@ -89,7 +88,7 @@ bool AppContext::load()
     file.close();
 
     if (err.error != QJsonParseError::NoError || !doc.isObject()) {
-        return false;
+        return LoadResult::LoadError;
     }
 
     QJsonObject root = doc.object();
@@ -118,7 +117,7 @@ bool AppContext::load()
         }
     }
 
-    return true;
+    return LoadResult::Loaded;
 }
 
 bool AppContext::save() const

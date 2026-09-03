@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/providers/rclone/RCloneProvider.h"
+
 #include <QJsonObject>
 #include <QString>
 
@@ -41,6 +43,11 @@ public:
     SharedSettings(const QJsonObject& o);
 
     const QJsonObject toJson() const;
+
+    // Populates the shared/vfs fields of an RcloneCommandParams from this
+    // settings object. Callers still need to fill in the job-specific
+    // fields (type, local, remote, readOnly, deleteBefore, swapSides).
+    RcloneCommandParams toCommandParams() const;
 private:
     QString m_rclonePath         = "C:\\RClone\\rclone.exe";
     bool    m_advanced           = false;

@@ -10,6 +10,17 @@
 LogFile::LogFile(const QString &jobName, QObject *parent)
     : QObject(parent)
     , m_jobName(jobName){
+
+    // Batch flush()es instead of doing one after every write() — jobs can
+    // emit output lines rapidly during transfers, and flush() is a real
+    // per-line I/O cost.
+    m_flushTimer.setInterval(Config::LOG_FLUSH_INTERVAL_MS);
+    connect(&m_flushTimer, &QTimer::timeout, this, [this](){
+        if (m_pendingFlush && m_file.isOpen()) {
+            m_file.flush();
+            m_pendingFlush = false;
+        }
+    });
 }
 
 LogFile::~LogFile(){
@@ -52,12 +63,21 @@ void LogFile::write(const QString &line){
         return;
     }
 
-    m_file.flush();
+    m_pendingFlush = true;
+    if (!m_flushTimer.isActive()) {
+        m_flushTimer.start();
+    }
 }
 
 void LogFile::close(){
-    if (m_file.isOpen())
+    m_flushTimer.stop();
+    if (m_file.isOpen()){
+        if (m_pendingFlush) {
+            m_file.flush();
+            m_pendingFlush = false;
+        }
         m_file.close();
+    }
 }
 
 void LogFile::cleanupOldLogs(const QString &logDirPath){

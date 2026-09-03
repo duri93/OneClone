@@ -37,7 +37,12 @@ public:
     void removeJob(QString id);
 
     // general settings
-    bool load();
+    enum class LoadResult {
+        Loaded,     // existing settings file was read successfully
+        FirstRun,   // no settings file existed yet — defaults were created (benign)
+        LoadError,  // a settings file existed but could not be read/parsed
+    };
+    LoadResult load();
     bool save() const;
 signals:
     void added(Job* newJob);

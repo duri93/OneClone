@@ -1,5 +1,6 @@
 #include "src/app/SingleInstanceGuard.h"
 #include "src/common/Config.h"
+#include "src/core/Status.h"
 #include "src/ui/MainWindow.h"
 
 #include <QApplication>
@@ -16,9 +17,17 @@ int main(int argc, char* argv[])
     if (instanceGuard.tryNotifyExisting()) {
         return 0;
     }
-    instanceGuard.listen();
+    const bool listening = instanceGuard.listen();
 
     MainWindow window;
+
+    if (!listening) {
+        // Not fatal — the app still works standalone — but future launches
+        // won't be able to find this instance and will start duplicates.
+        Status::notify(
+            "Could not start the single-instance listener; opening this app again may launch a second copy.",
+            Status::Level::Warning);
+    }
     QObject::connect(&instanceGuard, &SingleInstanceGuard::showRequested, &window, &MainWindow::activate);
 
     if (!QCoreApplication::arguments().contains("--tray")) {

@@ -3,12 +3,16 @@
 #include <QFile>
 #include <QObject>
 #include <QString>
+#include <QTimer>
 
 // ---------------------------------------------------------------------------
 // LogFile
-// Simple append-only, unbuffered logger for a single job. Writes to
+// Simple append-only logger for a single job. Writes to
 // <applicationDirPath>/logs/<jobName>-<timestamp>.log, created lazily on
 // first write(); keeps only the newest Config::MAX_LOG_FILES per directory.
+// Writes are buffered by QFile/the OS and flushed periodically (rather than
+// after every line) since jobs can emit output rapidly during transfers;
+// close() always flushes so nothing pending is lost.
 // ---------------------------------------------------------------------------
 class LogFile : public QObject
 {
@@ -34,4 +38,6 @@ private:
 
     QString m_jobName;
     QFile m_file;
+    QTimer m_flushTimer;
+    bool m_pendingFlush = false;
 };

@@ -41,6 +41,7 @@ private slots:
 private:
     void populateJobList();
     JobWidget* findOrCreateJobWidget(Job* job);
+    JobWidget* createJobWidget(Job* job);
 
     Ui::JobsTabController* ui;
     AppContext* m_appContext;

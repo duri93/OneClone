@@ -3,17 +3,10 @@
 #include "src/common/Config.h"
 #include "src/core/Status.h"
 
-#include <atomic>
 #include <QDesktopServices>
 #include <QDir>
 #include <QTimer>
 #include <QUuid>
-
-#ifdef Q_OS_WIN
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-static std::atomic<int> s_ctrlSuppressCount{0};
 
 Job::Job(SharedSettings* shared, RCloneProvider* rcloneProvider, QObject* parent)
     : QObject(parent), m_shared(shared), m_rcloneProvider(rcloneProvider){
@@ -60,24 +53,13 @@ const QString Job::statusString() const{
 // start / stop
 // ---------------------------------------------------------------------------
 QStringList Job::getCommand(bool swapSides){
-    RcloneCommandParams params;
+    RcloneCommandParams params = m_shared->toCommandParams();
     params.type         = m_type;
     params.local        = m_local;
     params.remote       = m_remote;
     params.readOnly     = m_readOnly;
     params.deleteBefore = m_deleteBefore;
     params.swapSides    = swapSides;
-
-    params.cacheMode          = m_shared->cacheMode();
-    params.cacheMaxSize       = m_shared->cacheMaxSize();
-    params.cacheMinFreeSpace  = m_shared->cacheMinFreeSpace();
-    params.cacheMaxAge        = m_shared->cacheMaxAge();
-    params.readChunkSize      = m_shared->readChunkSize();
-    params.readChunkSizeLimit = m_shared->readChunkSizeLimit();
-    params.bufferSize         = m_shared->bufferSize();
-    params.transfers          = m_shared->transfers();
-    params.checkers           = m_shared->checkers();
-    params.links              = m_shared->links();
 
     return m_rcloneProvider->buildCommand(params);
 }
@@ -100,7 +82,14 @@ void Job::start(bool swapSides){
     delete m_logfile;
     m_logfile = new LogFile(m_name, this);
     connect(m_logfile, &LogFile::error, this, [this](const QString& message){
-        emit warning(m_id, message);
+        // Deliberately NOT emit warning(m_id, message): that signal/its UI
+        // (the status-icon tooltip) is for warnings parsed from rclone's
+        // own output. A logging failure is a different kind of problem —
+        // route it through the app-wide status channel instead, so the two
+        // aren't shown through the same indistinguishable UI element.
+        Status::notify(
+            tr("Job \"%1\": %2").arg(m_name, message),
+            Status::Level::Warning);
     });
     m_logfile->write(args.join(' '));
 
@@ -121,26 +110,16 @@ void Job::stop(){
     if (!active()) return;
     setStatus(JobStatus::Stopping);
 
-#ifdef Q_OS_WIN
-    if (AttachConsole(m_process.processId())) {
-        if (s_ctrlSuppressCount.fetch_add(1) == 0){
-            SetConsoleCtrlHandler(nullptr, TRUE);   // suppress it in our process
-        }
-
-        GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-        FreeConsole();
-
+    if (m_rcloneProvider->requestGracefulStop(m_process)) {
+        // Graceful stop signal sent — give the process a moment to exit on
+        // its own, then fall back to a hard kill if it hasn't.
         QTimer::singleShot(3000, this, [this]() {
             if (m_process.state() != QProcess::NotRunning)
                 m_process.kill();  // fallback
         });
-
     } else {
         m_process.kill();
     }
-#else
-    m_process.kill();
-#endif
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +135,13 @@ void Job::onReadyRead(){
     }
 }
 void Job::onProcessError(QProcess::ProcessError error){
-    Q_UNUSED(error)
+    // Job::stop() -> m_process.kill() always emits errorOccurred(Crashed)
+    // before finished(). That's expected/intentional here, not a real
+    // error, so don't let it clobber the Stopping status; onProcessFinished
+    // will transition Stopping -> Stopped once the process actually exits.
+    if (error == QProcess::Crashed && m_status == JobStatus::Stopping) {
+        return;
+    }
 
     if(error == QProcess::FailedToStart){
         processLineOutput(QString("[ERROR] Failed to start: %1").arg(m_process.errorString()));
@@ -169,18 +154,18 @@ void Job::onProcessError(QProcess::ProcessError error){
 void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus){
     Q_UNUSED(exitStatus)
 
-#ifdef Q_OS_WIN
-    if (s_ctrlSuppressCount.load() > 0) {
-        if (--s_ctrlSuppressCount == 0)
-            SetConsoleCtrlHandler(nullptr, FALSE);
-    }
-#endif
+    // Let the provider clean up any platform-specific state left behind by
+    // requestGracefulStop() (e.g. Windows' console control handler
+    // suppression). No-op if a graceful stop was never requested.
+    m_rcloneProvider->notifyProcessFinished(m_process);
 
     // Drain any remaining output
     onReadyRead();
 
     if (m_status == JobStatus::Errored) {
-        // already Errored from a matched error pattern — leave status as-is
+        // already Errored from a matched error pattern — leave status as-is.
+        // (Stopping is handled below and is no longer forced into Errored by
+        // the Crashed error kill() emits — see onProcessError.)
     } else if(m_status == JobStatus::Stopping){
         setStatus(JobStatus::Stopped);
     } else if (exitCode != 0) {
@@ -189,9 +174,6 @@ void Job::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus){
     } else {
         setStatus(JobStatus::Success);
     }
-
-    delete m_logfile;
-    m_logfile = nullptr;
 }
 
 // ---------------------------------------------------------------------------

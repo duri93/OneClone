@@ -1,11 +1,26 @@
 #include "RCloneProviderWindows.h"
 
+#include "src/common/Config.h"
+
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QUrl>
+
+#include <atomic>
+
+#ifdef Q_OS_WIN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+// Tracks how many currently-stopping processes have suppressed this
+// process's own CTRL+C handler, so it's only restored once the last one
+// is done with it. Lives here (not in Job) since it's purely an artifact
+// of the Windows graceful-stop mechanism.
+static std::atomic<int> s_ctrlSuppressCount{0};
 
 bool RCloneProviderWindows::isAvailable(const QString& rclonePath) const
 {
@@ -113,6 +128,37 @@ QStringList RCloneProviderWindows::listDirs(const QString& rclonePath, const QSt
     return dirs;
 }
 
+bool RCloneProviderWindows::requestGracefulStop(QProcess& process) const
+{
+#ifdef Q_OS_WIN
+    if (!AttachConsole(process.processId())) {
+        return false;
+    }
+
+    if (s_ctrlSuppressCount.fetch_add(1) == 0) {
+        SetConsoleCtrlHandler(nullptr, TRUE);   // suppress CTRL+C in our own process
+    }
+
+    GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+    FreeConsole();
+    return true;
+#else
+    Q_UNUSED(process);
+    return false;
+#endif
+}
+
+void RCloneProviderWindows::notifyProcessFinished(QProcess& process) const
+{
+    Q_UNUSED(process);
+#ifdef Q_OS_WIN
+    if (s_ctrlSuppressCount.load() > 0) {
+        if (--s_ctrlSuppressCount == 0)
+            SetConsoleCtrlHandler(nullptr, FALSE);
+    }
+#endif
+}
+
 bool RCloneProviderWindows::runRclone(const QString& rclonePath, const QStringList& arguments, QString* stdoutText)
 {
     QProcess process;
@@ -121,7 +167,10 @@ bool RCloneProviderWindows::runRclone(const QString& rclonePath, const QStringLi
     if (!process.waitForStarted()) {
         return false;
     }
-    if (!process.waitForFinished(-1)) {
+    if (!process.waitForFinished(Config::RCLONE_HELPER_TIMEOUT_MS)) {
+        // Timed out (or errored) — make sure nothing is left running.
+        process.kill();
+        process.waitForFinished(1000);
         return false;
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {

@@ -27,6 +27,23 @@ SharedSettings::SharedSettings(const QJsonObject& o){
     this->m_links              = log("links",              this->links());
 }
 
+RcloneCommandParams SharedSettings::toCommandParams() const{
+    RcloneCommandParams params;
+
+    params.cacheMode          = this->cacheMode();
+    params.cacheMaxSize       = this->cacheMaxSize();
+    params.cacheMinFreeSpace  = this->cacheMinFreeSpace();
+    params.cacheMaxAge        = this->cacheMaxAge();
+    params.readChunkSize      = this->readChunkSize();
+    params.readChunkSizeLimit = this->readChunkSizeLimit();
+    params.bufferSize         = this->bufferSize();
+    params.transfers          = this->transfers();
+    params.checkers           = this->checkers();
+    params.links              = this->links();
+
+    return params;
+}
+
 const QJsonObject SharedSettings::toJson() const{
     QJsonObject o;
 

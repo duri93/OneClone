@@ -27,13 +27,18 @@ bool SingleInstanceGuard::tryNotifyExisting()
     return true;
 }
 
-void SingleInstanceGuard::listen()
+bool SingleInstanceGuard::listen()
 {
     m_server = std::make_unique<QLocalServer>();
     QLocalServer::removeServer(m_appId); // clean up stale socket if crashed
-    m_server->listen(m_appId);
+
+    if (!m_server->listen(m_appId)) {
+        m_server.reset();
+        return false;
+    }
 
     connect(m_server.get(), &QLocalServer::newConnection, this, &SingleInstanceGuard::handleNewConnection);
+    return true;
 }
 
 void SingleInstanceGuard::handleNewConnection()
