@@ -73,7 +73,7 @@ void TrayController::onMenuAboutToShow()
 void TrayController::onActivated(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
-        if (m_window->isVisible()) {
+        if (m_window->isVisible() && !m_window->isMinimized()) {
             m_window->hide();
         } else {
             m_window->show();

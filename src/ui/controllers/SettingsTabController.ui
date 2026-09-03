@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>266</width>
-    <height>589</height>
+    <width>550</width>
+    <height>669</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -69,7 +69,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>246</width>
+        <width>530</width>
         <height>333</height>
        </rect>
       </property>
@@ -284,20 +284,42 @@
     </spacer>
    </item>
    <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Note: running jobs will keep old settings until stopped and restarted.</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::TextFormat::RichText</enum>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="buttonsLayout">
+    <layout class="QGridLayout" name="navLayout">
+     <item row="1" column="1">
+      <spacer name="navSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabelInstantTooltip" name="unsaved">
+       <property name="maximumSize">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;There are unsaved changes. Remember to save!&lt;/p&gt;&lt;p&gt;Note: currently active jobs will keep old settings until stopped and restarted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../../../resources/resources.qrc">:/icons/message.svg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QPushButton" name="openRcloneConf">
        <property name="enabled">
@@ -315,19 +337,6 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <spacer name="buttonsSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="openWizard">
        <property name="toolTip">
@@ -342,7 +351,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="1" column="3">
       <widget class="QPushButton" name="save">
        <property name="minimumSize">
         <size>
@@ -361,10 +370,24 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="4">
+      <widget class="QPushButton" name="cancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QLabelInstantTooltip</class>
+   <extends>QLabel</extends>
+   <header>src/ui/widgets/QLabelInstantTooltip.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>rclone</tabstop>
   <tabstop>rcloneButton</tabstop>

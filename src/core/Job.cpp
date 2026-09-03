@@ -61,11 +61,12 @@ const QString Job::statusString() const{
 // ---------------------------------------------------------------------------
 QStringList Job::getCommand(bool swapSides){
     RcloneCommandParams params;
-    params.type      = m_type;
-    params.local     = m_local;
-    params.remote    = m_remote;
-    params.readOnly  = m_readOnly;
-    params.swapSides = swapSides;
+    params.type         = m_type;
+    params.local        = m_local;
+    params.remote       = m_remote;
+    params.readOnly     = m_readOnly;
+    params.deleteBefore = m_deleteBefore;
+    params.swapSides    = swapSides;
 
     params.cacheMode          = m_shared->cacheMode();
     params.cacheMaxSize       = m_shared->cacheMaxSize();
@@ -301,13 +302,14 @@ bool Job::openLocalFolder(){
 }
 
 void Job::fromJson(const QJsonValue& json){
-    this->m_id        = json["id"].toString();
-    this->m_name      = json["name"].toString();
-    this->m_type      = json["type"].toString();
-    this->m_local     = json["local"].toString();
-    this->m_remote    = json["remote"].toString();
-    this->m_autostart = json["autostart"].toBool(false);
-    this->m_readOnly  = json["readOnly"].toBool(false);
+    this->m_id           = json["id"]          .toString();
+    this->m_name         = json["name"]        .toString();
+    this->m_type         = json["type"]        .toString();
+    this->m_local        = json["local"]       .toString();
+    this->m_remote       = json["remote"]      .toString();
+    this->m_autostart    = json["autostart"]   .toBool(false);
+    this->m_readOnly     = json["readOnly"]    .toBool(false);
+    this->m_deleteBefore = json["deleteBefore"].toBool(false);
 
     if (this->m_id.isEmpty()) {
         this->m_id = QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -315,13 +317,14 @@ void Job::fromJson(const QJsonValue& json){
 }
 const QJsonObject Job::toJson() const{
     QJsonObject o;
-    o["id"]        = this->m_id;
-    o["name"]      = this->m_name;
-    o["type"]      = this->m_type;
-    o["local"]     = this->m_local;
-    o["remote"]    = this->m_remote;
-    o["autostart"] = this->m_autostart;
-    o["readOnly"]  = this->m_readOnly;
+    o["id"]           = this->m_id;
+    o["name"]         = this->m_name;
+    o["type"]         = this->m_type;
+    o["local"]        = this->m_local;
+    o["remote"]       = this->m_remote;
+    o["autostart"]    = this->m_autostart;
+    o["readOnly"]     = this->m_readOnly;
+    o["deleteBefore"] = this->m_deleteBefore;
     return o;
 }
 

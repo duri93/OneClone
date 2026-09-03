@@ -89,7 +89,8 @@ void UpdateManager::onReleaseInfoReceived(){
     m_currentReply = nullptr;
 
     if (reply->error() != QNetworkReply::NoError) {
-        handleFatalFailure(tr("Failed to check for updates: %1").arg(reply->errorString()));
+        // handleFatalFailure(tr("Failed to check for updates: %1").arg(reply->errorString()));
+        handleFatalFailure("Failed to check for updates");
         return;
     }
 
@@ -97,7 +98,8 @@ void UpdateManager::onReleaseInfoReceived(){
     QJsonParseError parseError{};
     const QJsonDocument doc = QJsonDocument::fromJson(body, &parseError);
     if (parseError.error != QJsonParseError::NoError) {
-        handleFatalFailure(tr("Could not parse release information: %1").arg(parseError.errorString()));
+        // handleFatalFailure(tr("Could not parse release information: %1").arg(parseError.errorString()));
+        handleFatalFailure("Could not parse release information");
         return;
     }
 
@@ -157,7 +159,8 @@ void UpdateManager::onReleaseInfoReceived(){
     }
 
     if (chosen.name.isEmpty()) {
-        handleFatalFailure(tr("Release %1 has no asset matching \"%2\".").arg(tag, m_assetNameFilter));
+        // handleFatalFailure(tr("Release %1 has no asset matching \"%2\".").arg(tag, m_assetNameFilter));
+        handleFatalFailure("Couldn't locate update asset.");
         return;
     }
 
@@ -172,7 +175,8 @@ void UpdateManager::onReleaseInfoReceived(){
 
     if (!isDirectoryWritable(m_installDir)) {
         emit insufficientPermissions(m_installDir);
-        handleFatalFailure(tr("Install directory is not writable: %1").arg(m_installDir));
+        // handleFatalFailure(tr("Install directory is not writable: %1").arg(m_installDir));
+        handleFatalFailure("Install directoty is not writable");
         return;
     }
 
@@ -185,7 +189,8 @@ void UpdateManager::onReleaseInfoReceived(){
         const QString err = m_tempDir->errorString();
         delete m_tempDir;
         m_tempDir = nullptr;
-        handleFatalFailure(tr("Could not create a temporary directory: %1").arg(err));
+        // handleFatalFailure(tr("Could not create a temporary directory: %1").arg(err));
+        handleFatalFailure("Could not create update directory");
         return;
     }
 
@@ -206,7 +211,8 @@ void UpdateManager::startAssetDownload(){
     }
     m_downloadFile.setFileName(m_downloadedFilePath);
     if (!m_downloadFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        handleFatalFailure(tr("Could not write to temporary file: %1").arg(m_downloadFile.errorString()));
+        // handleFatalFailure(tr("Could not write to temporary file: %1").arg(m_downloadFile.errorString()));
+        handleFatalFailure("Could not write update file");
         return;
     }
 

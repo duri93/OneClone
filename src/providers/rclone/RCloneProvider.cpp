@@ -4,6 +4,7 @@ QStringList RCloneProvider::buildCommand(const RcloneCommandParams& params) cons
 {
     QStringList command;
 
+
     if (params.type == "mount") {
         command << "mount" << params.remote << params.local;
         if (params.readOnly) command << "--read-only";
@@ -20,7 +21,9 @@ QStringList RCloneProvider::buildCommand(const RcloneCommandParams& params) cons
         } else {
             command << params.local << params.remote;
         }
-        command << "--progress" << "--delete-before";
+        command << "--progress";
+
+        if(params.deleteBefore) command << "--delete-before";
     }
 
     command << "--buffer-size"                 << QString::number(params.bufferSize)         + "M";

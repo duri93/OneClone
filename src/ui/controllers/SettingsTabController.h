@@ -29,8 +29,11 @@ signals:
     // rclone/WinFsp error banners) can refresh.
     void settingsSaved();
 
+    void settingsCancel();
+
 private slots:
     void onSave();
+    void onCancel();
     void onRcloneSelectClicked();
     void onAdvancedToggled();
     void onRcloneConfClicked();
@@ -38,6 +41,8 @@ private slots:
 private:
     void loadFromSettings();
     void saveToSettings();
+
+    void updateUnsavedIndicator();
 
     Ui::SettingsTabController* ui;
     AppContext* m_appContext;

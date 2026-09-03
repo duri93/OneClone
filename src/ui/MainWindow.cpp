@@ -52,6 +52,9 @@ MainWindow::MainWindow(QWidget* parent)
     ui->tabSettings->layout()->addWidget(m_settingsTab);
     connect(m_settingsTab, &SettingsTabController::wizardRequested, this, &MainWindow::openSetupWizard);
     connect(m_settingsTab, &SettingsTabController::settingsSaved, this, &MainWindow::checkDependencies);
+    connect(m_settingsTab, &SettingsTabController::settingsCancel, this, [this](){
+        ui->tabWidget->setCurrentWidget(ui->tabJobs);
+    });
 
     // ---- List tab ----
     m_jobsTab = new JobsTabController(&m_appContext, this);

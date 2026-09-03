@@ -20,8 +20,9 @@ struct RcloneCommandParams
     QString type;              // "mount", "sync" or "copy"
     QString local;
     QString remote;
-    bool    readOnly  = false; // mount only
-    bool    swapSides = false; // sync/copy only
+    bool    readOnly     = false; // mount only
+    bool    deleteBefore = false; // sync only
+    bool    swapSides    = false; // sync/copy only
 
     // shared / vfs settings
     QString cacheMode;

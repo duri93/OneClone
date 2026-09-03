@@ -29,6 +29,7 @@ SetupWizard::SetupWizard(AppContext* appContext, QWidget* parent)
     // above, or for any other reason), tear this wrapper down too.
     connect(m_wizard, &QWizard::finished, this, &SetupWizard::setupFinished);
     connect(m_wizard, &QWizard::finished, this, &QObject::deleteLater);
+    connect(m_wizard, &QWizard::finished, this, [this]() {m_appContext->save(); });
 }
 
 SetupWizard::~SetupWizard(){

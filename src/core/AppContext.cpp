@@ -39,6 +39,8 @@ void AppContext::addJob(Job* newJob){
     }
 
     m_jobs.append(newJob);
+    save();
+
     emit added(newJob);
 }
 void AppContext::moveJob(const QString& id, int newIndex)

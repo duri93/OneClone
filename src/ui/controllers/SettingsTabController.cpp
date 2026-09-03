@@ -17,7 +17,7 @@ SettingsTabController::SettingsTabController(AppContext* appContext, QWidget* pa
     , m_appContext(appContext)
 {
     ui->setupUi(this);
-
+    ui->unsaved->hide();
     ui->advancedScrollarea->hide();
     LocalPathAutocompleter::attach(ui->rclone, LocalPathAutocompleter::Mode::FoldersAndFiles, {"rclone.exe"});
 
@@ -25,9 +25,24 @@ SettingsTabController::SettingsTabController(AppContext* appContext, QWidget* pa
 
     connect(ui->advanced,       &QCheckBox::checkStateChanged, this, &SettingsTabController::onAdvancedToggled);
     connect(ui->save,           &QPushButton::clicked, this, &SettingsTabController::onSave);
+    connect(ui->cancel,         &QPushButton::clicked, this, &SettingsTabController::onCancel);
     connect(ui->rcloneButton,   &QToolButton::clicked, this, &SettingsTabController::onRcloneSelectClicked);
     connect(ui->openRcloneConf, &QPushButton::clicked, this, &SettingsTabController::onRcloneConfClicked);
     connect(ui->openWizard,     &QPushButton::clicked, this, &SettingsTabController::wizardRequested);
+
+    // Keep the "unsaved changes" indicator in sync with every field the user can edit
+    connect(ui->rclone,             &QLineEdit::textChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->autostart,          &QCheckBox::toggled,             this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->cacheMode,          &QComboBox::currentIndexChanged, this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->cacheMaxSize,       &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->cacheMinFreeSpace,  &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->cacheMaxAge,        &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->readChunkSize,      &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->readChunkSizeLimit, &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->bufferSize,         &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->transfers,          &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->checkers,           &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
+    connect(ui->symlinks,           &QCheckBox::toggled,             this, &SettingsTabController::updateUnsavedIndicator);
 }
 
 SettingsTabController::~SettingsTabController()
@@ -56,6 +71,8 @@ void SettingsTabController::loadFromSettings()
     // settingsCacheMode combobox: find matching text
     int idx = ui->cacheMode->findText(s->cacheMode());
     if (idx >= 0) ui->cacheMode->setCurrentIndex(idx);
+
+    updateUnsavedIndicator();
 }
 
 void SettingsTabController::saveToSettings()
@@ -76,6 +93,8 @@ void SettingsTabController::saveToSettings()
 
     // register or unregister startup
     AutostartManager::setEnabled(Config::APP_ID, ui->autostart->isChecked());
+
+    updateUnsavedIndicator();
 }
 
 void SettingsTabController::onSave()
@@ -89,6 +108,11 @@ void SettingsTabController::onSave()
     }
 
     emit settingsSaved();
+}
+void SettingsTabController::onCancel(){
+    loadFromSettings();
+
+    emit settingsCancel();
 }
 
 void SettingsTabController::onRcloneSelectClicked()
@@ -116,4 +140,23 @@ void SettingsTabController::onRcloneConfClicked()
     if (!process) {
         Status::notify("Failed to run 'rclone config'.", Status::Level::Error);
     }
+}
+
+void SettingsTabController::updateUnsavedIndicator()
+{
+    const bool dirty =
+        ui->autostart->isChecked()      != AutostartManager::isEnabled(Config::APP_ID) ||
+        ui->rclone->text()              != m_appContext->shared()->rclonePath() ||
+        ui->cacheMode->currentText()    != m_appContext->shared()->cacheMode() ||
+        ui->cacheMaxSize->value()       != m_appContext->shared()->cacheMaxSize()      ||
+        ui->cacheMinFreeSpace->value()  != m_appContext->shared()->cacheMinFreeSpace()    ||
+        ui->cacheMaxAge->value()        != m_appContext->shared()->cacheMaxAge()     ||
+        ui->readChunkSize->value()      != m_appContext->shared()->readChunkSize() ||
+        ui->readChunkSizeLimit->value() != m_appContext->shared()->readChunkSizeLimit() ||
+        ui->bufferSize->value()         != m_appContext->shared()->bufferSize()      ||
+        ui->transfers->value()          != m_appContext->shared()->transfers() ||
+        ui->checkers->value()           != m_appContext->shared()->checkers() ||
+        ui->symlinks->isChecked()       != m_appContext->shared()->links();
+
+    ui->unsaved->setVisible(dirty);
 }

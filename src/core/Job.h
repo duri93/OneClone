@@ -38,21 +38,23 @@ public:
     ~Job() override;
 
     // property accessors
-    const QString id()       const { return m_id; }
-    const QString name()     const { return m_name; }
-    const QString type()     const { return m_type; }
-    const QString local()     const {return m_local;     };
-    const QString remote()    const {return m_remote;    };
-    const bool    autostart() const {return m_autostart; };
-    const bool    readOnly()  const {return m_readOnly;  };
+    const QString id()           const { return m_id;           };
+    const QString name()         const { return m_name;         };
+    const QString type()         const { return m_type;         };
+    const QString local()        const { return m_local;        };
+    const QString remote()       const { return m_remote;       };
+    const bool    autostart()    const { return m_autostart;    };
+    const bool    readOnly()     const { return m_readOnly;     };
+    const bool    deleteBefore() const { return m_deleteBefore; };
 
-    void setId       (QString newId    ){ m_id        = std::move(newId);        emit specsChanged(); }
-    void setName     (QString newName  ){ m_name      = std::move(newName);      emit specsChanged(); }
-    void setType     (QString newType  ){ m_type      = std::move(newType);      emit specsChanged(); }
-    void setLocal    (QString newLocal ){ m_local     = std::move(newLocal);     emit specsChanged(); }
-    void setRemote   (QString newRemote){ m_remote    = std::move(newRemote);    emit specsChanged(); }
-    void setAutostart(bool newAutostart){ m_autostart = newAutostart; emit specsChanged(); }
-    void setReadOnly (bool newReaOnly  ){ m_readOnly  = newReaOnly;   emit specsChanged(); }
+    void setId           (QString newId        ){ m_id           = std::move(newId);     emit specsChanged(); }
+    void setName         (QString newName      ){ m_name         = std::move(newName);   emit specsChanged(); }
+    void setType         (QString newType      ){ m_type         = std::move(newType);   emit specsChanged(); }
+    void setLocal        (QString newLocal     ){ m_local        = std::move(newLocal);  emit specsChanged(); }
+    void setRemote       (QString newRemote    ){ m_remote       = std::move(newRemote); emit specsChanged(); }
+    void setAutostart    (bool newAutostart    ){ m_autostart    = newAutostart;         emit specsChanged(); }
+    void setReadOnly     (bool newReaOnly      ){ m_readOnly     = newReaOnly;           emit specsChanged(); }
+    void setDeleteBefore (bool newDeleteBefore ){ m_deleteBefore = newDeleteBefore;      emit specsChanged(); }
 
     // import / export
     const QJsonObject toJson() const;
@@ -103,6 +105,8 @@ private:
     QString m_remote  = "";
     bool m_autostart  = false;
     bool m_readOnly   = false;
+    bool m_deleteBefore = false;
+
 
     SharedSettings*  m_shared;
     RCloneProvider*  m_rcloneProvider;

@@ -27,20 +27,22 @@ JobDetailsTabController::JobDetailsTabController(AppContext* appContext, QWidget
 
     // Keep the generated command preview in sync with every field that
     // feeds into it, so it updates instantly as the user edits the job.
-    connect(ui->type,     &QComboBox::currentIndexChanged,  this, &JobDetailsTabController::updateCommandPreview);
-    connect(ui->local,    &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
-    connect(ui->remote,   &QLineEdit::textChanged,          this, &JobDetailsTabController::updateCommandPreview);
-    connect(ui->readOnly, &QCheckBox::toggled,              this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->type,         &QComboBox::currentIndexChanged, this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->local,        &QLineEdit::textChanged,         this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->remote,       &QLineEdit::textChanged,         this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->readOnly,     &QCheckBox::toggled,             this, &JobDetailsTabController::updateCommandPreview);
+    connect(ui->deleteBefore, &QCheckBox::toggled,             this, &JobDetailsTabController::updateCommandPreview);
 
     // Keep the "unsaved changes" indicator in sync with every field the
     // user can edit, so it reflects whether the form still matches the
     // stored job.
-    connect(ui->name,      &QLineEdit::textChanged,          this, &JobDetailsTabController::updateUnsavedIndicator);
-    connect(ui->type,      &QComboBox::currentIndexChanged,  this, &JobDetailsTabController::updateUnsavedIndicator);
-    connect(ui->local,     &QLineEdit::textChanged,          this, &JobDetailsTabController::updateUnsavedIndicator);
-    connect(ui->remote,    &QLineEdit::textChanged,          this, &JobDetailsTabController::updateUnsavedIndicator);
-    connect(ui->autostart, &QCheckBox::toggled,              this, &JobDetailsTabController::updateUnsavedIndicator);
-    connect(ui->readOnly,  &QCheckBox::toggled,              this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->name,         &QLineEdit::textChanged,         this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->type,         &QComboBox::currentIndexChanged, this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->local,        &QLineEdit::textChanged,         this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->remote,       &QLineEdit::textChanged,         this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->autostart,    &QCheckBox::toggled,             this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->readOnly,     &QCheckBox::toggled,             this, &JobDetailsTabController::updateUnsavedIndicator);
+    connect(ui->deleteBefore, &QCheckBox::toggled,             this, &JobDetailsTabController::updateUnsavedIndicator);
 
     clear();
 }
@@ -54,16 +56,17 @@ void JobDetailsTabController::setJob(Job* job)
 {
     bool validJob = (bool) job;
 
-    ui->name       ->setEnabled(validJob);
-    ui->type       ->setEnabled(validJob);
-    ui->local      ->setEnabled(validJob);
-    ui->localButton->setEnabled(validJob);
-    ui->remote     ->setEnabled(validJob);
-    ui->autostart  ->setEnabled(validJob);
-    ui->readOnly   ->setEnabled(validJob);
-    ui->save       ->setEnabled(validJob);
-    ui->remove     ->setEnabled(validJob);
-    ui->openLog    ->setEnabled(validJob);
+    ui->name        ->setEnabled(validJob);
+    ui->type        ->setEnabled(validJob);
+    ui->local       ->setEnabled(validJob);
+    ui->localButton ->setEnabled(validJob);
+    ui->remote      ->setEnabled(validJob);
+    ui->autostart   ->setEnabled(validJob);
+    ui->readOnly    ->setEnabled(validJob);
+    ui->deleteBefore->setEnabled(validJob);
+    ui->save        ->setEnabled(validJob);
+    ui->remove      ->setEnabled(validJob);
+    ui->openLog     ->setEnabled(validJob);
 
     if (!validJob) {
         clear();
@@ -78,6 +81,7 @@ void JobDetailsTabController::setJob(Job* job)
     ui->remote->setText(job->remote());
     ui->autostart->setChecked(job->autostart());
     ui->readOnly->setChecked(job->readOnly());
+    ui->deleteBefore->setChecked(job->deleteBefore());
 
     // populate command preview
     updateCommandPreview();
@@ -102,6 +106,7 @@ void JobDetailsTabController::clear()
     ui->remote->clear();
     ui->autostart->setChecked(false);
     ui->readOnly->setChecked(false);
+    ui->deleteBefore->setChecked(false);
     ui->command->clear();
 
     // no job loaded (or panel disabled) -> nothing to be unsaved
@@ -111,6 +116,7 @@ void JobDetailsTabController::clear()
 void JobDetailsTabController::onTypeChanged(int index)
 {
     ui->readOnly->setEnabled(index == ui->type->findText("mount"));
+    ui->deleteBefore->setEnabled(index == ui->type->findText("sync"));
 }
 
 void JobDetailsTabController::updateCommandPreview()
@@ -123,10 +129,11 @@ void JobDetailsTabController::updateCommandPreview()
     const SharedSettings* shared = m_appContext->shared();
 
     RcloneCommandParams params;
-    params.type      = ui->type->currentText();
-    params.local     = ui->local->text();
-    params.remote    = ui->remote->text();
-    params.readOnly  = ui->readOnly->isChecked();
+    params.type         = ui->type->currentText();
+    params.local        = ui->local->text();
+    params.remote       = ui->remote->text();
+    params.readOnly     = ui->readOnly->isChecked();
+    params.deleteBefore = ui->deleteBefore->isChecked();
     params.swapSides = false;
 
     params.cacheMode          = shared->cacheMode();
@@ -152,12 +159,13 @@ void JobDetailsTabController::updateUnsavedIndicator()
     }
 
     const bool dirty =
-        ui->name->text()           != m_currentJob->name()      ||
-        ui->type->currentText()    != m_currentJob->type()      ||
-        ui->local->text()          != m_currentJob->local()     ||
-        ui->remote->text()         != m_currentJob->remote()    ||
-        ui->autostart->isChecked() != m_currentJob->autostart() ||
-        ui->readOnly->isChecked()  != m_currentJob->readOnly();
+        ui->name->text()              != m_currentJob->name()      ||
+        ui->type->currentText()       != m_currentJob->type()      ||
+        ui->local->text()             != m_currentJob->local()     ||
+        ui->remote->text()            != m_currentJob->remote()    ||
+        ui->autostart->isChecked()    != m_currentJob->autostart() ||
+        ui->readOnly->isChecked()     != m_currentJob->readOnly()  ||
+        ui->deleteBefore->isChecked() != m_currentJob->deleteBefore();
 
     ui->unsaved->setVisible(dirty);
 }
@@ -182,6 +190,7 @@ void JobDetailsTabController::onSaveClicked()
     job->setRemote(ui->remote->text());
     job->setAutostart(ui->autostart->isChecked());
     job->setReadOnly(ui->readOnly->isChecked());
+    job->setDeleteBefore(ui->readOnly->isChecked());
 
     updateCommandPreview();
 
@@ -190,7 +199,7 @@ void JobDetailsTabController::onSaveClicked()
         updateUnsavedIndicator();
         onCancelClicked(); // resets job and closes
     } else {
-        Status::notify("Error saving job.", Status::Level::Error);
+        Status::notify("Error saving job. Edits will be reverted on restart.", Status::Level::Error);
     }
 }
 
