@@ -6,7 +6,7 @@ namespace Config {
 
     // Application info
     inline constexpr char APP_NAME[]    = "OneClone";
-    inline constexpr char APP_VERSION[] = "1.8";
+    inline constexpr char APP_VERSION[] = "1.8.1";
     inline constexpr char APP_ID[]      = "tk.duri.oneclone";
     inline constexpr char APP_AUTHOR[]  = "duri93";
 
