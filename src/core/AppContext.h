@@ -36,6 +36,12 @@ public:
     void removeJob(Job* job);
     void removeJob(QString id);
 
+    // Index of the job with the given id within jobs(), or -1 if not
+    // present. Exposed so callers that need a job's position (and can rely
+    // on it, like JobsTabController keeping its widget list in the same
+    // order) aren't each left re-implementing this scan themselves.
+    int indexOfJob(const QString& id) const;
+
     // general settings
     enum class LoadResult {
         Loaded,     // existing settings file was read successfully

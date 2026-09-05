@@ -42,7 +42,7 @@ void JobsTabController::onJobMoved(const QString& id, int newIndex)
     populateJobList();
 
     if (!m_appContext->save()) {
-        Status::notify("Warning: failed to save settings.", Status::Level::Warning);
+        Status::notify(tr("Warning: failed to save settings."), Status::Level::Error);
     }
 }
 
@@ -74,6 +74,16 @@ JobWidget* JobsTabController::createJobWidget(Job* job)
     JobWidget* w = new JobWidget(job);
     w->setProperty("jobId", job->id());
     connect(w, &JobWidget::openDetailsRequested, this, &JobsTabController::openDetailsRequested);
+
+    // Job deliberately doesn't call into the app-wide Status bus itself
+    // (it's a model class, decoupled from that UI-layer broadcast channel)
+    // — it emits notification() instead. This is the UI-boundary listener
+    // that forwards those through to Status::notify(), for every job that
+    // gets a widget (i.e. every job in the app).
+    connect(job, &Job::notification, this, [](const QString& message, Status::Level level) {
+        Status::notify(message, level);
+    });
+
     return w;
 }
 
@@ -96,11 +106,13 @@ void JobsTabController::onJobAdded(Job* job)
 
 void JobsTabController::onJobRemoved(const QString& jobId)
 {
-    for (int i = 0; i < m_jobWidgets.size(); ++i) {
-        if (m_jobWidgets[i]->job()->id() == jobId) {
-            delete m_jobWidgets[i];
-            m_jobWidgets.removeAt(i);
-            break;
-        }
-    }
+    // removeJob() emits removed() just before actually erasing the job, so
+    // AppContext still has it (and thus a valid index for it) here — and
+    // m_jobWidgets is always kept in the same order as m_appContext->jobs(),
+    // so that index tells us exactly what to remove from our own list too.
+    const int index = m_appContext->indexOfJob(jobId);
+    if (index < 0 || index >= m_jobWidgets.size()) return;
+
+    delete m_jobWidgets[index];
+    m_jobWidgets.removeAt(index);
 }

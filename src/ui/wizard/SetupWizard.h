@@ -26,8 +26,9 @@ signals:
     void setupFinished();
 
 private:
-    // QPointer so we can safely tell, in the destructor, whether the
-    // wizard has already deleted itself (WA_DeleteOnClose) or not.
+    // QPointer so the destructor can safely tell whether the wizard has
+    // already been destroyed (e.g. because its parent widget was) rather
+    // than assume it's still around to delete.
     QPointer<QWizard> m_wizard;
 
     // Owned by m_wizard via QWizard::addPage(); kept here only for

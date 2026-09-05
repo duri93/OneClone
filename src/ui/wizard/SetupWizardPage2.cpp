@@ -1,5 +1,6 @@
 #include "SetupWizardPage2.h"
 
+#include "src/common/AsyncRunner.h"
 #include "src/core/AppContext.h"
 #include "src/core/Status.h"
 
@@ -19,8 +20,11 @@ SetupWizardPage2::SetupWizardPage2(AppContext* appContext, QWidget* parent)
     // driven for as long as this page exists (unlike RemotesLookupWorker,
     // which is a one-shot per-thread job) so refreshRemotes()/the config
     // file button can be triggered repeatedly without blocking the UI.
+    // AsyncRunner moves the worker onto that thread and starts it; it's
+    // parented to `this` so it (and the thread) is cleaned up automatically
+    // when this page is destroyed.
     m_worker = new RCloneConfigWorker(m_appContext->rcloneProvider());
-    m_worker->moveToThread(&m_workerThread);
+    m_runner = new AsyncRunner(m_worker, this);
 
     connect(this, &SetupWizardPage2::requestRemotes,        m_worker, &RCloneConfigWorker::fetchRemotes);
     connect(this, &SetupWizardPage2::requestOpenConfigFile, m_worker, &RCloneConfigWorker::openConfigFile);
@@ -41,9 +45,6 @@ SetupWizardPage2::SetupWizardPage2(AppContext* appContext, QWidget* parent)
         }
     });
 
-    connect(&m_workerThread, &QThread::finished, m_worker, &QObject::deleteLater);
-    m_workerThread.start();
-
     connect(ui.configFileButton, &QPushButton::clicked, this, [this](){
         emit requestOpenConfigFile(m_appContext->shared()->rclonePath());
     });
@@ -60,11 +61,9 @@ SetupWizardPage2::SetupWizardPage2(AppContext* appContext, QWidget* parent)
         }
         connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 this, [this](int exitCode, QProcess::ExitStatus exitStatus){
-            // NOTE: cmd.exe's "start /wait" does not reliably propagate the
-            // wrapped rclone process's exit code, so this mainly catches
-            // cmd.exe itself crashing/erroring rather than every possible
-            // rclone config failure. TODO: launch rclone config directly
-            // (without the cmd.exe/start wrapper) to get a real exit code.
+            // rclone config is now launched directly (no cmd.exe/start
+            // wrapper), so this exit code genuinely reflects whether it
+            // succeeded.
             if (exitStatus != QProcess::NormalExit || exitCode != 0) {
                 Status::instance().notify(
                     tr("'rclone config' did not complete successfully."), Status::Level::Warning);
@@ -72,12 +71,6 @@ SetupWizardPage2::SetupWizardPage2(AppContext* appContext, QWidget* parent)
             refreshRemotes();
         });
     });
-}
-
-SetupWizardPage2::~SetupWizardPage2()
-{
-    m_workerThread.quit();
-    m_workerThread.wait();
 }
 
 void SetupWizardPage2::initializePage(){

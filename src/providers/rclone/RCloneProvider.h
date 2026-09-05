@@ -89,4 +89,15 @@ public:
     // Windows' console control handler suppression). Safe to call even if
     // requestGracefulStop() was never called or returned false.
     virtual void notifyProcessFinished(QProcess& process) const { Q_UNUSED(process); }
+
+    // Resolves a job's configured local path to wherever it's actually
+    // reachable on disk right now, for opening it in the OS file browser.
+    // For an ordinary path this is just the path itself. But a mount's
+    // local path can be something the OS only resolves indirectly — e.g.
+    // on Windows, WinFsp mounts configured with a UNC-style path such as
+    // \\rclone\media are actually backed by a drive letter chosen at mount
+    // time, and only Windows' network-connection table can say which one.
+    // The default implementation returns `local` unchanged; platforms with
+    // that kind of indirection should override it.
+    virtual QString resolveLocalPath(const QString& local) const { return local; }
 };

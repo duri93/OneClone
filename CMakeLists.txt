@@ -16,11 +16,13 @@ qt_add_executable(OneClone
     src/app/SingleInstanceGuard.h       src/app/SingleInstanceGuard.cpp
 
     src/common/Config.h
+    src/common/AsyncRunner.h             src/common/AsyncRunner.cpp
     src/common/LocalPathAutocompleter.h  src/common/LocalPathAutocompleter.cpp
     src/common/UpdateManager.h           src/common/UpdateManager.cpp
 
     src/core/AppContext.h              src/core/AppContext.cpp
     src/core/Job.h                     src/core/Job.cpp
+    src/core/JobType.h                 src/core/JobType.cpp
     src/core/LogFile.h                 src/core/LogFile.cpp
     src/core/SharedSettings.h          src/core/SharedSettings.cpp
     src/core/Status.h
@@ -34,6 +36,8 @@ qt_add_executable(OneClone
     src/providers/rclone/RCloneConfigWorker.h       src/providers/rclone/RCloneConfigWorker.cpp
     src/providers/rclone/RemotesAutocompleter.h     src/providers/rclone/RemotesAutocompleter.cpp
     src/providers/rclone/RemotesLookupWorker.h      src/providers/rclone/RemotesLookupWorker.cpp
+
+    src/ui/JobIcons.h                       src/ui/JobIcons.cpp
 
     src/ui/controllers/JobDetailsTabController.h    src/ui/controllers/JobDetailsTabController.cpp
     src/ui/controllers/JobsTabController.h          src/ui/controllers/JobsTabController.cpp
@@ -64,6 +68,13 @@ target_link_libraries(OneClone
         Qt::Svg
         Qt::SvgWidgets
 )
+
+if(WIN32)
+    # WNetGetConnectionW (used to resolve a mount's UNC-style local path
+    # back to its actual drive letter) lives in mpr.lib, which isn't
+    # linked by default.
+    target_link_libraries(OneClone PRIVATE mpr)
+endif()
 
 install(TARGETS OneClone
     BUNDLE  DESTINATION .

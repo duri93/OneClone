@@ -13,18 +13,18 @@
 class SharedSettings
 {
 public:
-    const QString rclonePath()         const { return m_rclonePath;         };
-    const bool    advanced()           const { return m_advanced;           };
-    const QString cacheMode()          const { return m_cacheMode;          };
-    const int     cacheMaxSize()       const { return m_cacheMaxSize;       };
-    const int     cacheMinFreeSpace()  const { return m_cacheMinFreeSpace;  };
-    const int     cacheMaxAge()        const { return m_cacheMaxAge;        };
-    const int     readChunkSize()      const { return m_readChunkSize;      };
-    const int     readChunkSizeLimit() const { return m_readChunkSizeLimit; };
-    const int     bufferSize()         const { return m_bufferSize;         };
-    const int     transfers()          const { return m_transfers;          };
-    const int     checkers()           const { return m_checkers;           };
-    const bool    links()              const { return m_links;              };
+    QString rclonePath()         const { return m_rclonePath;         };
+    bool    advanced()           const { return m_advanced;           };
+    QString cacheMode()          const { return m_cacheMode;          };
+    int     cacheMaxSize()       const { return m_cacheMaxSize;       };
+    int     cacheMinFreeSpace()  const { return m_cacheMinFreeSpace;  };
+    int     cacheMaxAge()        const { return m_cacheMaxAge;        };
+    int     readChunkSize()      const { return m_readChunkSize;      };
+    int     readChunkSizeLimit() const { return m_readChunkSizeLimit; };
+    int     bufferSize()         const { return m_bufferSize;         };
+    int     transfers()          const { return m_transfers;          };
+    int     checkers()           const { return m_checkers;           };
+    bool    links()               const { return m_links;               };
 
     void setRclonePath        (QString newRclonePath        ){ m_rclonePath         = std::move(newRclonePath); };
     void setAdvanced          (bool    newAdvanced          ){ m_advanced           = newAdvanced;              };

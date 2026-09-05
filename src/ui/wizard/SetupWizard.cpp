@@ -25,8 +25,9 @@ SetupWizard::SetupWizard(AppContext* appContext, QWidget* parent)
     m_wizard->addPage(m_page2);
     m_wizard->addPage(m_page3);
 
-    // Whenever the wizard is actually destroyed (via WA_DeleteOnClose
-    // above, or for any other reason), tear this wrapper down too.
+    // When the wizard finishes, tear down this wrapper too: deleteLater()
+    // destroys the SetupWizard object, whose destructor then deletes
+    // m_wizard itself.
     connect(m_wizard, &QWizard::finished, this, &SetupWizard::setupFinished);
     connect(m_wizard, &QWizard::finished, this, &QObject::deleteLater);
     connect(m_wizard, &QWizard::finished, this, [this]() {m_appContext->save(); });

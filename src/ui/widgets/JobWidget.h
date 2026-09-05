@@ -31,8 +31,8 @@ public:
     void onProgress();
     void onWarning();
 
-    const QPixmap getJobIcon() const;
-    const QPixmap getStatusIcon() const;
+    QPixmap getJobIcon() const;
+    QPixmap getStatusIcon() const;
 
 signals:
     void openDetailsRequested(const QString& id);

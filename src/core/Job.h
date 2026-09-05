@@ -1,9 +1,12 @@
 #pragma once
 
+#include "src/core/JobType.h"
 #include "src/core/LogFile.h"
 #include "src/core/SharedSettings.h"
+#include "src/core/Status.h"
 #include "src/providers/rclone/RCloneProvider.h"
 
+#include <memory>
 #include <QObject>
 #include <QProcess>
 #include <QString>
@@ -38,18 +41,18 @@ public:
     ~Job() override;
 
     // property accessors
-    const QString id()           const { return m_id;           };
-    const QString name()         const { return m_name;         };
-    const QString type()         const { return m_type;         };
-    const QString local()        const { return m_local;        };
-    const QString remote()       const { return m_remote;       };
-    const bool    autostart()    const { return m_autostart;    };
-    const bool    readOnly()     const { return m_readOnly;     };
-    const bool    deleteBefore() const { return m_deleteBefore; };
+    QString id()           const { return m_id;           };
+    QString name()         const { return m_name;         };
+    JobType type()         const { return m_type;         };
+    QString local()        const { return m_local;        };
+    QString remote()       const { return m_remote;       };
+    bool    autostart()    const { return m_autostart;    };
+    bool    readOnly()     const { return m_readOnly;     };
+    bool    deleteBefore() const { return m_deleteBefore; };
 
     void setId           (QString newId        ){ m_id           = std::move(newId);     emit specsChanged(); }
     void setName         (QString newName      ){ m_name         = std::move(newName);   emit specsChanged(); }
-    void setType         (QString newType      ){ m_type         = std::move(newType);   emit specsChanged(); }
+    void setType         (JobType newType      ){ m_type         = newType;              emit specsChanged(); }
     void setLocal        (QString newLocal     ){ m_local        = std::move(newLocal);  emit specsChanged(); }
     void setRemote       (QString newRemote    ){ m_remote       = std::move(newRemote); emit specsChanged(); }
     void setAutostart    (bool newAutostart    ){ m_autostart    = newAutostart;         emit specsChanged(); }
@@ -57,16 +60,16 @@ public:
     void setDeleteBefore (bool newDeleteBefore ){ m_deleteBefore = newDeleteBefore;      emit specsChanged(); }
 
     // import / export
-    const QJsonObject toJson() const;
+    QJsonObject toJson() const;
     void fromJson(const QJsonValue& json);
 
     // Status accessors
-    const JobStatus        status()   const { return m_status; }
-    const bool             active()   const { return m_status == JobStatus::Starting || m_status == JobStatus::Running; }
-    const JobProgress      progress() const { return m_progress; }
-    const QVector<QString> warnings() const { return m_warnings; }
+    JobStatus        status()   const { return m_status; }
+    bool             active()   const { return m_status == JobStatus::Starting || m_status == JobStatus::Running; }
+    JobProgress      progress() const { return m_progress; }
+    QVector<QString> warnings() const { return m_warnings; }
 
-    const QString       statusString() const;
+    QString statusString() const;
 
     // Process handling
     QStringList getCommand(bool swapSides = false);
@@ -87,6 +90,13 @@ signals:
     void progressUpdated(const QString& serviceId, const JobProgress& newProgress);
     void outputLine(const QString& serviceId, const QString& line);
 
+    // Anything Job would otherwise have reported straight to the app-wide
+    // Status bus (log-write failures, "no local folder configured", etc.)
+    // is emitted here instead, keeping this model class decoupled from
+    // that UI-layer broadcast channel. A listener at the UI boundary (see
+    // JobsTabController) forwards these to Status::notify().
+    void notification(const QString& message, Status::Level level);
+
 private slots:
     void onReadyRead();
     void onProcessError(QProcess::ProcessError error);
@@ -100,7 +110,7 @@ private:
 
     QString m_id;       // internal UUID, not shown in UI
     QString m_name    = "New job";
-    QString m_type    = "sync";
+    JobType m_type    = JobType::Sync;
     QString m_local   = "";
     QString m_remote  = "";
     bool m_autostart  = false;
@@ -114,5 +124,5 @@ private:
     QVector<QString> m_warnings;
     JobProgress      m_progress;
     QProcess         m_process;
-    LogFile*         m_logfile = nullptr;
+    std::unique_ptr<LogFile> m_logfile;
 };

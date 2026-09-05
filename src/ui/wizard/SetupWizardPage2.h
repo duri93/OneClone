@@ -3,22 +3,23 @@
 #include "src/providers/rclone/RCloneConfigWorker.h"
 #include "src/ui/wizard/ui_SetupWizardPage2.h"
 
-#include <QThread>
 #include <QWizardPage>
 
 class AppContext;
+class AsyncRunner;
 
 // Page 2: shows configured rclone remotes, lets the user open the
 // config console or the raw config file. The remotes list refreshes
 // when the config console process exits, rather than on a timer.
 // All rclone calls (listing remotes, opening the config file) run on a
-// background thread via RCloneConfigWorker so the UI never blocks on a
-// slow/hung rclone process.
+// background thread via RCloneConfigWorker (kept alive for as long as this
+// page exists via AsyncRunner) so the UI never blocks on a slow/hung
+// rclone process.
 class SetupWizardPage2 : public QWizardPage {
     Q_OBJECT
 public:
     explicit SetupWizardPage2(AppContext* appContext, QWidget* parent = nullptr);
-    ~SetupWizardPage2() override;
+    ~SetupWizardPage2() override = default;
 
 protected:
     void initializePage() override;
@@ -35,6 +36,9 @@ private:
     Ui::SetupWizardPage2 ui;
     AppContext* m_appContext = nullptr;
 
-    QThread m_workerThread;
+    // m_runner owns the background thread m_worker lives on, and is
+    // parented to `this` so it (and the thread) is torn down automatically
+    // when this page is destroyed — see AsyncRunner.
+    AsyncRunner* m_runner = nullptr;
     RCloneConfigWorker* m_worker = nullptr;
 };

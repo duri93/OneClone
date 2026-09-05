@@ -3,6 +3,7 @@
 #include "src/common/Config.h"
 
 #include <QDesktopServices>
+#include <QDir>
 #include <QFileInfo>
 #include <QProcess>
 #include <QRegularExpression>
@@ -14,6 +15,7 @@
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <winnetwk.h>
 #endif
 
 // Tracks how many currently-stopping processes have suppressed this
@@ -52,10 +54,20 @@ QProcess* RCloneProviderWindows::openConfig(const QString& rclonePath, QObject* 
     QObject::connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                       process, &QProcess::deleteLater);
 
-    const QString program = "cmd.exe";
-    const QStringList arguments = {"/c", "start", "rclone config", "/wait", rclonePath, "config"};
+#ifdef Q_OS_WIN
+    // rclone config is an interactive console tool, but this process is a
+    // GUI app with no console of its own for it to print its prompts to.
+    // Launching rclone.exe directly (rather than through
+    // "cmd.exe /c start ... /wait", which used to provide that console as
+    // a side effect) means we have to ask for one ourselves, so the
+    // prompts are still visible to the user.
+    process->setCreateProcessArgumentsModifier(
+        [](QProcess::CreateProcessArguments* args) {
+            args->flags |= CREATE_NEW_CONSOLE;
+        });
+#endif
 
-    process->start(program, arguments);
+    process->start(resolveExecutable(rclonePath), {"config"});
     if (!process->waitForStarted()) {
         process->deleteLater();
         return nullptr;
@@ -170,7 +182,7 @@ bool RCloneProviderWindows::runRclone(const QString& rclonePath, const QStringLi
     if (!process.waitForFinished(Config::RCLONE_HELPER_TIMEOUT_MS)) {
         // Timed out (or errored) — make sure nothing is left running.
         process.kill();
-        process.waitForFinished(1000);
+        process.waitForFinished(Config::PROCESS_KILL_WAIT_MS);
         return false;
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
@@ -179,4 +191,67 @@ bool RCloneProviderWindows::runRclone(const QString& rclonePath, const QStringLi
 
     *stdoutText = QString::fromLocal8Bit(process.readAllStandardOutput());
     return true;
+}
+
+QString RCloneProviderWindows::resolveLocalPath(const QString& local) const
+{
+#ifdef Q_OS_WIN
+    // Only UNC-style paths need resolving — an ordinary drive-letter path
+    // (or a WinFsp folder mount) is already directly reachable exactly as
+    // configured.
+    const QString normalized = QDir::toNativeSeparators(local);
+    if (!normalized.startsWith(QStringLiteral("\\\\"))) {
+        return local;
+    }
+
+    auto stripTrailingSlash = [](QString s) {
+        while (s.endsWith(QLatin1Char('\\'))) s.chop(1);
+        return s;
+    };
+    const QString normalizedNoTrail = stripTrailingSlash(normalized);
+
+    // A mount configured with a UNC-style local path (e.g. \\rclone\media)
+    // is actually backed by a drive letter WinFsp picks automatically at
+    // mount time — Windows just presents it to the user under that
+    // network name. The only way to find out which drive letter that is
+    // is to ask Windows' network-connection table directly, so walk every
+    // currently-mapped network drive looking for one whose remote name
+    // matches.
+    const DWORD drives = GetLogicalDrives();
+    for (int i = 0; i < 26; ++i) {
+        if (!(drives & (1u << i))) continue;
+
+        const QString driveSpec = QStringLiteral("%1:").arg(QChar(QLatin1Char('A' + i)));
+        const QString driveRoot = driveSpec + QLatin1Char('\\');
+
+        if (GetDriveTypeW(reinterpret_cast<LPCWSTR>(driveRoot.utf16())) != DRIVE_REMOTE) continue;
+
+        wchar_t remoteName[MAX_PATH];
+        DWORD remoteNameLen = MAX_PATH;
+        if (WNetGetConnectionW(reinterpret_cast<LPCWSTR>(driveSpec.utf16()), remoteName, &remoteNameLen) != NO_ERROR) {
+            continue;
+        }
+
+        const QString remote = stripTrailingSlash(
+            QDir::toNativeSeparators(QString::fromWCharArray(remoteName)));
+
+        if (normalizedNoTrail.compare(remote, Qt::CaseInsensitive) == 0) {
+            return driveRoot;
+        }
+        if (normalizedNoTrail.startsWith(remote + QLatin1Char('\\'), Qt::CaseInsensitive)) {
+            // Re-anchor the configured path onto the resolved drive,
+            // keeping any subfolder the user appended after the
+            // UNC-style mountpoint.
+            return driveSpec + normalizedNoTrail.mid(remote.length());
+        }
+    }
+
+    // Not currently mounted (or mounted under a different network name) —
+    // nothing better to offer than the path as configured, so the caller
+    // gets the same "couldn't open" behavior as before for a genuinely
+    // unmounted job.
+    return local;
+#else
+    return local;
+#endif
 }

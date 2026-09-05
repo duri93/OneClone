@@ -1,12 +1,13 @@
 #include "RCloneProvider.h"
 
+#include "src/core/JobType.h"
+
 QStringList RCloneProvider::buildCommand(const RcloneCommandParams& params) const
 {
     QStringList command;
 
-
-    if (params.type == "mount") {
-        command << "mount" << params.remote << params.local;
+    if (jobTypeFromString(params.type) == JobType::Mount) {
+        command << jobTypeToString(JobType::Mount) << params.remote << params.local;
         if (params.readOnly) command << "--read-only";
         command << "--vfs-cache-mode"              << params.cacheMode;
         command << "--vfs-cache-max-size"          << QString::number(params.cacheMaxSize)       + "G";

@@ -10,9 +10,9 @@
 // RCloneConfigWorker
 // Runs the blocking RCloneProvider calls used by the setup wizard's config
 // page (listRemotes, openConfigFile) on a background thread, so callers
-// never block the UI thread waiting on rclone. Intended to be moved to a
-// QThread by the caller (see RemotesAutocompleter for the same pattern) and
-// driven via queued slot invocations for as long as that thread lives.
+// never block the UI thread waiting on rclone. Meant to be driven for as
+// long as its owner lives — see AsyncRunner, which handles moving this onto
+// a background thread and keeping it running there.
 // ---------------------------------------------------------------------------
 class RCloneConfigWorker : public QObject
 {

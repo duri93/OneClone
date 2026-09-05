@@ -1,7 +1,5 @@
 #include "AutostartManager.h"
 
-#include "src/core/Status.h"
-
 #include <QCoreApplication>
 #include <QSettings>
 
@@ -27,7 +25,6 @@ bool AutostartManager::setEnabled(const QString& appId, bool enabled)
     reg.sync();
 
     if (reg.status() != QSettings::NoError) {
-        Status::notify("Could not update startup registry entry.", Status::Level::Error);
         return false;
     }
     return true;

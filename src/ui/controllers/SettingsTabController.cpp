@@ -92,7 +92,9 @@ void SettingsTabController::saveToSettings()
     s->setLinks(ui->symlinks->isChecked());
 
     // register or unregister startup
-    AutostartManager::setEnabled(Config::APP_ID, ui->autostart->isChecked());
+    if (!AutostartManager::setEnabled(Config::APP_ID, ui->autostart->isChecked())) {
+        Status::notify(tr("Could not update startup registry entry."), Status::Level::Error);
+    }
 
     updateUnsavedIndicator();
 }
@@ -102,9 +104,9 @@ void SettingsTabController::onSave()
     saveToSettings();
 
     if (m_appContext->save()) {
-        Status::notify("Settings saved.", Status::Level::Success);
+        Status::notify(tr("Settings saved."), Status::Level::Success);
     } else {
-        Status::notify("Error saving settings.", Status::Level::Error);
+        Status::notify(tr("Error saving settings."), Status::Level::Error);
     }
 
     emit settingsSaved();
@@ -118,8 +120,8 @@ void SettingsTabController::onCancel(){
 void SettingsTabController::onRcloneSelectClicked()
 {
     QString path = QFileDialog::getOpenFileName(
-        this, "Select rclone.exe", ui->rclone->text(),
-        "Executable (*.exe);;All files (*.*)");
+        this, tr("Select rclone.exe"), ui->rclone->text(),
+        tr("Executable (*.exe);;All files (*.*)"));
     if (!path.isEmpty()) {
         ui->rclone->setText(QDir::toNativeSeparators(path));
     }
@@ -138,7 +140,7 @@ void SettingsTabController::onRcloneConfClicked()
 {
     QProcess* process = m_appContext->rcloneProvider()->openConfig(m_appContext->shared()->rclonePath(), m_appContext);
     if (!process) {
-        Status::notify("Failed to run 'rclone config'.", Status::Level::Error);
+        Status::notify(tr("Failed to run 'rclone config'."), Status::Level::Error);
     }
 }
 

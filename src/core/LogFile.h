@@ -27,7 +27,7 @@ public:
     void close();
 
     const QFile& file() const { return m_file; }
-    const bool exists() const { return m_file.exists(); }
+    bool exists() const { return m_file.exists(); }
 
 signals:
     void error(const QString &message);

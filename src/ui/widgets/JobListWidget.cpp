@@ -76,7 +76,7 @@ void JobListWidget::dropEvent(QDropEvent* event)
             break;
         }
     }
-    targetIndex--; // correct position is the previous one
+    targetIndex--;
 
     // sync the new order to the model
     emit jobMoved(id, targetIndex);

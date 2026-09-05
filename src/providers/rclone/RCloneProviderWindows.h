@@ -13,8 +13,9 @@ QT_END_NAMESPACE
 // ---------------------------------------------------------------------------
 // RCloneProviderWindows
 // Windows implementation of RCloneProvider: resolves rclone.exe, drives the
-// interactive config tool via cmd.exe, and shells out to rclone for remote
-// and directory listings.
+// interactive config tool directly (in its own console window), shells out
+// to rclone for remote and directory listings, and resolves WinFsp's
+// UNC-style network mountpoints to their actual drive letter.
 // ---------------------------------------------------------------------------
 class RCloneProviderWindows : public RCloneProvider
 {
@@ -27,6 +28,7 @@ public:
     QStringList listDirs(const QString& rclonePath, const QString& remote) const override;
     bool requestGracefulStop(QProcess& process) const override;
     void notifyProcessFinished(QProcess& process) const override;
+    QString resolveLocalPath(const QString& local) const override;
 
 private:
     // Runs rclone synchronously and captures stdout. Returns false on

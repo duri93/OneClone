@@ -1,5 +1,7 @@
 #include "SingleInstanceGuard.h"
 
+#include "src/common/Config.h"
+
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QTimer>
@@ -59,7 +61,7 @@ void SingleInstanceGuard::handleNewConnection()
         conn->deleteLater();
     });
 
-    QTimer::singleShot(200, conn, [this, conn, fired]() {
+    QTimer::singleShot(Config::SINGLE_INSTANCE_ACK_TIMEOUT_MS, conn, [this, conn, fired]() {
         if (conn->bytesAvailable()) conn->readAll();
         if (!*fired) {
             *fired = true;

@@ -24,9 +24,6 @@ public:
     explicit JobsTabController(AppContext* appContext, QWidget* parent = nullptr);
     ~JobsTabController() override;
 
-    // Widgets currently shown in the list, e.g. for building the tray menu.
-    const QVector<JobWidget*>& jobWidgets() const { return m_jobWidgets; }
-
 signals:
     // Emitted when the user asks to open a job's details (add, click, or
     // double-click on a job widget).

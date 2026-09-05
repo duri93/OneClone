@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QJsonArray>
+#include <QJsonDocument>
 
 AppContext::AppContext(QObject* parent) : QObject(parent){
     m_filePath = QDir(QCoreApplication::applicationDirPath())
@@ -24,13 +25,8 @@ AppContext::~AppContext(){
 }
 
 Job* AppContext::getJob(QString id){
-    for(Job*& job : m_jobs){
-        if(job->id() == id){
-            return job;
-        }
-    }
-
-    return nullptr;
+    const int index = indexOfJob(id);
+    return index == -1 ? nullptr : m_jobs[index];
 }
 void AppContext::addJob(Job* newJob){
     if (getJob(newJob->id())) {
@@ -44,10 +40,7 @@ void AppContext::addJob(Job* newJob){
 }
 void AppContext::moveJob(const QString& id, int newIndex)
 {
-    int oldIndex = -1;
-    for (int i = 0; i < m_jobs.size(); ++i) {
-        if (m_jobs[i]->id() == id) { oldIndex = i; break; }
-    }
+    const int oldIndex = indexOfJob(id);
     if (oldIndex == -1 || oldIndex == newIndex) return;
 
     Job* job = m_jobs.takeAt(oldIndex);
@@ -55,17 +48,22 @@ void AppContext::moveJob(const QString& id, int newIndex)
     m_jobs.insert(newIndex, job);
 }
 void AppContext::removeJob(QString id){
-    for(int i = 0; i < m_jobs.size(); ++i){
-        if(m_jobs[i]->id() == id){
-            emit removed(m_jobs[i]->id());
-            delete m_jobs[i];
-            m_jobs.removeAt(i);
-            break;
-        }
-    }
+    const int index = indexOfJob(id);
+    if (index == -1) return;
+
+    emit removed(m_jobs[index]->id());
+    delete m_jobs[index];
+    m_jobs.removeAt(index);
 }
 void AppContext::removeJob(Job* job){
     removeJob(job->id());
+}
+int AppContext::indexOfJob(const QString& id) const
+{
+    for (int i = 0; i < m_jobs.size(); ++i) {
+        if (m_jobs[i]->id() == id) return i;
+    }
+    return -1;
 }
 
 AppContext::LoadResult AppContext::load()

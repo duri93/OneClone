@@ -1,19 +1,19 @@
 #include "TrayController.h"
 
 #include "src/common/Config.h"
-#include "src/ui/controllers/JobsTabController.h"
-#include "src/ui/widgets/JobWidget.h"
+#include "src/core/AppContext.h"
 #include "src/core/Job.h"
+#include "src/ui/JobIcons.h"
 
 #include <QAction>
 #include <QApplication>
 #include <QMenu>
 #include <QWidget>
 
-TrayController::TrayController(QWidget* window, JobsTabController* jobsTab, QObject* parent)
+TrayController::TrayController(QWidget* window, AppContext* appContext, QObject* parent)
     : QObject(parent)
     , m_window(window)
-    , m_jobsTab(jobsTab)
+    , m_appContext(appContext)
 {
     m_trayIcon = new QSystemTrayIcon(this);
 
@@ -22,11 +22,11 @@ TrayController::TrayController(QWidget* window, JobsTabController* jobsTab, QObj
     m_trayIcon->setToolTip(Config::APP_NAME);
 
     m_trayMenu  = new QMenu(m_window);
-    m_trayOpen  = m_trayMenu->addAction("Open");
+    m_trayOpen  = m_trayMenu->addAction(tr("Open"));
     m_trayMenu->addSeparator();
     // Per-job actions are inserted here dynamically (see onMenuAboutToShow)
     m_trayMenu->addSeparator();
-    m_trayClose = m_trayMenu->addAction("Quit");
+    m_trayClose = m_trayMenu->addAction(tr("Quit"));
 
     connect(m_trayOpen,  &QAction::triggered,         m_window, &QWidget::show);
     connect(m_trayClose, &QAction::triggered,         qApp,     &QApplication::quit);
@@ -54,10 +54,13 @@ void TrayController::onMenuAboutToShow()
         }
     }
 
-    // Re-insert current per-job actions before lastSep
-    for (JobWidget* jw : m_jobsTab->jobWidgets()) {
-        Job* job = jw->job();
-        QPixmap icon = QPixmap(jw->getStatusIcon());
+    // Re-insert current per-job actions before lastSep. Built straight from
+    // AppContext's job list — and JobIcons, the same cached icon rendering
+    // JobWidget uses — rather than from the Jobs tab's JobWidgets, so the
+    // tray doesn't need to know anything about how that tab displays jobs.
+    for (Job* job : m_appContext->jobs()) {
+        QPixmap icon = JobIcons::statusIcon(
+            job->status(), !job->warnings().isEmpty(), Config::TRAY_JOB_ICON_SIZE);
 
         QAction* act = new QAction(icon, job->name(), m_trayMenu);
 

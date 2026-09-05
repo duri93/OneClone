@@ -1,5 +1,6 @@
 #include "SetupWizardPage1.h"
 
+#include "src/common/Config.h"
 #include "src/common/LocalPathAutocompleter.h"
 #include "src/core/AppContext.h"
 
@@ -31,7 +32,7 @@ SetupWizardPage1::SetupWizardPage1(AppContext* appContext, QWidget* parent)
         m_appContext->shared()->setRclonePath(QDir::toNativeSeparators(ui.rclonePath->text()));
     });
 
-    m_timer->setInterval(2000);
+    m_timer->setInterval(Config::SETUP_WIZARD_PREREQ_REFRESH_INTERVAL_MS);
     connect(m_timer, &QTimer::timeout, this, &SetupWizardPage1::refresh);
 }
 

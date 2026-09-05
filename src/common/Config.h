@@ -19,6 +19,7 @@ namespace Config {
     // display
     inline constexpr int STATUS_DURATION = 5000;
     inline constexpr int SMALL_FONT_SIZE = 8;
+    inline constexpr int TRAY_JOB_ICON_SIZE = 16; // per-job status icon size in the tray menu
 
     //logs
     inline constexpr int MAX_LOG_FILES = 20;
@@ -28,6 +29,14 @@ namespace Config {
     // a hung/slow rclone process (e.g. waiting on network/credentials)
     // can't block indefinitely.
     inline constexpr int RCLONE_HELPER_TIMEOUT_MS = 15000;
+
+    // process lifecycle timings
+    inline constexpr int PROCESS_KILL_WAIT_MS = 1000;          // how long to wait for a killed process to actually exit
+    inline constexpr int JOB_STOP_GRACEFUL_TIMEOUT_MS = 3000;  // grace period after a graceful-stop request before falling back to kill()
+
+    // UI polling / debounce timings
+    inline constexpr int SETUP_WIZARD_PREREQ_REFRESH_INTERVAL_MS = 2000; // how often SetupWizardPage1 re-checks rclone/WinFsp availability
+    inline constexpr int SINGLE_INSTANCE_ACK_TIMEOUT_MS = 200;           // how long a second launch waits for the running instance to ack before giving up
 
     inline const QRegularExpression WARNING_REGEX{
         "NOTICE:.*failed|ERROR:"

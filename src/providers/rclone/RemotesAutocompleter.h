@@ -4,12 +4,11 @@
 
 #include <QObject>
 #include <QPointer>
-#include <QThread>
 
+class AsyncRunner;
 class QCompleter;
 class QLineEdit;
 class QStringListModel;
-class RemotesLookupWorker;
 
 // ---------------------------------------------------------------------------
 // RemotesAutocompleter
@@ -17,9 +16,9 @@ class RemotesLookupWorker;
 // `rclone listremotes` / `rclone lsd`, so the UI thread never blocks.
 // Entries appear incrementally as each remote/directory listing completes.
 //
-// Lifetime: RemotesAutocompleter::attach() parents the object (and its
-// background thread) to the QLineEdit, so everything is cleaned up
-// automatically when the line edit is destroyed.
+// Lifetime: RemotesAutocompleter::attach() parents the object (and, via it,
+// its AsyncRunner/background thread) to the QLineEdit, so everything is
+// cleaned up automatically when the line edit is destroyed.
 // ---------------------------------------------------------------------------
 class RemotesAutocompleter : public QObject
 {
@@ -32,7 +31,7 @@ public:
     static RemotesAutocompleter *attach(QLineEdit *lineEdit, RCloneProvider *rcloneProvider, const QString &rclonePath);
 
     explicit RemotesAutocompleter(QLineEdit *lineEdit, RCloneProvider *rcloneProvider, QString rclonePath, QObject *parent = nullptr);
-    ~RemotesAutocompleter() override;
+    ~RemotesAutocompleter() override = default;
 
     QCompleter *completer() const { return m_completer; }
 
@@ -53,6 +52,9 @@ private:
     QStringListModel *m_model = nullptr;
     QStringList m_entries;
 
-    QThread m_workerThread;
+    // Owns the background thread the lookup runs on; parented to `this`,
+    // so it's cleaned up (and the thread stopped) automatically when this
+    // RemotesAutocompleter is destroyed — see AsyncRunner.
+    AsyncRunner *m_runner = nullptr;
 };
 

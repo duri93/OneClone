@@ -26,11 +26,11 @@ Job::~Job(){
     if (m_process.state() != QProcess::NotRunning) {
         m_status = JobStatus::Stopping;
         m_process.kill();
-        m_process.waitForFinished(1000);
+        m_process.waitForFinished(Config::PROCESS_KILL_WAIT_MS);
     }
 }
 
-const QString Job::statusString() const{
+QString Job::statusString() const{
     switch(status()){
     case JobStatus::Stopped:
         return "Stopped";
@@ -54,7 +54,7 @@ const QString Job::statusString() const{
 // ---------------------------------------------------------------------------
 QStringList Job::getCommand(bool swapSides){
     RcloneCommandParams params = m_shared->toCommandParams();
-    params.type         = m_type;
+    params.type         = jobTypeToString(m_type);
     params.local        = m_local;
     params.remote       = m_remote;
     params.readOnly     = m_readOnly;
@@ -78,16 +78,15 @@ void Job::start(bool swapSides){
     // generate rclone command
     QStringList args = this->getCommand(swapSides);
 
-    // open log file
-    delete m_logfile;
-    m_logfile = new LogFile(m_name, this);
-    connect(m_logfile, &LogFile::error, this, [this](const QString& message){
+    // open log file — replacing any previous run's file for this job
+    m_logfile = std::make_unique<LogFile>(m_name);
+    connect(m_logfile.get(), &LogFile::error, this, [this](const QString& message){
         // Deliberately NOT emit warning(m_id, message): that signal/its UI
         // (the status-icon tooltip) is for warnings parsed from rclone's
         // own output. A logging failure is a different kind of problem —
         // route it through the app-wide status channel instead, so the two
         // aren't shown through the same indistinguishable UI element.
-        Status::notify(
+        emit notification(
             tr("Job \"%1\": %2").arg(m_name, message),
             Status::Level::Warning);
     });
@@ -113,7 +112,7 @@ void Job::stop(){
     if (m_rcloneProvider->requestGracefulStop(m_process)) {
         // Graceful stop signal sent — give the process a moment to exit on
         // its own, then fall back to a hard kill if it hasn't.
-        QTimer::singleShot(3000, this, [this]() {
+        QTimer::singleShot(Config::JOB_STOP_GRACEFUL_TIMEOUT_MS, this, [this]() {
             if (m_process.state() != QProcess::NotRunning)
                 m_process.kill();  // fallback
         });
@@ -187,7 +186,7 @@ void Job::setStatus(JobStatus s){
 void Job::processLine(const QString& line){
     // Transition from Starting -> Running on first real output
     if (m_status == JobStatus::Starting) {
-        if (m_type == "mount") {
+        if (m_type == JobType::Mount) {
             // mount signals readiness with a specific string
             if (line.contains(Config::DEFAULT_START_STRING))
                 setStatus(JobStatus::Running);
@@ -198,7 +197,7 @@ void Job::processLine(const QString& line){
     }
 
     // parse progress for sync/copy commands
-    if(m_type == "mount"){
+    if(m_type == JobType::Mount){
         processLineOutput(line);
     }else{
         static const QRegularExpression re(
@@ -267,14 +266,21 @@ bool Job::openLogFile(){
 }
 bool Job::openLocalFolder(){
     if(m_local.isEmpty()){
-        Status::notify(
+        emit notification(
             tr("Job \"%1\" has no local folder configured.").arg(m_name),
             Status::Level::Warning);
         return false;
     }
 
-    if(!QDesktopServices::openUrl(QUrl::fromLocalFile(this->m_local))){
-        Status::notify(
+    // For most jobs this is just m_local itself. But a mount's local path
+    // can be configured as something the OS only resolves indirectly (see
+    // RCloneProvider::resolveLocalPath) — e.g. a UNC-style WinFsp
+    // mountpoint that's actually backed by whatever drive letter got
+    // picked at mount time.
+    const QString path = m_rcloneProvider->resolveLocalPath(m_local);
+
+    if(!QDesktopServices::openUrl(QUrl::fromLocalFile(path))){
+        emit notification(
             tr("Could not open local folder for \"%1\".").arg(m_name),
             Status::Level::Error);
         return false;
@@ -286,7 +292,7 @@ bool Job::openLocalFolder(){
 void Job::fromJson(const QJsonValue& json){
     this->m_id           = json["id"]          .toString();
     this->m_name         = json["name"]        .toString();
-    this->m_type         = json["type"]        .toString();
+    this->m_type         = jobTypeFromString(json["type"].toString());
     this->m_local        = json["local"]       .toString();
     this->m_remote       = json["remote"]      .toString();
     this->m_autostart    = json["autostart"]   .toBool(false);
@@ -297,11 +303,11 @@ void Job::fromJson(const QJsonValue& json){
         this->m_id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     }
 }
-const QJsonObject Job::toJson() const{
+QJsonObject Job::toJson() const{
     QJsonObject o;
     o["id"]           = this->m_id;
     o["name"]         = this->m_name;
-    o["type"]         = this->m_type;
+    o["type"]         = jobTypeToString(this->m_type);
     o["local"]        = this->m_local;
     o["remote"]       = this->m_remote;
     o["autostart"]    = this->m_autostart;

@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->tabWidget->setCurrentWidget(ui->tabJobs);
 
     // ---- Setup tray ----
-    m_trayController = new TrayController(this, m_jobsTab, this);
+    m_trayController = new TrayController(this, &m_appContext, this);
 
     // ---- Status bar
     connect(&Status::instance(), &Status::statusMessage, this, &MainWindow::onStatusMessage);

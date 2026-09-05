@@ -1,6 +1,7 @@
 #include "JobWidget.h"
 
 #include "src/common/Config.h"
+#include "src/ui/JobIcons.h"
 #include "src/ui/widgets/ui_JobWidget.h"
 
 #include <QApplication>
@@ -9,8 +10,6 @@
 #include <QFont>
 #include <QMimeData>
 #include <QMouseEvent>
-#include <QPainter>
-#include <QSvgRenderer>
 
 // ---------------------------------------------------------------------------
 // Constructor and helpers
@@ -102,11 +101,7 @@ void JobWidget::leaveEvent(QEvent* event)
 void JobWidget::onSpecChange(){
     ui->name->setText(m_job->name());
 
-    ui->button2->setVisible(m_job->type() != "mount");
-
-    bool validType = m_job->type() != "";
-    ui->button1->setEnabled(validType);
-    ui->button2->setEnabled(validType);
+    ui->button2->setVisible(m_job->type() != JobType::Mount);
 
     onStatusChange();
 }
@@ -118,18 +113,20 @@ void JobWidget::onStatusChange(){
     ui->statusIcon->setIcon(QIcon(getStatusIcon()));
 
     // button labels
-    if(m_job->type() == "mount"){
-        ui->button1->setText(active ? "Stop" : "Mount");
-    }else if(m_job->type() == "copy"){
-        ui->button1->setText(active ? "Stop" : "Copy ▲");
-        ui->button2->setText(active ? "Stop" : "Copy ▼");
-
+    switch (m_job->type()) {
+    case JobType::Mount:
+        ui->button1->setText(active ? tr("Stop") : tr("Mount"));
+        break;
+    case JobType::Copy:
+        ui->button1->setText(active ? tr("Stop") : tr("Copy ▲"));
+        ui->button2->setText(active ? tr("Stop") : tr("Copy ▼"));
         ui->button2->setVisible(!active);
-    }else if(m_job->type() == "sync"){
-        ui->button1->setText(active ? "Stop" : "Sync ▲");
-        ui->button2->setText(active ? "Stop" : "Sync ▼");
-
+        break;
+    case JobType::Sync:
+        ui->button1->setText(active ? tr("Stop") : tr("Sync ▲"));
+        ui->button2->setText(active ? tr("Stop") : tr("Sync ▼"));
         ui->button2->setVisible(!active);
+        break;
     }
 
     if(m_job->status() == JobStatus::Starting){
@@ -159,52 +156,18 @@ void JobWidget::onWarning(){
     ui->statusIcon->setToolTip(str);
 }
 
-const QPixmap JobWidget::getJobIcon() const{
-    // svg resource
-    QString str = QString(":/icons/%1_%2.svg")
-        .arg(m_job->type(), m_job->active() ? "active" : "inactive");
-    str = str.toLower();
-
-    // size
+QPixmap JobWidget::getJobIcon() const{
     int h = ui->jobIcon->size().height();
-
-    // actually get
-    return QPixmap(str).scaled(h, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    return JobIcons::jobIcon(m_job->type(), m_job->active(), h);
 }
-const QPixmap JobWidget::getStatusIcon() const{
+QPixmap JobWidget::getStatusIcon() const{
     int h = ui->statusIcon->size().height();
-
-    // base icon
-    QString baseIcon = QString(":/icons/%1.svg").arg(m_job->statusString());
-    baseIcon = baseIcon.toLower();
-
-    QPixmap pixmap(baseIcon);
-    pixmap = pixmap.scaled(h, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    // warning badge
-    if(!m_job->warnings().isEmpty()){
-        QString warnIcon = QString(":/icons/warning.svg");
-        QSvgRenderer warnRenderer(warnIcon);
-
-        int warnSize = h / 3;
-
-        QRect warnRect(
-            h - warnSize,
-            h - warnSize,
-            warnSize,
-            warnSize);
-
-        QPainter painter(&pixmap);
-        warnRenderer.render(&painter, warnRect);
-    }
-
-    // set icon
-    return pixmap;
+    return JobIcons::statusIcon(m_job->status(), !m_job->warnings().isEmpty(), h);
 }
 void JobWidget::setProgressVisibility(){
     bool active = m_job->active();
 
-    if(m_job->type() != "mount" && active){
+    if(m_job->type() != JobType::Mount && active){
         ui->progressFrame->show();
     }else{
         ui->bytes->setText("");
@@ -223,15 +186,15 @@ void JobWidget::setProgressVisibility(){
 void JobWidget::buttonClicked(bool swap){
     this->jobInvert = swap;
 
-    if(m_job->type() == "mount" || m_job->active()){
+    if(m_job->type() == JobType::Mount || m_job->active()){
         this->confirmEvent();
     }else{
         this->showConfirm();
     }
 }
 void JobWidget::showConfirm(){
-    QString label = "Confirm starting %1 job?\nFrom: %2\nTo: %3\n";
-    label = label.arg(m_job->type(),
+    QString label = tr("Confirm starting %1 job?\nFrom: %2\nTo: %3\n");
+    label = label.arg(jobTypeToString(m_job->type()),
                       jobInvert ? m_job->remote() : m_job->local(),
                       jobInvert ? m_job->local()  : m_job->remote());
 

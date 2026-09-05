@@ -76,7 +76,7 @@ void JobDetailsTabController::setJob(Job* job)
     m_currentJob = job;
 
     ui->name->setText(job->name());
-    ui->type->setCurrentIndex(ui->type->findText(job->type()));
+    ui->type->setCurrentIndex(ui->type->findText(jobTypeToString(job->type())));
     ui->local->setText(job->local());
     ui->remote->setText(job->remote());
     ui->autostart->setChecked(job->autostart());
@@ -115,8 +115,8 @@ void JobDetailsTabController::clear()
 
 void JobDetailsTabController::onTypeChanged(int index)
 {
-    ui->readOnly->setEnabled(index == ui->type->findText("mount"));
-    ui->deleteBefore->setEnabled(index == ui->type->findText("sync"));
+    ui->readOnly->setEnabled(index == ui->type->findText(jobTypeToString(JobType::Mount)));
+    ui->deleteBefore->setEnabled(index == ui->type->findText(jobTypeToString(JobType::Sync)));
 }
 
 void JobDetailsTabController::updateCommandPreview()
@@ -129,7 +129,7 @@ void JobDetailsTabController::updateCommandPreview()
     const SharedSettings* shared = m_appContext->shared();
 
     RcloneCommandParams params = shared->toCommandParams();
-    params.type         = ui->type->currentText();
+    params.type         = jobTypeToString(jobTypeFromString(ui->type->currentText()));
     params.local        = ui->local->text();
     params.remote       = ui->remote->text();
     params.readOnly     = ui->readOnly->isChecked();
@@ -149,7 +149,7 @@ void JobDetailsTabController::updateUnsavedIndicator()
 
     const bool dirty =
         ui->name->text()              != m_currentJob->name()      ||
-        ui->type->currentText()       != m_currentJob->type()      ||
+        jobTypeFromString(ui->type->currentText()) != m_currentJob->type() ||
         ui->local->text()             != m_currentJob->local()     ||
         ui->remote->text()            != m_currentJob->remote()    ||
         ui->autostart->isChecked()    != m_currentJob->autostart() ||
@@ -164,7 +164,7 @@ void JobDetailsTabController::onOpenLogClicked()
     if (!m_currentJob) return;
 
     if (!m_currentJob->openLogFile()) {
-        Status::notify("Error opening job log file (run the job at least once first).", Status::Level::Error);
+        Status::notify(tr("Error opening job log file (run the job at least once first)."), Status::Level::Error);
     }
 }
 
@@ -174,7 +174,7 @@ void JobDetailsTabController::onSaveClicked()
     Job* job = m_currentJob;
 
     job->setName(ui->name->text());
-    job->setType(ui->type->currentText());
+    job->setType(jobTypeFromString(ui->type->currentText()));
     job->setLocal(ui->local->text());
     job->setRemote(ui->remote->text());
     job->setAutostart(ui->autostart->isChecked());
@@ -184,11 +184,11 @@ void JobDetailsTabController::onSaveClicked()
     updateCommandPreview();
 
     if (m_appContext->save()) {
-        Status::notify("Job saved.", Status::Level::Success);
+        Status::notify(tr("Job saved."), Status::Level::Success);
         updateUnsavedIndicator();
         onCancelClicked(); // resets job and closes
     } else {
-        Status::notify("Error saving job. Edits will be reverted on restart.", Status::Level::Error);
+        Status::notify(tr("Error saving job. Edits will be reverted on restart."), Status::Level::Error);
     }
 }
 
@@ -207,18 +207,18 @@ void JobDetailsTabController::onDeleteClicked()
     m_appContext->removeJob(toRemove);
 
     if (m_appContext->save()) {
-        Status::notify("Job removed.", Status::Level::Success);
+        Status::notify(tr("Job removed."), Status::Level::Success);
         setJob(nullptr);
         emit closeRequested();
     } else {
-        Status::notify("Error removing job.", Status::Level::Error);
+        Status::notify(tr("Error removing job."), Status::Level::Error);
     }
 }
 
 void JobDetailsTabController::onLocalSelectClicked()
 {
     QString path = QFileDialog::getExistingDirectory(
-        this, "Select local folder or mount point", ui->local->text());
+        this, tr("Select local folder or mount point"), ui->local->text());
     if (!path.isEmpty()) {
         ui->local->setText(QDir::toNativeSeparators(path));
     }

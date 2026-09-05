@@ -1,5 +1,6 @@
 #include "RemotesAutocompleter.h"
 
+#include "src/common/AsyncRunner.h"
 #include "src/providers/rclone/RemotesLookupWorker.h"
 
 #include <QCompleter>
@@ -38,22 +39,19 @@ RemotesAutocompleter::RemotesAutocompleter(QLineEdit *lineEdit, RCloneProvider *
         lineEdit->setCompleter(m_completer);
 
     auto *worker = new RemotesLookupWorker(rcloneProvider, std::move(rclonePath));
-    worker->moveToThread(&m_workerThread);
 
-    connect(&m_workerThread, &QThread::started, worker, &RemotesLookupWorker::run);
+    // AsyncRunner moves `worker` onto a background thread and starts that
+    // thread immediately. This is a one-shot job: run it as soon as the
+    // thread starts, and let the thread (and worker) stop themselves once
+    // finished() fires, rather than waiting for this RemotesAutocompleter
+    // to be destroyed.
+    m_runner = new AsyncRunner(worker, this);
+    connect(&m_runner->backgroundThread(), &QThread::started, worker, &RemotesLookupWorker::run);
+    connect(worker, &RemotesLookupWorker::finished, &m_runner->backgroundThread(), &QThread::quit);
+
     connect(worker, &RemotesLookupWorker::remotesReady, this, &RemotesAutocompleter::onRemotesReady);
     connect(worker, &RemotesLookupWorker::dirsReady, this, &RemotesAutocompleter::onDirsReady);
     connect(worker, &RemotesLookupWorker::finished, this, &RemotesAutocompleter::lookupFinished);
-    connect(worker, &RemotesLookupWorker::finished, &m_workerThread, &QThread::quit);
-    connect(&m_workerThread, &QThread::finished, worker, &QObject::deleteLater);
-
-    m_workerThread.start();
-}
-
-RemotesAutocompleter::~RemotesAutocompleter()
-{
-    m_workerThread.quit();
-    m_workerThread.wait();
 }
 
 void RemotesAutocompleter::onRemotesReady(const QStringList &remotes)
