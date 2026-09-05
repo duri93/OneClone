@@ -42,7 +42,7 @@ void JobsTabController::onJobMoved(const QString& id, int newIndex)
     populateJobList();
 
     if (!m_appContext->save()) {
-        Status::notify("Warning: failed to save settings.", Status::Level::Error);
+        Status::notify("Warning: failed to save settings.", Status::Level::Warning);
     }
 }
 
