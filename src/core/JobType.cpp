@@ -7,6 +7,7 @@ QString jobTypeToString(JobType type)
     case JobType::Copy:  return QStringLiteral("copy");
     case JobType::Sync:  return QStringLiteral("sync");
     }
+
     return QStringLiteral("sync"); // unreachable, keeps compilers happy
 }
 

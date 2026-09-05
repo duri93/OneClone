@@ -30,25 +30,6 @@ Job::~Job(){
     }
 }
 
-QString Job::statusString() const{
-    switch(status()){
-    case JobStatus::Stopped:
-        return "Stopped";
-    case JobStatus::Starting:
-        return "Starting";
-    case JobStatus::Running:
-        return "Running";
-    case JobStatus::Errored:
-        return "Errored";
-    case JobStatus::Stopping:
-        return "Stopping";
-    case JobStatus::Success:
-        return "Success";
-    }
-
-    return "Unknown";
-}
-
 // ---------------------------------------------------------------------------
 // start / stop
 // ---------------------------------------------------------------------------

@@ -58,6 +58,7 @@ qt_add_executable(OneClone
 
     resources/resources.qrc
     resources/main.rc
+    src/core/JobStatus.h src/core/JobStatus.cpp
 )
 
 target_link_libraries(OneClone

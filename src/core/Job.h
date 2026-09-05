@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/core/JobStatus.h"
 #include "src/core/JobType.h"
 #include "src/core/LogFile.h"
 #include "src/core/SharedSettings.h"
@@ -10,15 +11,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-
-enum class JobStatus{
-    Stopped,
-    Starting,
-    Running,
-    Success,
-    Stopping,
-    Errored
-};
 
 struct JobProgress{
     QString bytes = "";
@@ -68,8 +60,6 @@ public:
     bool             active()   const { return m_status == JobStatus::Starting || m_status == JobStatus::Running; }
     JobProgress      progress() const { return m_progress; }
     QVector<QString> warnings() const { return m_warnings; }
-
-    QString statusString() const;
 
     // Process handling
     QStringList getCommand(bool swapSides = false);
