@@ -80,6 +80,7 @@ void TrayController::onActivated(QSystemTrayIcon::ActivationReason reason)
             m_window->hide();
         } else {
             m_window->show();
+            m_window->setWindowState( (m_window->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
             m_window->raise();
             m_window->activateWindow();
         }

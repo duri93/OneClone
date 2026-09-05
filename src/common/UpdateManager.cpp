@@ -447,8 +447,6 @@ QString UpdateManager::writeWindowsScript(qint64 pid) const{
                                "robocopy \"%EXTRACT_DIR%\" \"%INSTALL_DIR%\" /E /IS /IT /NFL /NDL /NJH /NJS\r\n"
                                "if errorlevel 8 goto cleanup\r\n"
                                "\r\n"
-                               "::start \"\" \"%APP_EXE%\"\r\n"
-                               "\r\n"
                                ":cleanup\r\n"
                                "rd /s /q \"%TEMP_DIR%\" >NUL 2>NUL\r\n"
                                "del \"%~f0\" >NUL 2>NUL\r\n"
@@ -497,8 +495,6 @@ QString UpdateManager::writeLinuxScript(qint64 pid) const{
                                "tar -xzf \"$ARCHIVE\" -C \"$EXTRACT_DIR\" || exit 1\n"
                                "cp -rf \"$EXTRACT_DIR\"/. \"$INSTALL_DIR\"/ || exit 1\n"
                                "chmod +x \"$APP_EXE\" 2>/dev/null\n"
-                               "\n"
-                               "nohup \"$APP_EXE\" >/dev/null 2>&1 &\n"
                                ).arg(QString::number(pid),
                                     quoteForShell(archive),
                                     quoteForShell(extractDir),

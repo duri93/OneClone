@@ -61,7 +61,7 @@ void AppContext::removeJob(Job* job){
 int AppContext::indexOfJob(const QString& id) const
 {
     for (int i = 0; i < m_jobs.size(); ++i) {
-        if (m_jobs[i]->id() == id) return i;
+        if (m_jobs[i] && m_jobs[i]->id() == id) return i;
     }
     return -1;
 }
@@ -98,8 +98,11 @@ AppContext::LoadResult AppContext::load()
 
     // remove old jobs
     for(Job*& job:m_jobs){
-        emit removed(job->id());
-        delete job;
+        Job* toDelete = job;
+        job = nullptr;
+
+        emit removed(toDelete->id());
+        delete toDelete;
     }
     m_jobs.clear();
 

@@ -21,8 +21,6 @@ SettingsTabController::SettingsTabController(AppContext* appContext, QWidget* pa
     ui->advancedScrollarea->hide();
     LocalPathAutocompleter::attach(ui->rclone, LocalPathAutocompleter::Mode::FoldersAndFiles, {"rclone.exe"});
 
-    loadFromSettings();
-
     connect(ui->advanced,       &QCheckBox::checkStateChanged, this, &SettingsTabController::onAdvancedToggled);
     connect(ui->save,           &QPushButton::clicked, this, &SettingsTabController::onSave);
     connect(ui->cancel,         &QPushButton::clicked, this, &SettingsTabController::onCancel);
@@ -43,6 +41,8 @@ SettingsTabController::SettingsTabController(AppContext* appContext, QWidget* pa
     connect(ui->transfers,          &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
     connect(ui->checkers,           &QSpinBox::valueChanged,         this, &SettingsTabController::updateUnsavedIndicator);
     connect(ui->symlinks,           &QCheckBox::toggled,             this, &SettingsTabController::updateUnsavedIndicator);
+
+    loadFromSettings();
 }
 
 SettingsTabController::~SettingsTabController()
@@ -146,19 +146,22 @@ void SettingsTabController::onRcloneConfClicked()
 
 void SettingsTabController::updateUnsavedIndicator()
 {
+    SharedSettings* shared = m_appContext->shared();
+
     const bool dirty =
         ui->autostart->isChecked()      != AutostartManager::isEnabled(Config::APP_ID) ||
-        ui->rclone->text()              != m_appContext->shared()->rclonePath() ||
-        ui->cacheMode->currentText()    != m_appContext->shared()->cacheMode() ||
-        ui->cacheMaxSize->value()       != m_appContext->shared()->cacheMaxSize()      ||
-        ui->cacheMinFreeSpace->value()  != m_appContext->shared()->cacheMinFreeSpace()    ||
-        ui->cacheMaxAge->value()        != m_appContext->shared()->cacheMaxAge()     ||
-        ui->readChunkSize->value()      != m_appContext->shared()->readChunkSize() ||
-        ui->readChunkSizeLimit->value() != m_appContext->shared()->readChunkSizeLimit() ||
-        ui->bufferSize->value()         != m_appContext->shared()->bufferSize()      ||
-        ui->transfers->value()          != m_appContext->shared()->transfers() ||
-        ui->checkers->value()           != m_appContext->shared()->checkers() ||
-        ui->symlinks->isChecked()       != m_appContext->shared()->links();
+        ui->rclone->text()              != shared->rclonePath() ||
+        ui->advanced->isChecked()       != shared->advanced() ||
+        ui->cacheMode->currentText()    != shared->cacheMode() ||
+        ui->cacheMaxSize->value()       != shared->cacheMaxSize()      ||
+        ui->cacheMinFreeSpace->value()  != shared->cacheMinFreeSpace()    ||
+        ui->cacheMaxAge->value()        != shared->cacheMaxAge()     ||
+        ui->readChunkSize->value()      != shared->readChunkSize() ||
+        ui->readChunkSizeLimit->value() != shared->readChunkSizeLimit() ||
+        ui->bufferSize->value()         != shared->bufferSize()      ||
+        ui->transfers->value()          != shared->transfers() ||
+        ui->checkers->value()           != shared->checkers() ||
+        ui->symlinks->isChecked()       != shared->links();
 
     ui->unsaved->setVisible(dirty);
 }
